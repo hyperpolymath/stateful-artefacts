@@ -1,13 +1,13 @@
 ;; SPDX-License-Identifier: MPL-2.0
-;; Copyright (c) {{CURRENT_YEAR}} {{AUTHOR}} ({{OWNER}}) <{{AUTHOR_EMAIL}}>
+;; Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
 ;;
-;; Guix package definition for {{PROJECT_NAME}}
+;; Guix package definition for Stateful Artefacts
 ;;
 ;; Usage:
 ;;   guix shell -D -f guix.scm    # Enter development shell
 ;;   guix build -f guix.scm       # Build package
 ;;
-;; TODO: Replace {{PROJECT_NAME}} and customize inputs for your language/stack.
+;; TODO: Replace Stateful Artefacts and customize inputs for your language/stack.
 ;; See: https://guix.gnu.org/manual/en/html_node/Defining-Packages.html
 
 (use-modules (guix packages)
@@ -18,7 +18,7 @@
              (gnu packages base))
 
 (package
-  (name "{{PROJECT_NAME}}")
+  (name "Stateful Artefacts")
   (version "0.1.0")
   (source (local-file "." "source"
                        #:recursive? #t
@@ -63,8 +63,8 @@
    (list
     ;; TODO: Add runtime dependencies
     ))
-  (home-page "https://github.com/{{OWNER}}/{{PROJECT_NAME}}")
-  (synopsis "{{PROJECT_PURPOSE}}")
+  (home-page "https://github.com/hyperpolymath/Stateful Artefacts")
+  (synopsis "State-carrying artefact layer of the Reposystem/OPSM stack: schemas and tooling for artefacts that carry machine-readable state (identity, provenance, lifecycle, verification) across the hyperpolymath estate.")
   (description "RSR-compliant project. See README.adoc for details.")
   (license (list
             ;; MPL-2.0 extends MPL-2.0
