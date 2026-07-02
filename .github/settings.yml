@@ -7,13 +7,11 @@
 # applied by the probot/settings app when changes are pushed to the default
 # branch. Install the app at: https://github.com/apps/settings
 #
-# Template file — replace stateful-artefacts and {{DESCRIPTION}} with actual values.
-
 # ─── Repository Settings ───────────────────────────────────────────────────────
 
 repository:
   name: "stateful-artefacts"
-  description: "{{DESCRIPTION}}"
+  description: "State-carrying artefact layer of the Reposystem/OPSM stack — schemas and tooling for artefacts that carry machine-readable state across the hyperpolymath estate."
   homepage: "https://github.com/hyperpolymath/stateful-artefacts"
   private: false
   has_issues: true

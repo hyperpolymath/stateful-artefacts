@@ -3,24 +3,25 @@
 # See: https://github.com/hyperpolymath/gv-clade-index
 
 [identity]
-uuid = "a5ea1382-a34c-5334-8a46-a2ebe904c810"
+uuid = "dbc2ef6f-015c-525d-bed8-ed0d04788cf1"
 primary-forge = "github"
 primary-owner = "hyperpolymath"
-canonical-name = "rsr-template-repo"
-prefixed-name = "rm-rsr-template-repo"
+canonical-name = "stateful-artefacts"
+prefixed-name = "gv-stateful-artefacts"  # TODO: confirm clade prefix against gv-clade-index (registry unreachable at instantiation time)
 
 [clade]
-primary = "rm"
-secondary = ["gv"]
-assigned = "2026-03-16"
-rationale = ""
+primary = "gv"
+secondary = []
+assigned = "2026-07-02"
+rationale = "Estate-tooling component (Reposystem/OPSM stack); prefix provisional pending gv-clade-index registration."
 
 [forges]
-github = "hyperpolymath/rsr-template-repo"
-gitlab = "hyperpolymath/rsr-template-repo"
-bitbucket = "hyperpolymath/rsr-template-repo"
+github = "hyperpolymath/stateful-artefacts"
+gitlab = "hyperpolymath/stateful-artefacts"
+bitbucket = "hyperpolymath/stateful-artefacts"
 
 [lineage]
-type = "standalone"
-parent = "RSR template — scaffold for new repos"
-born = "2026-03-16"
+type = "template-instantiation"
+parent = "rsr-template-repo"
+born = "2026-07-02"
+notes = "Domain content extracted from hyperpolymath/reposystem; re-transfer pending (original transfer failed)."

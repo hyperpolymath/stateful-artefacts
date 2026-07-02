@@ -55,7 +55,7 @@ perfective = 10   # % for SPDX headers, doc updates, formatting, style
 # Customise this per project — the template default is generic.
 
 [methodology.unique-strength]
-description = "{{PROJECT_UNIQUE_STRENGTH}}"
+description = "One canonical, machine-readable state schema (identity, provenance, lifecycle, verification) carried by every estate artefact, with a formally-typed Idris2/Zig ABI seam."
 deepen-not-broaden = true
 
 # ============================================================================
@@ -101,7 +101,7 @@ constraints = [
 # These rules detect corrupt/template/stale state files.
 
 [methodology.state-validation]
-reject-if-contains = ["{{PLACEHOLDER}}", "STATEFUL_ARTEFACTS", "rsr-template-repo"]
+reject-if-contains = ["{{", "rsr-template-repo"]
 reject-if-project-name-mismatch = true
 staleness-threshold-days = 90
 fallback-files = ["TODO.md", "TODO.adoc", "ROADMAP.adoc", "README.adoc"]

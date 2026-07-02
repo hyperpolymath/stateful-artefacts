@@ -20,9 +20,9 @@ purpose = [
 
 [identity]
 project = "Stateful Artefacts"
-kind = "{{PROJECT_KIND}}"                # language | library | service | tool
+kind = "library"                # language | library | service | tool
 one-sentence = "State-carrying artefact layer of the Reposystem/OPSM stack: schemas and tooling for artefacts that carry machine-readable state (identity, provenance, lifecycle, verification) across the hyperpolymath estate."
-domain = "{{PROJECT_DOMAIN}}"
+domain = "estate-tooling / artefact-state-metadata"
 
 [semantic-authority]
 policy = "canonical"

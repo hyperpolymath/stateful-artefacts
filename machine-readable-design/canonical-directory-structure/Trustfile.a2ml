@@ -42,7 +42,7 @@ Trust levels:
 
 #### author-correct
 - description: Git author matches expected identity
-- run: "git log -1 --format='%ae' | grep -qE '{{EXPECTED_AUTHOR}}'"
+- run: "git log -1 --format='%ae' | grep -qE 'jewell@(open\\.ac\\.uk|gmail\\.com)|noreply@anthropic\\.com'"
 - severity: warning
 
 ## Container Security

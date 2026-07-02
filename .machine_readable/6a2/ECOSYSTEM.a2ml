@@ -1,39 +1,26 @@
 # SPDX-License-Identifier: MPL-2.0
-# ECOSYSTEM.a2ml — Ecosystem position (META-TEMPLATE)
-#
-# This is the ECOSYSTEM file for rsr-template-repo itself. It records the
-# TEMPLATE's own position in the estate. When consumed by a new project,
-# replace these fields with the target project's ecosystem position and
-# related projects (see the NOTE FOR CONSUMERS at the bottom).
+# ECOSYSTEM.a2ml — Ecosystem position
 
 [metadata]
-project = "rsr-template-repo"
+project = "stateful-artefacts"
 ecosystem = "hyperpolymath"
 
 [position]
-type = "repository-template"
-purpose = "Canonical RSR-compliant repository template: scaffolding (CI/CD, AI manifests, ABI/FFI standards, container ecosystem, governance) that new hyperpolymath projects are instantiated from."
+type = "library"
+purpose = "State-carrying artefact layer of the Reposystem/OPSM stack: canonical schemas and cross-language tooling (Idris2-proven layout, Zig C ABI) for artefacts that carry machine-readable state across the estate."
 
 [pipeline]
-position = "foundation"
-chain = "standards → rsr-template-repo → (every estate repo)"
-notes = "rsr-template-repo turns the RSR standard into runnable scaffolding. New repos are created from it via `just init`, which substitutes the {{PLACEHOLDER}} tokens."
-coordination = "standards"
+position = "component"
+chain = "standards → rsr-template-repo → stateful-artefacts"
+notes = "Instantiated from rsr-template-repo on 2026-07-02. Extracted from hyperpolymath/reposystem (the original content transfer failed and is being redone; see STATE.a2ml blockers)."
+coordination = "reposystem"
 
 [related-projects]
 projects = [
-  { name = "standards", relationship = "standard-source", notes = "Defines the RSR standard, contractile canon, and policies that this template operationalises." },
-  { name = "stapeln", relationship = "build-tooling", notes = "Layer-based container build system; the template ships stapeln.toml scaffolding." },
-  { name = "selur-compose", relationship = "build-tooling", notes = "Service composition; the template ships selur-compose.toml scaffolding." },
-  { name = "k9-svc", relationship = "validation-tooling", notes = "Runs the self-validating k9.ncl checks (.machine_readable/self-validating/)." },
-  { name = "cerro-torre", relationship = "signing-tooling", notes = "Container/image signing provider referenced by the container scaffolding." },
-  { name = "svalinn", relationship = "verification-tooling", notes = "Supply-chain verification referenced by the container scaffolding." },
-  { name = "vordr", relationship = "verification-tooling", notes = "Build/artifact verification referenced by the container scaffolding." },
+  { name = "reposystem", relationship = "extraction-parent", notes = "Railway-yard estate coordination tool this repo was split out of; the domain content is re-transferred from there." },
+  { name = "standards", relationship = "standard-source", notes = "Defines the RSR standard, contractile canon, and policies this repo follows." },
+  { name = "rsr-template-repo", relationship = "template-parent", notes = "Scaffolding this repo was instantiated from via `just init`." },
+  { name = "nextgen-databases", relationship = "data-feed-target", notes = "VeriSimDB is the aggregation sink for artefact state records (hexad feed format)." },
+  { name = "git-hud", relationship = "stack-peer", notes = "OPSM stack HUD; consumes Reposystem exports that carry stateful-artefacts records." },
+  { name = "vordr", relationship = "verification-tooling", notes = "Build/artifact verification; natural consumer of artefact state records." },
 ]
-
-# ---------------------------------------------------------------------------
-# NOTE FOR CONSUMERS: When using this template to create a new repo, replace
-# the project/purpose above and rewrite [related-projects] to describe YOUR
-# project's actual ecosystem. The entries above describe the TEMPLATE's own
-# position, not yours.
-# ---------------------------------------------------------------------------

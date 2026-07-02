@@ -6,17 +6,21 @@
 
 [metadata]
 version = "0.1.0"
-last-updated = "2026-04-11"
+last-updated = "2026-07-02"
 
 [project-info]
-type = "library"  # TODO: update type (library|binary|service|website|monorepo)  # library | binary | monorepo | service | website
-languages = []             # e.g. ["rust", "zig", "idris2"]
+type = "library"  # library | binary | monorepo | service | website
+languages = ["idris2", "zig"]  # + "rust" once the reposystem content re-transfer lands
 license = "MPL-2.0"
 author = "Jonathan D.A. Jewell (hyperpolymath)"
 
 [architecture-decisions]
 # ADR format: status = proposed | accepted | deprecated | superseded | rejected
-# - { id = "ADR-001", title = "Use Zig for FFI", status = "accepted", date = "2026-02-14" }
+adrs = [
+  { id = "ADR-001", title = "Instantiate from RSR template (rsr-template-repo)", status = "accepted", date = "2026-07-02" },
+  { id = "ADR-002", title = "Extraction from reposystem: domain content re-transferred, Rust core planned; Zig keeps the C-ABI seam, Idris2 keeps the ABI proofs", status = "accepted", date = "2026-07-02" },
+  { id = "ADR-003", title = "ABI Result canon: five values (ok, error, invalid_param, out_of_memory, null_pointer) shared verbatim by Zig, Idris2, and the C header", status = "accepted", date = "2026-07-02" },
+]
 
 [development-practices]
 build-tool = "just"

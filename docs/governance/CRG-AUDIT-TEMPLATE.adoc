@@ -9,7 +9,7 @@ Jonathan D.A. Jewell
 // USAGE
 // -----
 // Copy this file to `docs/governance/CRG-AUDIT-YYYY-MM-DD.adoc` in the target
-// repo, replace the {{PLACEHOLDER}} tokens, and fill every section with
+// repo, replace the placeholder tokens, and fill every section with
 // *verified-today* evidence. Do not leave "TODO" or "tbd" in a finished audit.
 // Worked example of a completed audit: boj-server/docs/governance/CRG-AUDIT-2026-04-18.adoc
 //

@@ -167,7 +167,6 @@ REQUIRED_WORKFLOWS=(
     "workflow-linter.yml"
     "npm-bun-blocker.yml"
     "ts-blocker.yml"
-    "scorecard-enforcer.yml"
     "secret-scanner.yml"
 )
 

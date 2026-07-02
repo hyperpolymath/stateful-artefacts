@@ -1,30 +1,31 @@
 // SPDX-License-Identifier: CC-BY-SA-4.0
 // Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
-// Template: QUICKSTART-MAINTAINER.adoc — packaging, deploying, and maintaining
-// Replace rsr-template-repo, {{PACKAGE_NAME}}, {{DEPS}} with actuals
-= rsr-template-repo — Quick Start for Platform Maintainers
+// QUICKSTART-MAINTAINER.adoc — packaging, deploying, and maintaining
+= Stateful Artefacts — Quick Start for Platform Maintainers
 :toc:
 :toclevels: 2
 
 == Overview
 
-This guide covers packaging, deploying, and maintaining rsr-template-repo for
+This guide covers packaging, deploying, and maintaining stateful-artefacts for
 distribution on your platform.
 
 == Runtime Dependencies
 
-{{DEPS}}
+* None at runtime today — the FFI seam builds to a self-contained static/shared
+  library (`libstateful_artefacts`) linked against libc only.
+* Build-time: Zig 0.15.2+; Idris2 (optional, ABI typecheck only); just.
 
 == Build from Source
 
 [source,bash]
 ----
-git clone https://github.com/hyperpolymath/rsr-template-repo.git
-cd rsr-template-repo
+git clone https://github.com/hyperpolymath/stateful-artefacts.git
+cd stateful-artefacts
 just build-release
 ----
 
-Output: `{{BUILD_OUTPUT_PATH}}`
+Output: `src/interface/ffi/zig-out/lib/libstateful_artefacts.{a,so}`
 
 == Packaging
 
@@ -47,7 +48,7 @@ nix build
 [source,bash]
 ----
 just stapeln-export    # Generates Containerfile
-podman build -t rsr-template-repo .
+podman build -t stateful-artefacts .
 ----
 
 === Manual Package
@@ -66,10 +67,10 @@ Files installed:
 | `$PREFIX/bin/`
 | Executables
 
-| `$PREFIX/share/{{PACKAGE_NAME}}/`
+| `$PREFIX/share/stateful-artefacts/`
 | Data files, assets
 
-| `$PREFIX/share/doc/{{PACKAGE_NAME}}/`
+| `$PREFIX/share/doc/stateful-artefacts/`
 | Documentation
 
 | `$PREFIX/share/applications/`
@@ -81,9 +82,9 @@ Files installed:
 
 == Configuration
 
-Default config location: `$XDG_CONFIG_HOME/{{PACKAGE_NAME}}/config.toml`
+Default config location: `$XDG_CONFIG_HOME/stateful-artefacts/config.toml`
 
-Fallback: `$HOME/.config/{{PACKAGE_NAME}}/config.toml`
+Fallback: `$HOME/.config/stateful-artefacts/config.toml`
 
 == Health Checks
 
@@ -103,11 +104,11 @@ just build-release
 just install --prefix=/usr/local
 ----
 
-Or via OPSM: `opsm update {{PACKAGE_NAME}}`
+Or via OPSM: `opsm update stateful-artefacts`
 
 == Security Notes
 
-* License: MPL-2.0 (Palimpsest License)
+* License: MPL-2.0 (Mozilla Public License 2.0)
 * All dependencies SHA-pinned
 * `panic-attacker` scan results: link:INSTALL-SECURITY-REPORT.adoc[]
 * OpenSSF Scorecard: see badge in README
@@ -118,13 +119,13 @@ For deploying multiple instances (e.g., different users or tenants):
 
 [source,bash]
 ----
-just install --prefix=/opt/{{PACKAGE_NAME}}-instance1 --config=/etc/{{PACKAGE_NAME}}/instance1.toml
-just install --prefix=/opt/{{PACKAGE_NAME}}-instance2 --config=/etc/{{PACKAGE_NAME}}/instance2.toml
+just install --prefix=/opt/stateful-artefacts-instance1 --config=/etc/stateful-artefacts/instance1.toml
+just install --prefix=/opt/stateful-artefacts-instance2 --config=/etc/stateful-artefacts/instance2.toml
 ----
 
 Each instance has isolated config, data, and logs.
 
 == Reporting Issues
 
-* Upstream: https://github.com/hyperpolymath/rsr-template-repo/issues
+* Upstream: https://github.com/hyperpolymath/stateful-artefacts/issues
 * With diagnostic: `just help-me` (pre-fills context)
