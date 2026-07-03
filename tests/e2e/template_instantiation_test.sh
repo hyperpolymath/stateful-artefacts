@@ -26,6 +26,10 @@ TEST_PROJECT_NAME="Test Project"
 TEST_DESCRIPTION="A test project instantiated from the RSR template"
 TEST_PRIMARY_LANGUAGE="Rust"
 
+# Exported so the `find -exec bash -c` subshell below can see them.
+export TEST_REPO_NAME TEST_OWNER TEST_FORGE TEST_AUTHOR TEST_AUTHOR_EMAIL \
+       TEST_PROJECT_NAME TEST_DESCRIPTION TEST_PRIMARY_LANGUAGE
+
 # ANSI colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -137,7 +141,7 @@ find "$TEST_REPO_PATH" -type f \
                 sed -i "s|$placeholder|$value|g" "$file"
             fi
         done
-    ' _ "$file"
+    ' _ {} \;
 
 log_pass "All placeholder tokens replaced"
 
@@ -184,11 +188,14 @@ fi
 
 log_step "Checking for remaining placeholders"
 
+# Match leftover template tokens ({{PROJECT_NAME}}, {{OWNER}}, …) but NOT just's
+# own recipe-parameter interpolation {{ARGS}}, which legitimately stays in the
+# Justfiles.
 REMAINING_PLACEHOLDERS=$(
     find "$TEST_REPO_PATH" -type f \
         \( -name "*.md" -o -name "*.adoc" -o -name "*.a2ml" -o -name "*.zig" -o -name "*.idr" \
            -o -name "Justfile" -o -name "*.yml" \) \
-        -exec grep -l "{{[A-Z_]*}}" {} \; 2>/dev/null || true
+        -exec grep -lP '\{\{(?!ARGS\}\})[A-Z_]+\}\}' {} \; 2>/dev/null || true
 )
 
 if [ -z "$REMAINING_PLACEHOLDERS" ]; then

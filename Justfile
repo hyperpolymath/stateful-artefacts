@@ -80,25 +80,24 @@ import? "build/just/assess.just"
 # BUILD & COMPILE
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# Build the project (debug mode)
+# Build the project (debug mode) — builds the ABI/FFI seam
 build *args:
     @echo "Building stateful_artefacts (debug)..."
-    # TODO: Replace with your build command
-    # Examples:
-    #   cargo build {{args}}                    # Rust
-    #   mix compile {{args}}                    # Elixir
-    #   zig build {{args}}                      # Zig
-    #   deno task build {{args}}                # Deno/ReScript
+    @if command -v zig >/dev/null 2>&1; then \
+        cd src/interface/ffi && zig build {{args}}; \
+    else \
+        echo "zig not found — skipping FFI build (install Zig 0.15.2+)"; \
+    fi
     @echo "Build complete"
 
 # Build in release mode with optimizations
 build-release *args:
     @echo "Building stateful_artefacts (release)..."
-    # TODO: Replace with your release build command
-    # Examples:
-    #   cargo build --release {{args}}
-    #   MIX_ENV=prod mix compile {{args}}
-    #   zig build -Doptimize=ReleaseFast {{args}}
+    @if command -v zig >/dev/null 2>&1; then \
+        cd src/interface/ffi && zig build -Doptimize=ReleaseFast {{args}}; \
+    else \
+        echo "zig not found — skipping FFI build (install Zig 0.15.2+)"; \
+    fi
     @echo "Release build complete"
 
 # Build and watch for changes (requires entr or similar)
@@ -124,15 +123,14 @@ clean-all: clean
 # TEST & QUALITY
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# Run all tests
+# Run all tests (Zig unit + integration through the C ABI)
 test *args:
     @echo "Running tests..."
-    # TODO: Replace with your test command
-    # Examples:
-    #   cargo test {{args}}
-    #   mix test {{args}}
-    #   zig build test {{args}}
-    #   deno test {{args}}
+    @if command -v zig >/dev/null 2>&1; then \
+        cd src/interface/ffi && zig build test {{args}}; \
+    else \
+        echo "zig not found — skipping FFI tests (install Zig 0.15.2+)"; \
+    fi
     @echo "Tests passed!"
 
 # Run tests with verbose output
@@ -158,14 +156,7 @@ e2e:
 # Run aspect tests (cross-cutting concern validation)
 aspect:
     @echo "Running aspect tests..."
-    # TODO: Replace with your aspect test command. Examples:
-    #   bash tests/aspect_tests.sh           # Shell-based aspect tests
-    #   cargo test --test aspects             # Rust aspect tests
-    # Aspect tests validate architectural invariants:
-    #   - Thread safety (mutex in FFI modules)
-    #   - ABI/FFI contract (declarations match exports)
-    #   - SPDX compliance (all files have license headers)
-    #   - No dangerous patterns (believe_me, assert_total, etc.)
+    @bash tests/aspect_tests.sh
     @echo "Aspect tests passed!"
 
 # Run benchmarks (performance regression detection)
