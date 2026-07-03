@@ -12,6 +12,22 @@
 proof-check-all: proof-check-idris2 proof-check-lean4 proof-check-agda proof-check-coq proof-scan-dangerous
     @echo "=== All proof checks complete ==="
 
+# Typecheck the ABI/FFI seam package (src/interface/Abi via abi.ipkg).
+# This compiles the Idris2 half of the C-ABI seam — the aspect symbol-parity
+# test and the Zig tests cannot catch a broken Idris body, so this is the
+# gate that does. Runs in CI where idris2 is installable; skips locally when
+# no idris2 toolchain is present.
+typecheck-abi:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "=== Typechecking ABI seam (abi.ipkg) ==="
+    if ! command -v idris2 &>/dev/null; then
+        echo "SKIP: idris2 not installed"
+        exit 0
+    fi
+    idris2 --typecheck abi.ipkg
+    echo "PASS: abi.ipkg typechecks"
+
 # Check Idris2 proofs (ABI, types, dependent type proofs)
 proof-check-idris2:
     #!/usr/bin/env bash
