@@ -1,0 +1,20 @@
+EXHIBIT A — ETHICAL USE COMMITMENT (PROVISIONAL)
+
+TODO(sync with standards canon): the canonical exhibit text lives in the
+hyperpolymath/standards repository, which was unreachable when this repo was
+instantiated. Replace this provisional text with the canonical version at the
+first opportunity; the commitments below are a faithful summary, not the canon.
+
+The maintainers of stateful-artefacts commit that this software is developed
+and published with the following expectations of use:
+
+1. The software must not be used to cause, coordinate, or conceal harm to
+   people — including surveillance, discrimination, or exploitation.
+2. Provenance and state metadata produced by this software must not be
+   falsified to misrepresent the origin, verification status, or lifecycle
+   of an artefact.
+3. Downstream distributions should preserve this exhibit alongside the
+   MPL-2.0 licence text (licensing/texts/MPL-2.0.txt).
+
+This exhibit expresses the maintainers' intent. It does not modify the
+rights and obligations granted by the Mozilla Public License 2.0.

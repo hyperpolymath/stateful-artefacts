@@ -1,0 +1,55 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+= Affirmation — Honest State Snapshot
+:toc:
+
+*Repository:* hyperpolymath/stateful-artefacts +
+*Snapshot date:* 2026-07-02 +
+*Affirmed by:* Jonathan D.A. Jewell (hyperpolymath), via Claude Code
+
+This file is the dated, honest snapshot of what is actually true in this
+repository — not what it aspires to be. It is the third of the
+README / EXPLAINME / AFFIRMATION trio. Update it whenever the real state moves.
+
+== What is true today
+
+* The repository was instantiated from the RSR template (`rsr-template-repo`)
+  on 2026-07-02 via `just init`, then given its real identity by hand
+  (6a2 metadata, README, EXPLAINME, contractiles).
+* The formally-typed ABI/FFI seam is *real code and builds*:
+  `src/interface/ffi/` (Zig) exports `stateful_artefacts_*` C symbols;
+  `src/interface/Abi/` (Idris2) binds them with a shared 5-value `Result`
+  canon (ADR-003). Zig unit and integration tests pass locally under
+  Zig 0.15.2.
+* `just validate`, `bash scripts/validate-template.sh .`, `just verify-template`,
+  and `bash tests/aspect_tests.sh` pass locally.
+
+== What is NOT true yet (do not overstate)
+
+* *There is no domain implementation.* `src/core`, `src/definitions`,
+  `src/contracts`, `src/errors`, and `src/bridges` are structured scaffolds
+  (README + AI-MANIFEST only). The project's actual behaviour is pending a
+  content re-transfer from `hyperpolymath/reposystem` (the original split lost
+  the content). See the re-transfer checklist in `README.adoc`.
+* The project definition in `STATE.a2ml` / `README.adoc` is marked
+  *PROVISIONAL* and may be refined once the re-transfer clarifies the scope.
+* The formal proofs under `verification/proofs/` are template-level; they have
+  not been specialised to the artefact-state schema, and Idris2/Agda/Coq/Lean
+  were *not* run in this environment (no toolchains present) — only the Zig
+  side was executed. The Idris2 typecheck is expected to run in CI.
+* The `k9.ncl` self-validating contractiles and Nickel policies were *not*
+  verified locally (no `nickel` / `k9-svc` available).
+
+== Open questions for the maintainer
+
+* *Licence discrepancy.* This repo is normalised to MPL-2.0 (code) +
+  CC-BY-SA-4.0 (docs), but `hyperpolymath/reposystem` — the extraction parent —
+  declares *PMPL-1.0*. This must be reconciled before the re-transfer lands.
+* *Rust CI without Rust.* `.github/workflows/rust-ci.yml` and
+  `.machine_readable/compliance/rust/deny.toml` are retained on the expectation
+  that the reposystem content is Rust-core; if the domain turns out not to be
+  Rust, delete both.
+* *Provisional external registrations.* The Groove port (`8471`), the clade
+  prefix (`gv-stateful-artefacts`), and the OpenSSF Best Practices ID are
+  placeholders pending registration in the (currently unreachable) `standards`
+  and `gv-clade-index` repos.

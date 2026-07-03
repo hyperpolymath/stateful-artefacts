@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: CC-BY-SA-4.0
 // Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 = ABI/FFI Standards
-{{~ Aditionally delete this line and fill out the template below ~}}
 
 # STATEFUL_ARTEFACTS ABI/FFI Documentation
 
@@ -11,15 +10,34 @@ This library follows the **Hyperpolymath RSR Standard** for ABI and FFI design:
 
 - **ABI (Application Binary Interface)** defined in **Idris2** with formal proofs
 - **FFI (Foreign Function Interface)** implemented in **Zig** for C compatibility
-- **Generated C headers** bridge Idris2 ABI to Zig FFI
+- **A hand-maintained C header** bridges the Idris2 ABI to the Zig FFI
 - **Any language** can call through standard C ABI
+
+## Result Canon (ADR-003)
+
+Every FFI operation that can fail returns a single, shared result enum. The
+five values, their C codes, and their names are **identical** across the Zig
+implementation (`Result = enum(c_int)`), the Idris2 ABI (`data Result`), and
+the C header:
+
+| Code | Zig | Idris2 |
+|------|-----|--------|
+| 0 | `ok` | `Ok` |
+| 1 | `error` | `Error` |
+| 2 | `invalid_param` | `InvalidParam` |
+| 3 | `out_of_memory` | `OutOfMemory` |
+| 4 | `null_pointer` | `NullPointer` |
+
+`Abi.Types.resultCode` / `resultFromCode` convert between the enum and the raw
+`Bits32` returned across the boundary. Adding, removing, or renumbering a value
+is a breaking ABI change: update all three sides and bump the ABI version.
 
 ## Architecture
 
 ```
 ┌─────────────────────────────────────────────┐
 │  ABI Definitions (Idris2)                   │
-│  src/abi/                                   │
+│  src/interface/Abi/                                   │
 │  - Types.idr      (Type definitions)        │
 │  - Layout.idr     (Memory layout proofs)    │
 │  - Foreign.idr    (FFI declarations)        │
@@ -29,14 +47,14 @@ This library follows the **Hyperpolymath RSR Standard** for ABI and FFI design:
                   ▼
 ┌─────────────────────────────────────────────┐
 │  C Headers (auto-generated)                 │
-│  generated/abi/stateful_artefacts.h                │
+│  src/interface/generated/abi/stateful_artefacts.h │
 └─────────────────┬───────────────────────────┘
                   │
                   │ imported by
                   ▼
 ┌─────────────────────────────────────────────┐
 │  FFI Implementation (Zig)                   │
-│  ffi/zig/src/main.zig                       │
+│  src/interface/ffi/src/main.zig                       │
 │  - Implements C-compatible functions        │
 │  - Zero-cost abstractions                   │
 │  - Memory-safe by default                   │
@@ -192,23 +210,32 @@ pub const lib = @import("std");
 ### Build FFI Library
 
 ```bash
-cd ffi/zig
+cd src/interface/ffi
 zig build                         # Build debug
 zig build -Doptimize=ReleaseFast  # Build optimized
 zig build test                    # Run tests
 ```
 
-### Generate C Header from Idris2 ABI
+### C Header
+
+The C-consumer contract is the hand-maintained header
+`src/interface/generated/abi/stateful_artefacts.h`. It mirrors the
+`export fn stateful_artefacts_*` symbols in `src/interface/ffi/src/main.zig`
+and the `%foreign` bindings in `src/interface/Abi/Foreign.idr` (modern Zig and
+Idris2 no longer emit a usable C header automatically). When you add or change
+an export, update all three in lock-step; `tests/aspect_tests.sh` checks
+Idris2↔Zig symbol parity.
+
+Verify the header parses:
 
 ```bash
-cd src/abi
-idris2 --cg c-header Types.idr -o ../../generated/abi/stateful_artefacts.h
+gcc -fsyntax-only src/interface/generated/abi/stateful_artefacts.h
 ```
 
 ### Cross-Compile
 
 ```bash
-cd ffi/zig
+cd src/interface/ffi
 
 # Linux x86_64
 zig build -Dtarget=x86_64-linux
@@ -322,14 +349,14 @@ end
 ### Unit Tests (Zig)
 
 ```bash
-cd ffi/zig
+cd src/interface/ffi
 zig build test
 ```
 
 ### Integration Tests
 
 ```bash
-cd ffi/zig
+cd src/interface/ffi
 zig build test-integration
 ```
 
@@ -351,17 +378,16 @@ main = do
 
 When modifying the ABI/FFI:
 
-1. **Update ABI first** (`src/abi/*.idr`)
+1. **Update ABI first** (`src/interface/Abi/*.idr`)
    - Modify type definitions
    - Update proofs
    - Ensure backward compatibility
 
-2. **Generate C header**
-   ```bash
-   idris2 --cg c-header src/abi/Types.idr -o generated/abi/stateful_artefacts.h
-   ```
+2. **Update the hand-maintained C header**
+   (`src/interface/generated/abi/stateful_artefacts.h`) to match — keep it in
+   lock-step with the Idris2 `%foreign` bindings and the Zig exports.
 
-3. **Update FFI implementation** (`ffi/zig/src/main.zig`)
+3. **Update FFI implementation** (`src/interface/ffi/src/main.zig`)
    - Implement new functions
    - Match ABI types exactly
 
