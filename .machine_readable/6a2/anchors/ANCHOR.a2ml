@@ -56,7 +56,7 @@ must-have-anchor = true
 must-have-golden-path = true
 
 [semantic-authority-files]
-language-spec = "SPECIFICATION.md"
-formal-proofs = "docs/proofs/PROOFS.adoc"
-type-theory = "docs/theory/THEORY.adoc"
-algorithms = "docs/theory/ALGORITHMS.adoc"
+spec = "docs/spec/ARTEFACT-STATE-RECORD.adoc"          # canonical v0 record spec
+formal-proofs = "verification/proofs/"                  # TLA+ (ArtefactLifecycle) + Idris2 trees
+type-theory = "src/interface/Abi/Record.idr"            # typed lifecycle model (illegal transitions unrepresentable)
+abi = "docs/developer/ABI-FFI-README.adoc"              # ABI/FFI seam contract

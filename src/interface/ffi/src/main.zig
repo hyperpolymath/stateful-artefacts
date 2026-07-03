@@ -8,6 +8,7 @@
 //
 
 const std = @import("std");
+const core = @import("core"); // src/core/record.zig — artefact-state-record domain
 
 // Version information (keep in sync with project)
 const VERSION = "0.1.0";
@@ -255,6 +256,169 @@ export fn stateful_artefacts_register_callback(
 export fn stateful_artefacts_is_initialized(handle: ?*Handle) u32 {
     const h = fromHandle(handle orelse return 0);
     return if (h.initialized) 1 else 0;
+}
+
+//==============================================================================
+// Artefact State Record (v0)
+//
+// Opaque record handle over core.Record (src/core/record.zig). The state-machine
+// legality (forward-only phase; monotonic verification) is enforced in core;
+// these wrappers translate to the C ABI and the Result canon.
+// Spec: docs/spec/ARTEFACT-STATE-RECORD.adoc.
+//==============================================================================
+
+/// Opaque artefact-state-record handle at the C boundary.
+pub const Record = opaque {};
+
+inline fn fromRecord(rec: *Record) *core.Record {
+    return @ptrCast(@alignCast(rec));
+}
+inline fn toRecord(rec: *core.Record) *Record {
+    return @ptrCast(rec);
+}
+
+fn kindFromInt(v: c_int) ?core.Kind {
+    return if (v >= 0 and v <= 4) @enumFromInt(@as(u8, @intCast(v))) else null;
+}
+fn phaseFromInt(v: c_int) ?core.Phase {
+    return if (v >= 0 and v <= 4) @enumFromInt(@as(u8, @intCast(v))) else null;
+}
+fn verificationFromInt(v: c_int) ?core.Verification {
+    return if (v >= 0 and v <= 2) @enumFromInt(@as(u8, @intCast(v))) else null;
+}
+
+/// Create a record with the given id and kind. Returns null on failure.
+export fn stateful_artefacts_record_new(id: ?[*:0]const u8, kind: c_int) ?*Record {
+    const id_ptr = id orelse {
+        setError("Null id");
+        return null;
+    };
+    const k = kindFromInt(kind) orelse {
+        setError("Invalid kind");
+        return null;
+    };
+    const allocator = std.heap.c_allocator;
+    const impl = allocator.create(core.Record) catch {
+        setError("Failed to allocate record");
+        return null;
+    };
+    impl.* = core.Record.init(std.mem.span(id_ptr), k) catch {
+        allocator.destroy(impl);
+        setError("id too long");
+        return null;
+    };
+    clearError();
+    return toRecord(impl);
+}
+
+/// Free a record.
+export fn stateful_artefacts_record_free(rec: ?*Record) void {
+    const r = fromRecord(rec orelse return);
+    std.heap.c_allocator.destroy(r);
+    clearError();
+}
+
+/// Current lifecycle phase (Phase code), or -1 on null.
+export fn stateful_artefacts_record_phase(rec: ?*Record) c_int {
+    const r = fromRecord(rec orelse return -1);
+    return @intFromEnum(r.phase);
+}
+
+/// Current verification status (Verification code), or -1 on null.
+export fn stateful_artefacts_record_verification(rec: ?*Record) c_int {
+    const r = fromRecord(rec orelse return -1);
+    return @intFromEnum(r.verification);
+}
+
+/// Set provenance fields. Empty/short strings only (<= 255).
+export fn stateful_artefacts_record_set_provenance(
+    rec: ?*Record,
+    source_ref: ?[*:0]const u8,
+    produced_by: ?[*:0]const u8,
+    timestamp: i64,
+) Result {
+    const r = fromRecord(rec orelse {
+        setError("Null record");
+        return .null_pointer;
+    });
+    if (source_ref) |p| r.source_ref.set(std.mem.span(p)) catch {
+        setError("source-ref too long");
+        return .invalid_param;
+    };
+    if (produced_by) |p| r.produced_by.set(std.mem.span(p)) catch {
+        setError("produced-by too long");
+        return .invalid_param;
+    };
+    r.timestamp = timestamp;
+    clearError();
+    return .ok;
+}
+
+/// Advance the lifecycle phase. Illegal (non-forward / terminal) transitions
+/// return invalid_param and leave the record unchanged.
+export fn stateful_artefacts_record_advance_phase(rec: ?*Record, to: c_int) Result {
+    const r = fromRecord(rec orelse {
+        setError("Null record");
+        return .null_pointer;
+    });
+    const target = phaseFromInt(to) orelse {
+        setError("Invalid phase code");
+        return .invalid_param;
+    };
+    core.advancePhase(r, target) catch {
+        setError("Illegal phase transition");
+        return .invalid_param;
+    };
+    clearError();
+    return .ok;
+}
+
+/// Set verification status. Regressing to `unverified` is refused here — use
+/// stateful_artefacts_record_reopen_verification.
+export fn stateful_artefacts_record_set_verification(rec: ?*Record, to: c_int) Result {
+    const r = fromRecord(rec orelse {
+        setError("Null record");
+        return .null_pointer;
+    });
+    const target = verificationFromInt(to) orelse {
+        setError("Invalid verification code");
+        return .invalid_param;
+    };
+    core.setVerification(r, target) catch {
+        setError("Illegal verification transition (use reopen to unverify)");
+        return .invalid_param;
+    };
+    clearError();
+    return .ok;
+}
+
+/// The only path back to `unverified` — a deliberate re-assessment.
+export fn stateful_artefacts_record_reopen_verification(rec: ?*Record) Result {
+    const r = fromRecord(rec orelse {
+        setError("Null record");
+        return .null_pointer;
+    });
+    core.reopenVerification(r);
+    clearError();
+    return .ok;
+}
+
+/// Serialize the record into `buf` (v0 key=value form). Returns the number of
+/// bytes written, or -1 on null/too-small buffer.
+export fn stateful_artefacts_record_serialize(rec: ?*Record, buf: ?[*]u8, len: usize) c_int {
+    const r = fromRecord(rec orelse {
+        setError("Null record");
+        return -1;
+    });
+    const b = buf orelse {
+        setError("Null buffer");
+        return -1;
+    };
+    const n = core.serialize(r, b[0..len]) catch {
+        setError("Buffer too small");
+        return -1;
+    };
+    return @intCast(n);
 }
 
 //==============================================================================

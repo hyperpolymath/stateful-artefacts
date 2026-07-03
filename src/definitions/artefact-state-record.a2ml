@@ -1,0 +1,56 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+#
+# artefact-state-record.a2ml — machine-readable v0 schema for the artefact
+# state record. Human spec: docs/spec/ARTEFACT-STATE-RECORD.adoc.
+# PROVISIONAL — sub-fields/serialization may change on the reposystem
+# re-transfer. Evolution is additive-only.
+
+[schema]
+name = "artefact-state-record"
+version = 1
+status = "provisional"
+serialization = "kv-lines"   # deterministic key=value, one field per line
+
+[fields]
+# name = { type, max, optional }
+schema-version         = { type = "u32",    optional = false }
+identity.id            = { type = "string", max = 255, optional = false }
+identity.kind          = { type = "enum:Kind", optional = false }
+provenance.source-ref  = { type = "string", max = 255, optional = false }
+provenance.produced-by = { type = "string", max = 255, optional = false }
+provenance.timestamp   = { type = "i64",    optional = false }   # unix seconds; 0 = unset
+provenance.signature-ref = { type = "string", max = 255, optional = true }
+phase                  = { type = "enum:Phase", optional = false }
+verification           = { type = "enum:Verification", optional = false }
+verification.evidence-ref = { type = "string", max = 255, optional = true }
+
+[enums]
+Kind         = ["binary", "container", "dataset", "document", "other"]   # 0..4
+Phase        = ["draft", "built", "released", "superseded", "withdrawn"] # 0..4
+Verification = ["unverified", "verified", "rejected"]                    # 0..2
+
+[lifecycle]
+# Legal phase transitions (forward-only; everything else -> invalid_param).
+transitions = [
+  { from = "draft",    to = ["built", "withdrawn"] },
+  { from = "built",    to = ["released", "withdrawn"] },
+  { from = "released", to = ["superseded", "withdrawn"] },
+  { from = "superseded", to = [] },
+  { from = "withdrawn",  to = [] },
+]
+
+[verification-rules]
+# verification-monotonicity: no silent regress to "unverified".
+set-allowed = [
+  { from = "unverified", to = ["verified", "rejected"] },
+  { from = "verified",   to = ["rejected"] },
+  { from = "rejected",   to = ["verified"] },
+]
+reopen = "the only path back to unverified (explicit re-assessment)"
+
+[abi]
+# Mirrored by src/interface/Abi/Record.idr, src/interface/ffi/src/main.zig,
+# and src/interface/generated/abi/stateful_artefacts.h (lock-step; checked by
+# tests/aspect_tests.sh symbol parity).
+exports-prefix = "stateful_artefacts_record_"

@@ -32,6 +32,14 @@ lifecycle phase, verification status) that any artefact can carry, plus the
 tooling to read, write, and validate those records from any language via a
 formally-typed C ABI (Idris2-proven layout, Zig implementation).
 
+A *v0* of that record now exists — the schema
+(link:docs/spec/ARTEFACT-STATE-RECORD.adoc[ARTEFACT-STATE-RECORD]), a Zig core
+(`src/core/record.zig`) with a typed lifecycle (forward-only phase, monotonic
+verification) exposed over the `stateful_artefacts_record_*` C ABI, and lifecycle
+proofs (Idris2 `Abi/Record.idr` + TLA+ `ArtefactLifecycle.tla`). It is
+PROVISIONAL and additive-only; the reposystem-specific domain content still
+arrives via the <<Re-transfer status,re-transfer>>.
+
 == Quick start
 
 [source,bash]
@@ -75,10 +83,12 @@ link:docs/onboarding/QUICKSTART-MAINTAINER.adoc[QUICKSTART-MAINTAINER].
 
 | `0-AI-MANIFEST.a2ml`      | Universal entry point for AI agents (read first).
 | `.machine_readable/`      | Project metadata, policies, contractiles, AI configs.
-| `src/core/`               | Domain implementation (awaits reposystem re-transfer).
-| `src/interface/`          | Typed ABI (Idris2) + FFI (Zig) + generated headers.
-| `verification/proofs/`    | Agda/Coq/Lean4/Idris2/TLA+ proof scaffolding.
-| `docs/`                   | Onboarding, status, governance, practice, decisions.
+| `src/core/`               | Domain core — the v0 artefact-state-record (`record.zig`); reposystem content still to re-transfer.
+| `src/definitions/`        | Machine-readable schemas (`artefact-state-record.a2ml`).
+| `src/bridges/`            | Estate adapters — `verisimdb-feed.sh` (PROVISIONAL local stub).
+| `src/interface/`          | Typed ABI (Idris2) + FFI (Zig) + hand-maintained C header.
+| `verification/proofs/`    | Idris2/TLA+ lifecycle proofs (+ Agda/Coq/Lean4 scaffolding).
+| `docs/spec/`, `docs/`     | The record spec; onboarding, status, governance, decisions.
 | `build/`, `Justfile`      | Task orchestration (`just` phases delegate to `build/just/*.just`).
 | `.github/`                | Workflows + community health files.
 | `tests/`, `benches/`      | Test suites and benchmarks.

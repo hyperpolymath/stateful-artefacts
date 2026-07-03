@@ -12,15 +12,19 @@
 
 | ABI/FFI (ABI) | 5 | 0 | 0 | 0 | 5
 | Typing (TP) | 2 | 0 | 0 | 0 | 2
-| Invariant (INV) | 0 | 0 | 0 | 0 | 0
+| Invariant (INV) | 3 | 0 | 3 | 0 | 0
 | Security (SEC) | 0 | 0 | 0 | 0 | 0
 | Concurrency (CONC) | 0 | 0 | 0 | 0 | 0
 | Algorithm (ALG) | 0 | 0 | 0 | 0 | 0
-| Domain (DOM) | 0 | 0 | 0 | 0 | 0
-| *Total* | *7* | *0* | *0* | *0* | *7*
+| Domain (DOM) | 1 | 0 | 1 | 0 | 0
+| *Total* | *11* | *0* | *4* | *0* | *7*
 |===
 
-*Overall*: 0% proven
+*Overall*: 0% machine-verified. The four INV/DOM lifecycle proofs below are
+*authored but not yet machine-checked in this environment* (no idris2/TLC
+present; idris-lang GitHub source is blocked here). They run via
+`just typecheck-abi` / `just proof-check-idris2` and `tlc` where those
+toolchains are installable (e.g. CI). See AFFIRMATION.adoc.
 
 == Proofs Done
 
@@ -39,9 +43,12 @@
 
 [cols="1,3,1,2,1,2", options="header"]
 |===
-| ID | Proof | Prover | Assignee | Started | Blocker
+| ID | Proof | Prover | File | Started | Blocker
 
-| — | — | — | — | — | —
+| INV-1 | Phase is forward-only (no backward/terminal edges) | Idris2 + TLA+ | src/interface/Abi/Record.idr; verification/proofs/tlaplus/ArtefactLifecycle.tla | 2026-07-03 | no local idris2/TLC (CI-gated)
+| INV-2 | Verification-monotonicity (no silent regress to unverified; reopen only) | Idris2 + TLA+ | Abi/Record.idr (noSetToUnverified); ArtefactLifecycle.tla (NoSilentUnverify) | 2026-07-03 | no local idris2/TLC (CI-gated)
+| INV-3 | Additive-schema / backward-readability (schema-version non-decreasing) | TLA+ | ArtefactLifecycle.tla (AdditiveSchema) | 2026-07-03 | no local TLC (CI-gated)
+| DOM-1 | Typed lifecycle transition relation (illegal transitions unrepresentable) | Idris2 | Abi/Record.idr (ValidPhaseStep, ValidVerificationSet) | 2026-07-03 | no local idris2 (CI-gated)
 |===
 
 == Proofs Blocked
@@ -98,4 +105,5 @@ panic-attack assail --proofs-only
 | Date | Change | By
 
 | 2026-04-04 | Initial proof status tracking | Template
+| 2026-07-03 | Authored v0 lifecycle proofs (INV-1..3, DOM-1) — Idris2 typed transitions + TLA+ spec; CI-gated | —
 |===

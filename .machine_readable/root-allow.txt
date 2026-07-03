@@ -55,6 +55,7 @@ session/                   # dispatch.sh, custom-checks.k9, local-hooks.sh
 
 # Source / test / artifact trees (project-specific but conventional)
 src/
+verisimdb-data/            # gitignored runtime feed output (src/bridges/verisimdb-feed.sh); never committed
 tests/
 benches/
 examples/

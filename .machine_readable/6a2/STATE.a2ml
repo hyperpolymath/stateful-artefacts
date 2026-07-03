@@ -6,13 +6,13 @@
 [metadata]
 project = "stateful-artefacts"
 version = "0.1.0"
-last-updated = "2026-07-02"
+last-updated = "2026-07-03"
 status = "active"  # active | paused | archived
 
 [project-context]
 name = "stateful-artefacts"
 purpose = "State-carrying artefact layer of the Reposystem/OPSM stack: schemas and tooling for artefacts that carry machine-readable state (identity, provenance, lifecycle, verification) across the hyperpolymath estate. PROVISIONAL definition — refine on content re-transfer from hyperpolymath/reposystem."
-completion-percentage = 15
+completion-percentage = 45
 
 [position]
 phase = "implementation"   # design | implementation | testing | maintenance | archived
@@ -21,10 +21,11 @@ maturity = "alpha"         # experimental | alpha | beta | production | lts
 [route-to-mvp]
 milestones = [
   { name = "Phase A: Template instantiation and identity", completion = 100 },
-  { name = "Phase B: Repair template defects (ABI drift, validators, missing docs)", completion = 0 },
-  { name = "Phase C: ABI/FFI seam builds and passes tests (Zig + Idris2)", completion = 0 },
-  { name = "Phase D: Re-transfer domain content from hyperpolymath/reposystem", completion = 0 },
-  { name = "Phase E: VeriSimDB feed emitter (hexad JSON, local stub first)", completion = 0 },
+  { name = "Phase B: Repair template defects (ABI drift, validators, missing docs)", completion = 100 },
+  { name = "Phase C: ABI/FFI seam builds and passes tests (Zig + Idris2)", completion = 100 },
+  { name = "Phase D: v0 artefact-state-record (schema + Zig core + lifecycle proofs)", completion = 90 },
+  { name = "Phase E: Re-transfer domain content from hyperpolymath/reposystem", completion = 0 },
+  { name = "Phase F: VeriSimDB live feed + estate registrations (local stub done)", completion = 10 },
 ]
 
 [blockers-and-issues]
@@ -35,9 +36,9 @@ issues = [
 
 [critical-next-actions]
 actions = [
-  "Make the Idris2<->Zig ABI seam compile and pass integration tests",
-  "Re-transfer the stateful-artefacts slice from hyperpolymath/reposystem into src/core (maintainer-only; see README)",
-  "Register groove port in standards PORT-REGISTRY and clade prefix in gv-clade-index",
+  "Get an idris2 toolchain into CI so the ABI/Record typecheck (just typecheck-abi) runs on every change (currently dev/CI-local only; see AFFIRMATION)",
+  "Re-transfer the stateful-artefacts slice from hyperpolymath/reposystem into src/core, reconciling it with the v0 artefact-state-record (maintainer-only; see README)",
+  "Register groove port in standards PORT-REGISTRY and clade prefix in gv-clade-index; upstream the estate V/Zig naming-check fix to standards",
   "Resolve PMPL-1.0 vs MPL-2.0 licensing question",
 ]
 

@@ -53,14 +53,20 @@ touching licensing (MPL-2.0 vs reposystem's PMPL-1.0 is unresolved).
 ### abi-seam-builds
 - description: The Idris2↔Zig ABI seam compiles and its unit + integration tests pass
 - probe: cd src/interface/ffi && zig build test
-- status: in_progress
-- notes: Symbol prefix stateful_artefacts_*; Result canon shared by both sides
+- status: done
+- notes: Symbol prefix stateful_artefacts_*; Result canon shared by both sides; 16 Zig tests pass
+
+### v0-artefact-state-record
+- description: v0 record (schema + Zig core + lifecycle proofs) through the seam
+- probe: cd src/interface/ffi && zig build test && bash tests/aspect_tests.sh
+- status: done
+- notes: docs/spec/ARTEFACT-STATE-RECORD.adoc; src/core/record.zig; Abi/Record.idr; ArtefactLifecycle.tla. PROVISIONAL, additive-only. Idris2/TLC checks are CI-gated.
 
 ### retransfer-domain-content
 - description: Re-transfer the stateful-artefacts slice out of hyperpolymath/reposystem into src/core
-- probe: test -n "$(find src/core -name '*.rs' -o -name '*.zig' | head -1)"
+- probe: test -n "$(find src/core -name '*.rs' | head -1)"
 - status: declared
-- notes: Blocked on maintainer access to $REPOS_DIR; see README re-transfer checklist
+- notes: Blocked on maintainer access to $REPOS_DIR; reconcile with the v0 record; see README re-transfer checklist
 
 ## Wishes
 
@@ -69,7 +75,8 @@ touching licensing (MPL-2.0 vs reposystem's PMPL-1.0 is unresolved).
 #### verisimdb-feed-stub
 - description: Local hexad-JSON feed emitter writing artefact state records to verisimdb-data/feeds/
 - horizon: near
-- status: declared
+- status: achieved
+- notes: src/bridges/verisimdb-feed.sh — PROVISIONAL local stub; does not freeze the hexad layout
 
 ### Mid Horizon
 
