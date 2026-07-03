@@ -10,6 +10,10 @@ permissions:
   contents: read
 jobs:
   dispatch:
+    # Only runs where the forge-farm dispatch is configured; skips (does not
+    # fail) elsewhere. Enable by setting repo variable INSTANT_SYNC_ENABLED=true
+    # (mirrors the push-email-notify.yml gating pattern).
+    if: ${{ vars.INSTANT_SYNC_ENABLED == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
