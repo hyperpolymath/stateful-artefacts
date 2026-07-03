@@ -13,7 +13,7 @@ plus checks that verify repository integrity.
 
 ## Trust Levels
 
-The {{PROJECT_NAME}} operates at trust level: [maximal | standard | restricted | minimal]
+The Stateful Artefacts operates at trust level: [maximal | standard | restricted | minimal]
 
 Trust levels:
 - maximal:    Agent may read, build, test, lint, format, heal freely.
@@ -42,7 +42,7 @@ Trust levels:
 
 #### author-correct
 - description: Git author matches expected identity
-- run: "git log -1 --format='%ae' | grep -qE '{{EXPECTED_AUTHOR}}'"
+- run: "git log -1 --format='%ae' | grep -qE 'jewell@(open\\.ac\\.uk|gmail\\.com)|noreply@anthropic\\.com'"
 - severity: warning
 
 ## Container Security

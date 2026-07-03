@@ -1,14 +1,16 @@
 // SPDX-License-Identifier: CC-BY-SA-4.0
 // Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
-// Template: QUICKSTART-DEV.adoc — clone → build → test → PR
-// Replace rsr-template-repo, {{BUILD_CMD}}, {{TEST_CMD}}, {{LANG_STACK}} with actuals
-= rsr-template-repo — Quick Start for Developers
+// QUICKSTART-DEV.adoc — clone → build → test → PR
+= Stateful Artefacts — Quick Start for Developers
 :toc:
 :toclevels: 2
 
 == Tech Stack
 
-{{LANG_STACK}}
+* *Zig* (0.15.2+) — C-ABI FFI seam (`src/interface/ffi/`)
+* *Idris2* — formally-typed ABI layer and layout proofs (`src/interface/Abi/`, `abi.ipkg`)
+* *Rust* — planned core implementation (lands with the reposystem content re-transfer)
+* *just* — task runner; *AsciiDoc* — prose
 
 == Set Up Development Environment
 
@@ -30,8 +32,8 @@ nix develop
 
 [source,bash]
 ----
-git clone https://github.com/hyperpolymath/rsr-template-repo.git
-cd rsr-template-repo
+git clone https://github.com/hyperpolymath/stateful-artefacts.git
+cd stateful-artefacts
 just setup-dev
 ----
 
@@ -39,31 +41,31 @@ just setup-dev
 
 [source,bash]
 ----
-{{BUILD_CMD}}
+just build                       # or: cd src/interface/ffi && zig build
 ----
 
 == Test
 
 [source,bash]
 ----
-{{TEST_CMD}}
+just test                        # or: cd src/interface/ffi && zig build test
 ----
 
 == Project Structure
 
 [source]
 ----
-rsr-template-repo/
-├── src/                  # Source code
-├── src/abi/              # Idris2 ABI definitions (if applicable)
-├── ffi/zig/              # Zig FFI bridge (if applicable)
-├── tests/                # Test suite
-├── docs/                 # Documentation
-├── .machine_readable/    # Checkpoint files (STATE, META, ECOSYSTEM)
-├── Justfile              # Task runner recipes
-├── guix.scm              # Guix environment
-├── flake.nix             # Nix environment (fallback)
-└── 0-AI-MANIFEST.a2ml    # AI agent entry point
+stateful-artefacts/
+├── src/core/                 # Domain implementation (awaits reposystem re-transfer)
+├── src/interface/Abi/        # Idris2 ABI definitions and layout proofs
+├── src/interface/ffi/        # Zig FFI bridge (C ABI)
+├── src/interface/generated/  # Generated ABI artefacts (C header)
+├── verification/proofs/      # Agda/Coq/Lean4/Idris2/TLA+ proof scaffolding
+├── tests/                    # Test suite
+├── docs/                     # Documentation
+├── .machine_readable/        # Checkpoint files (STATE, META, ECOSYSTEM)
+├── Justfile                  # Task runner recipes
+└── 0-AI-MANIFEST.a2ml        # AI agent entry point
 ----
 
 == Key Recipes
@@ -89,10 +91,13 @@ just panic-scan     # No new security issues
 
 == Contractile Invariants
 
-Read `.machine_readable/MUST.contractile` before making changes.
+Read `.machine_readable/contractiles/` before making changes.
 Key invariants that must never be violated:
 
-{{MUST_INVARIANTS}}
+* Every exported C symbol is prefixed `stateful_artefacts_` and declared on both the Zig and Idris2 sides.
+* The Idris2 ABI layer stays `%default total`; no `believe_me` / `assert_total`.
+* No TypeScript, npm, or bun anywhere in the repo (CI-enforced).
+* Artefact state records remain backward-readable: schema changes are additive.
 
 == LLM/AI Agent Development
 
@@ -107,6 +112,6 @@ Or read `0-AI-MANIFEST.a2ml` and `.claude/CLAUDE.md` directly.
 
 == Get Help
 
-* **Architecture**: link:EXPLAINME.adoc[EXPLAINME.adoc]
-* **Wiki**: https://github.com/hyperpolymath/rsr-template-repo/wiki
+* **Architecture**: link:../../EXPLAINME.adoc[EXPLAINME.adoc]
+* **Wiki**: https://github.com/hyperpolymath/stateful-artefacts/wiki
 * **Report issue**: `just help-me`

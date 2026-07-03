@@ -5,11 +5,11 @@
 #
 [metadata]
 version = "0.1.0"
-last-updated = "{{CURRENT_DATE}}"
+last-updated = "2026-07-02"
 
 [project]
-name = "[YOUR-REPO-NAME]"
-purpose = "{{PROJECT_DESCRIPTION}}"
+name = "Stateful Artefacts"
+purpose = "State-carrying artefact layer of the Reposystem/OPSM stack: schemas and tooling for artefacts that carry machine-readable state (identity, provenance, lifecycle, verification) across the hyperpolymath estate."
 
 [ai-allocation]
 agents = [

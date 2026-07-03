@@ -1,51 +1,54 @@
 // SPDX-License-Identifier: CC-BY-SA-4.0
 // Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 // SPDX-FileCopyrightText: 2024-2026 Jonathan D.A. Jewell (hyperpolymath)
-= {{PROJECT_NAME}}
+= Stateful Artefacts
 :toc:
 :toc-placement: preamble
 
-image:https://img.shields.io/badge/OpenSSF-Best_Practices-green?logo=opensourcesecurity[OpenSSF Best Practices,link="https://www.bestpractices.dev/en/projects/new?repo_url=https://{{FORGE}}/{{OWNER}}/{{REPO}}"]
+image:https://img.shields.io/badge/OpenSSF-Best_Practices-green?logo=opensourcesecurity[OpenSSF Best Practices,link="https://www.bestpractices.dev/en/projects/new?repo_url=https://github.com/hyperpolymath/stateful-artefacts"]
 image:https://img.shields.io/badge/License-MPL_2.0-blue.svg[License: MPL-2.0,link="https://opensource.org/licenses/MPL-2.0"]
-image:https://api.thegreenwebfoundation.org/greencheckimage/{{FORGE}}[Green Web,link="https://www.thegreenwebfoundation.org/green-web-check/?url={{FORGE}}"]
+image:https://api.thegreenwebfoundation.org/greencheckimage/github.com[Green Web,link="https://www.thegreenwebfoundation.org/green-web-check/?url=github.com"]
 
-{{PROJECT_DESCRIPTION}}
-
-[IMPORTANT]
-====
-*This file is a template.* You are reading `README.adoc` from the *RSR template repo*
-(or a freshly-cloned copy of it). Run `just init` to replace every `{{PLACEHOLDER}}`
-token with your project's details, then delete this admonition. Until you do, the
-`{{...}}` markers below are intentional placeholders, not content.
-====
+State-carrying artefact layer of the Reposystem/OPSM stack: schemas and tooling for artefacts that carry machine-readable state (identity, provenance, lifecycle, verification) across the hyperpolymath estate.
 
 == What this is
 
-A new repository scaffolded from the *Rhodium Standard Repository (RSR)* template:
-a batteries-included starting point that ships with CI/CD, machine-readable project
-metadata, an AI-agent gatekeeper protocol, a formally-typed ABI/FFI seam
-(Idris2 + Zig), container and reproducible-build scaffolding, and governance
-infrastructure — all wired and passing the RSR validators on day one.
+[NOTE]
+====
+*PROVISIONAL definition — refine on content re-transfer.* This repository was
+split out of https://github.com/hyperpolymath/reposystem[reposystem] (the
+railway-yard estate-coordination tool), but the original content transfer
+failed: only the RSR template shell arrived. The repo has since been properly
+instantiated; the domain content is being re-transferred from reposystem
+(see <<Re-transfer status>>).
+====
 
-Replace this section with a description of *your* project once initialised.
+Reposystem treats a ~300-repo estate as a railway yard: repos are yards, edges
+are tracks, provider choices are switch points, and everything it knows is
+exported as artefacts — graph exports, scenario states, estate metadata,
+VeriSimDB feed records. *Stateful Artefacts* is the layer those artefacts pass
+through: one canonical, machine-readable *state record* (identity, provenance,
+lifecycle phase, verification status) that any artefact can carry, plus the
+tooling to read, write, and validate those records from any language via a
+formally-typed C ABI (Idris2-proven layout, Zig implementation).
 
 == Quick start
 
 [source,bash]
 ----
-# 1. Create a repo from this template (or clone it), then from the repo root:
-just init                # interactive bootstrap: fills every {{PLACEHOLDER}}
-
-# 2. See the available tasks:
-just                     # lists all phases (build, test, validate, audit, ...)
-
-# 3. Check the repo still satisfies the RSR shape:
-just validate            # structure + metadata checks
+just                     # list all tasks (build, test, validate, audit, ...)
+just build               # build the FFI seam (requires Zig 0.15.2+)
+just test                # run tests
+just validate            # structure + metadata checks (RSR shape)
 ----
 
-`just init` prompts for the project name, owner, author, licence contact, and the
-other values listed in `.machine_readable/ai/PLACEHOLDERS.adoc`, substitutes them
-across the tree, validates the result, and (if available) runs the `k9-svc` checks.
+== AI-Assisted Installation
+
+AI agents should start at `0-AI-MANIFEST.a2ml` (the gatekeeper protocol) and
+follow link:docs/AI_INSTALLATION_GUIDE.adoc[the AI installation guide], which
+contains the machine-readable install steps and the privacy notice. Human
+installers: see link:docs/onboarding/QUICKSTART-DEV.adoc[QUICKSTART-DEV] and
+link:docs/onboarding/QUICKSTART-MAINTAINER.adoc[QUICKSTART-MAINTAINER].
 
 == What you get
 
@@ -55,7 +58,8 @@ across the tree, validates the result, and (if available) runs the `k9-svc` chec
 * *AI gatekeeper protocol* — `0-AI-MANIFEST.a2ml` is the universal entry point that
   tells an AI agent how to work in this repo before it touches anything.
 * *Typed ABI/FFI seam* — `src/interface/Abi/` (Idris2 type + layout proofs) over
-  `src/interface/ffi/` (Zig implementation), with generated C headers.
+  `src/interface/ffi/` (Zig implementation), with a hand-maintained C header in
+  `src/interface/generated/abi/`.
 * *CI/CD* — GitHub Actions for quality, security (CodeQL, Scorecard, secret
   scanning), multi-forge mirroring, and RSR anti-pattern enforcement.
 * *Supply-chain & reproducibility* — container layering (stapeln), Nix/Guix shells,
@@ -71,19 +75,35 @@ across the tree, validates the result, and (if available) runs the `k9-svc` chec
 
 | `0-AI-MANIFEST.a2ml`      | Universal entry point for AI agents (read first).
 | `.machine_readable/`      | Project metadata, policies, contractiles, AI configs.
+| `src/core/`               | Domain implementation (awaits reposystem re-transfer).
 | `src/interface/`          | Typed ABI (Idris2) + FFI (Zig) + generated headers.
+| `verification/proofs/`    | Agda/Coq/Lean4/Idris2/TLA+ proof scaffolding.
 | `docs/`                   | Onboarding, status, governance, practice, decisions.
 | `build/`, `Justfile`      | Task orchestration (`just` phases delegate to `build/just/*.just`).
 | `.github/`                | Workflows + community health files.
 | `tests/`, `benches/`      | Test suites and benchmarks.
 |===
 
+== Re-transfer status
+
+The domain content still lives in `hyperpolymath/reposystem` and must be
+re-extracted by the maintainer (that repo is not reachable from CI here):
+
+1. Decide the slice — candidates: `src/verisimdb.rs`, the exporter/state parts
+   of `src/graph.rs`, scenario state, `spec/DATA-MODEL.adoc`.
+2. Extract with history: `git filter-repo --path <each-path>` in a clone of
+   reposystem, then merge into this repo with `--allow-unrelated-histories`.
+3. Land code in `src/core` / `src/definitions` / `src/bridges`, specs in
+   `docs/`; update `META.a2ml` languages and `STATE.a2ml` completion; delete
+   the PROVISIONAL markers here and in `STATE.a2ml`.
+4. Resolve the licence question: reposystem declares PMPL-1.0; this repo is
+   normalised to MPL-2.0 (code) + CC-BY-SA-4.0 (docs).
+
 == Where to go next
 
 * `EXPLAINME.adoc` — the engineering deep-dive: how the pieces actually work.
 * `AFFIRMATION.adoc` — the dated, signed honesty snapshot of the repo's true state.
 * `AUDIT.adoc` — the release audit gate.
-* `.machine_readable/ai/PLACEHOLDERS.adoc` — the full placeholder reference.
 
 == Licence
 

@@ -1,0 +1,60 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+= Stateful Artefacts — AI Installation Guide
+:toc:
+:toclevels: 2
+
+This guide tells an AI agent (or a human following the same steps) how to
+obtain, build, and verify stateful-artefacts. It is parsed by the finishbot
+pre-release check (`just validate-ai-install`), so keep the
+`[[ai-implementation]]` anchor and the privacy notice below intact.
+
+[[ai-implementation]]
+== AI Implementation Steps
+
+Prerequisites: `git`, `just`, and Zig `0.15.2+` on `PATH`. Idris2 is optional
+(used only to typecheck the ABI layer).
+
+[source,bash]
+----
+# 1. Obtain the source
+git clone https://github.com/hyperpolymath/stateful-artefacts.git
+cd stateful-artefacts
+
+# 2. Read the machine-readable entry points BEFORE mutating anything
+#    - 0-AI-MANIFEST.a2ml            (gatekeeper protocol; agent roles)
+#    - .machine_readable/6a2/STATE.a2ml   (current phase, blockers, next actions)
+#    - .machine_readable/6a2/anchors/ANCHOR.a2ml  (semantic authority, golden path)
+
+# 3. Build the ABI/FFI seam
+just build                 # or: cd src/interface/ffi && zig build
+
+# 4. Run the checks that gate a change
+just test                  # Zig unit + integration tests
+bash tests/aspect_tests.sh # SPDX headers, no-dangerous-patterns, ABI/FFI parity
+just validate              # RSR structure + metadata + this guide
+----
+
+== Scope and Honest State
+
+This repository currently ships the RSR scaffolding plus a working, formally
+typed ABI/FFI seam. The domain implementation (`src/core` and siblings) is
+awaiting a content re-transfer from `hyperpolymath/reposystem`; see
+`AFFIRMATION.adoc` for the dated snapshot and open questions. An agent asked to
+"implement the domain" should stop and consult the maintainer rather than
+inventing semantics.
+
+== Privacy
+
+This guide and the install steps collect no telemetry. Cloning, building, and
+testing stateful-artefacts run entirely on your machine and transmit nothing to
+the maintainers. The optional estate integrations (VeriSimDB feeds, Groove
+discovery, multi-forge mirroring) are disabled by default and, when enabled,
+only exchange data with the hyperpolymath services you explicitly configure —
+never with third parties. No personal data is processed by the library itself.
+
+== Support
+
+* Architecture deep-dive: link:../EXPLAINME.adoc[EXPLAINME.adoc]
+* Developer quickstart: link:onboarding/QUICKSTART-DEV.adoc[QUICKSTART-DEV.adoc]
+* Report an issue: `just help-me`

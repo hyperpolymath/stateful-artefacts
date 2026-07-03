@@ -1,22 +1,24 @@
 // SPDX-License-Identifier: MPL-2.0
 // Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
-// {{PROJECT}} FFI Implementation
+// stateful_artefacts FFI Implementation
 //
-// This module implements the C-compatible FFI declared in src/abi/Foreign.idr
-// All types and layouts must match the Idris2 ABI definitions.
+// This module implements the C-compatible FFI declared in
+// src/interface/Abi/Foreign.idr. All types and layouts must match the
+// Idris2 ABI definitions.
 //
 
 const std = @import("std");
 
 // Version information (keep in sync with project)
 const VERSION = "0.1.0";
-const BUILD_INFO = "{{PROJECT}} built with Zig " ++ @import("builtin").zig_version_string;
+const BUILD_INFO = "stateful_artefacts built with Zig " ++ @import("builtin").zig_version_string;
 
-/// Thread-local error storage
-threadlocal var last_error: ?[]const u8 = null;
+/// Thread-local error storage. Only static string literals are stored,
+/// so consumers must never free the pointer returned by last_error.
+threadlocal var last_error: ?[*:0]const u8 = null;
 
-/// Set the last error message
-fn setError(msg: []const u8) void {
+/// Set the last error message (static literals only)
+fn setError(msg: [*:0]const u8) void {
     last_error = msg;
 }
 
@@ -26,10 +28,10 @@ fn clearError() void {
 }
 
 //==============================================================================
-// Core Types (must match src/abi/Types.idr)
+// Core Types (must match src/interface/Abi/Types.idr)
 //==============================================================================
 
-/// Result codes (must match Idris2 Result type)
+/// Result codes (must match the Idris2 Result type — ADR-003 canon)
 pub const Result = enum(c_int) {
     ok = 0,
     @"error" = 1,
@@ -38,13 +40,24 @@ pub const Result = enum(c_int) {
     null_pointer = 4,
 };
 
-/// Library handle (opaque to prevent direct access)
-pub const Handle = opaque {
-    // Internal state hidden from C
+/// Library handle: opaque at the C boundary (Zig opaque types cannot
+/// carry fields), backed internally by HandleImpl.
+pub const Handle = opaque {};
+
+/// Internal state hidden from C
+const HandleImpl = struct {
     allocator: std.mem.Allocator,
     initialized: bool,
     // Add your fields here
 };
+
+inline fn fromHandle(handle: *Handle) *HandleImpl {
+    return @ptrCast(@alignCast(handle));
+}
+
+inline fn toHandle(impl: *HandleImpl) *Handle {
+    return @ptrCast(impl);
+}
 
 //==============================================================================
 // Library Lifecycle
@@ -52,27 +65,27 @@ pub const Handle = opaque {
 
 /// Initialize the library
 /// Returns a handle, or null on failure
-export fn {{project}}_init() ?*Handle {
+export fn stateful_artefacts_init() ?*Handle {
     const allocator = std.heap.c_allocator;
 
-    const handle = allocator.create(Handle) catch {
+    const impl = allocator.create(HandleImpl) catch {
         setError("Failed to allocate handle");
         return null;
     };
 
     // Initialize handle
-    handle.* = .{
+    impl.* = .{
         .allocator = allocator,
         .initialized = true,
     };
 
     clearError();
-    return handle;
+    return toHandle(impl);
 }
 
 /// Free the library handle
-export fn {{project}}_free(handle: ?*Handle) void {
-    const h = handle orelse return;
+export fn stateful_artefacts_free(handle: ?*Handle) void {
+    const h = fromHandle(handle orelse return);
     const allocator = h.allocator;
 
     // Clean up resources
@@ -87,11 +100,11 @@ export fn {{project}}_free(handle: ?*Handle) void {
 //==============================================================================
 
 /// Process data (example operation)
-export fn {{project}}_process(handle: ?*Handle, input: u32) Result {
-    const h = handle orelse {
+export fn stateful_artefacts_process(handle: ?*Handle, input: u32) Result {
+    const h = fromHandle(handle orelse {
         setError("Null handle");
         return .null_pointer;
-    };
+    });
 
     if (!h.initialized) {
         setError("Handle not initialized");
@@ -111,11 +124,11 @@ export fn {{project}}_process(handle: ?*Handle, input: u32) Result {
 
 /// Get a string result (example)
 /// Caller must free the returned string
-export fn {{project}}_get_string(handle: ?*Handle) ?[*:0]const u8 {
-    const h = handle orelse {
+export fn stateful_artefacts_get_string(handle: ?*Handle) ?[*:0]const u8 {
+    const h = fromHandle(handle orelse {
         setError("Null handle");
         return null;
-    };
+    });
 
     if (!h.initialized) {
         setError("Handle not initialized");
@@ -133,7 +146,7 @@ export fn {{project}}_get_string(handle: ?*Handle) ?[*:0]const u8 {
 }
 
 /// Free a string allocated by the library
-export fn {{project}}_free_string(str: ?[*:0]const u8) void {
+export fn stateful_artefacts_free_string(str: ?[*:0]const u8) void {
     const s = str orelse return;
     const allocator = std.heap.c_allocator;
 
@@ -146,15 +159,15 @@ export fn {{project}}_free_string(str: ?[*:0]const u8) void {
 //==============================================================================
 
 /// Process an array of data
-export fn {{project}}_process_array(
+export fn stateful_artefacts_process_array(
     handle: ?*Handle,
     buffer: ?[*]const u8,
     len: u32,
 ) Result {
-    const h = handle orelse {
+    const h = fromHandle(handle orelse {
         setError("Null handle");
         return .null_pointer;
-    };
+    });
 
     const buf = buffer orelse {
         setError("Null buffer");
@@ -180,15 +193,10 @@ export fn {{project}}_process_array(
 // Error Handling
 //==============================================================================
 
-/// Get the last error message
+/// Get the last error message (static storage — do not free)
 /// Returns null if no error
-export fn {{project}}_last_error() ?[*:0]const u8 {
-    const err = last_error orelse return null;
-
-    // Return C string (static storage, no need to free)
-    const allocator = std.heap.c_allocator;
-    const c_str = allocator.dupeZ(u8, err) catch return null;
-    return c_str.ptr;
+export fn stateful_artefacts_last_error() ?[*:0]const u8 {
+    return last_error;
 }
 
 //==============================================================================
@@ -196,12 +204,12 @@ export fn {{project}}_last_error() ?[*:0]const u8 {
 //==============================================================================
 
 /// Get the library version
-export fn {{project}}_version() [*:0]const u8 {
+export fn stateful_artefacts_version() [*:0]const u8 {
     return VERSION.ptr;
 }
 
 /// Get build information
-export fn {{project}}_build_info() [*:0]const u8 {
+export fn stateful_artefacts_build_info() [*:0]const u8 {
     return BUILD_INFO.ptr;
 }
 
@@ -210,17 +218,17 @@ export fn {{project}}_build_info() [*:0]const u8 {
 //==============================================================================
 
 /// Callback function type (C ABI)
-pub const Callback = *const fn (u64, u32) callconv(.C) u32;
+pub const Callback = *const fn (u64, u32) callconv(.c) u32;
 
 /// Register a callback
-export fn {{project}}_register_callback(
+export fn stateful_artefacts_register_callback(
     handle: ?*Handle,
     callback: ?Callback,
 ) Result {
-    const h = handle orelse {
+    const h = fromHandle(handle orelse {
         setError("Null handle");
         return .null_pointer;
-    };
+    });
 
     const cb = callback orelse {
         setError("Null callback");
@@ -244,8 +252,8 @@ export fn {{project}}_register_callback(
 //==============================================================================
 
 /// Check if handle is initialized
-export fn {{project}}_is_initialized(handle: ?*Handle) u32 {
-    const h = handle orelse return 0;
+export fn stateful_artefacts_is_initialized(handle: ?*Handle) u32 {
+    const h = fromHandle(handle orelse return 0);
     return if (h.initialized) 1 else 0;
 }
 
@@ -254,22 +262,22 @@ export fn {{project}}_is_initialized(handle: ?*Handle) u32 {
 //==============================================================================
 
 test "lifecycle" {
-    const handle = {{project}}_init() orelse return error.InitFailed;
-    defer {{project}}_free(handle);
+    const handle = stateful_artefacts_init() orelse return error.InitFailed;
+    defer stateful_artefacts_free(handle);
 
-    try std.testing.expect({{project}}_is_initialized(handle) == 1);
+    try std.testing.expect(stateful_artefacts_is_initialized(handle) == 1);
 }
 
 test "error handling" {
-    const result = {{project}}_process(null, 0);
+    const result = stateful_artefacts_process(null, 0);
     try std.testing.expectEqual(Result.null_pointer, result);
 
-    const err = {{project}}_last_error();
+    const err = stateful_artefacts_last_error();
     try std.testing.expect(err != null);
 }
 
 test "version" {
-    const ver = {{project}}_version();
+    const ver = stateful_artefacts_version();
     const ver_str = std.mem.span(ver);
     try std.testing.expectEqualStrings(VERSION, ver_str);
 }

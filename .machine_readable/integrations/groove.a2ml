@@ -9,14 +9,14 @@
 (groove-manifest
   (version "1.0")
 
-  ; Service identity — replace {{REPO}} with your project name
-  (service "{{REPO}}")
+  ; Service identity
+  (service "stateful-artefacts")
   (service-version "0.1.0")
 
   ; Primary port — MUST be unique across the ecosystem.
   ; Check PORT-REGISTRY.md in the standards repo before assigning.
   ; https://github.com/hyperpolymath/standards/blob/main/PORT-REGISTRY.md
-  (port 0)  ; 0 = not assigned yet — run `just groove-setup` to assign
+  (port 8471)  ; PROVISIONAL — TODO: register in standards PORT-REGISTRY.md (registry unreachable at instantiation)
 
   ; API surfaces this project exposes (dodeca-API)
   ; Remove lines for API types you don't use.

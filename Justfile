@@ -19,9 +19,9 @@ set positional-arguments := true
 import? "build/contractile.just"
 
 # Project metadata — customize these
-project := "rsr-template-repo"
+project := "stateful-artefacts"
 OWNER := "hyperpolymath"
-REPO := "rsr-template-repo"
+REPO := "stateful-artefacts"
 version := "0.1.0"
 tier := "infrastructure"  # 1 | 2 | infrastructure
 
@@ -48,7 +48,7 @@ help recipe="":
 
 # Show this project's info
 info:
-    @echo "Project: {{project}}"
+    @echo "Project: stateful_artefacts"
     @echo "Version: {{version}}"
     @echo "RSR Tier: {{tier}}"
     @echo "Recipes: $(just --summary | wc -w)"
@@ -80,25 +80,24 @@ import? "build/just/assess.just"
 # BUILD & COMPILE
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# Build the project (debug mode)
+# Build the project (debug mode) — builds the ABI/FFI seam
 build *args:
-    @echo "Building {{project}} (debug)..."
-    # TODO: Replace with your build command
-    # Examples:
-    #   cargo build {{args}}                    # Rust
-    #   mix compile {{args}}                    # Elixir
-    #   zig build {{args}}                      # Zig
-    #   deno task build {{args}}                # Deno/ReScript
+    @echo "Building stateful_artefacts (debug)..."
+    @if command -v zig >/dev/null 2>&1; then \
+        cd src/interface/ffi && zig build {{args}}; \
+    else \
+        echo "zig not found — skipping FFI build (install Zig 0.15.2+)"; \
+    fi
     @echo "Build complete"
 
 # Build in release mode with optimizations
 build-release *args:
-    @echo "Building {{project}} (release)..."
-    # TODO: Replace with your release build command
-    # Examples:
-    #   cargo build --release {{args}}
-    #   MIX_ENV=prod mix compile {{args}}
-    #   zig build -Doptimize=ReleaseFast {{args}}
+    @echo "Building stateful_artefacts (release)..."
+    @if command -v zig >/dev/null 2>&1; then \
+        cd src/interface/ffi && zig build -Doptimize=ReleaseFast {{args}}; \
+    else \
+        echo "zig not found — skipping FFI build (install Zig 0.15.2+)"; \
+    fi
     @echo "Release build complete"
 
 # Build and watch for changes (requires entr or similar)
@@ -124,15 +123,14 @@ clean-all: clean
 # TEST & QUALITY
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# Run all tests
+# Run all tests (Zig unit + integration through the C ABI)
 test *args:
     @echo "Running tests..."
-    # TODO: Replace with your test command
-    # Examples:
-    #   cargo test {{args}}
-    #   mix test {{args}}
-    #   zig build test {{args}}
-    #   deno test {{args}}
+    @if command -v zig >/dev/null 2>&1; then \
+        cd src/interface/ffi && zig build test {{args}}; \
+    else \
+        echo "zig not found — skipping FFI tests (install Zig 0.15.2+)"; \
+    fi
     @echo "Tests passed!"
 
 # Run tests with verbose output
@@ -158,14 +156,7 @@ e2e:
 # Run aspect tests (cross-cutting concern validation)
 aspect:
     @echo "Running aspect tests..."
-    # TODO: Replace with your aspect test command. Examples:
-    #   bash tests/aspect_tests.sh           # Shell-based aspect tests
-    #   cargo test --test aspects             # Rust aspect tests
-    # Aspect tests validate architectural invariants:
-    #   - Thread safety (mutex in FFI modules)
-    #   - ABI/FFI contract (declarations match exports)
-    #   - SPDX compliance (all files have license headers)
-    #   - No dangerous patterns (believe_me, assert_total, etc.)
+    @bash tests/aspect_tests.sh
     @echo "Aspect tests passed!"
 
 # Run benchmarks (performance regression detection)
@@ -185,18 +176,18 @@ readiness:
     #   cargo test --test readiness -- --nocapture
     @echo "Readiness tests complete!"
 
-# Print the current CRG grade (reads from READINESS.md '**Current Grade:** X' line)
+# Print the current CRG grade (reads from docs/status/READINESS.adoc '*Current Grade:* X' line)
 crg-grade:
-    @grade=$$(grep -oP '(?<=\*\*Current Grade:\*\* )[A-FX]' READINESS.md 2>/dev/null | head -1); \
-    [ -z "$$grade" ] && grade="X"; \
-    echo "$$grade"
+    @grade=$(grep -oP 'Current Grade:\*+ \K[A-FX]' docs/status/READINESS.adoc 2>/dev/null | head -1); \
+    [ -z "$grade" ] && grade="X"; \
+    echo "$grade"
 
 # Print a shields.io CRG badge for embedding in README files
-# Looks for '**Current Grade:** X' in READINESS.md; falls back to X
+# Looks for '*Current Grade:* X' in docs/status/READINESS.adoc; falls back to X
 crg-badge:
-    @grade=$$(grep -oP '(?<=\*\*Current Grade:\*\* )[A-FX]' READINESS.md 2>/dev/null | head -1); \
-    [ -z "$$grade" ] && grade="X"; \
-    case "$$grade" in \
+    @grade=$(grep -oP 'Current Grade:\*+ \K[A-FX]' docs/status/READINESS.adoc 2>/dev/null | head -1); \
+    [ -z "$grade" ] && grade="X"; \
+    case "$grade" in \
       A) color="brightgreen" ;; \
       B) color="green" ;; \
       C) color="yellow" ;; \
@@ -205,7 +196,7 @@ crg-badge:
       F) color="critical" ;; \
       *) color="lightgrey" ;; \
     esac; \
-    echo "[![CRG $$grade](https://img.shields.io/badge/CRG-$$grade-$$color?style=flat-square)](https://github.com/hyperpolymath/standards/tree/main/component-readiness-grades)"
+    echo "[![CRG $grade](https://img.shields.io/badge/CRG-$grade-$color?style=flat-square)](https://github.com/hyperpolymath/standards/tree/main/component-readiness-grades)"
 
 # Run the full merge-requirement test suite (ALL categories)
 # Per STANDING rule: P2P + E2E + aspect + execution + lifecycle + bench
@@ -268,7 +259,7 @@ run-verbose *args: build
 
 # Install to user path
 install: build-release
-    @echo "Installing {{project}}..."
+    @echo "Installing stateful_artefacts..."
     # TODO: Replace with your install command
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -311,7 +302,7 @@ cookbook:
     #!/usr/bin/env bash
     mkdir -p docs
     OUTPUT="docs/just-cookbook.adoc"
-    echo "= {{project}} Justfile Cookbook" > "$OUTPUT"
+    echo "= stateful_artefacts Justfile Cookbook" > "$OUTPUT"
     echo ":toc: left" >> "$OUTPUT"
     echo ":toclevels: 3" >> "$OUTPUT"
     echo "" >> "$OUTPUT"
@@ -337,10 +328,10 @@ cookbook:
 man:
     #!/usr/bin/env bash
     mkdir -p docs/man
-    cat > docs/man/{{project}}.1 << EOF
-    .TH {{project}} 1 "$(date +%Y-%m-%d)" "{{version}}" "{{project}} Manual"
+    cat > docs/man/stateful_artefacts.1 << EOF
+    .TH stateful_artefacts 1 "$(date +%Y-%m-%d)" "{{version}}" "stateful_artefacts Manual"
     .SH NAME
-    {{project}} \- RSR-compliant project
+    stateful_artefacts \- RSR-compliant project
     .SH SYNOPSIS
     .B just
     [recipe] [args...]
@@ -349,7 +340,7 @@ man:
     .SH AUTHOR
     $(git config user.name 2>/dev/null || echo "Author") <$(git config user.email 2>/dev/null || echo "email")>
     EOF
-    echo "Generated: docs/man/{{project}}.1"
+    echo "Generated: docs/man/stateful_artefacts.1"
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # CONTAINERS (stapeln ecosystem — Podman + Chainguard Wolfi)
@@ -362,7 +353,7 @@ container-init:
 
     if [ ! -d "container" ]; then
         echo "Error: container/ directory not found."
-        echo "This repo may not have been created from rsr-template-repo."
+        echo "This repo may not have been created from the RSR template."
         exit 1
     fi
 
@@ -379,14 +370,14 @@ container-init:
     fi
 
     # Prompt for container-specific values
-    read -rp "Service name (e.g. my-api) [{{project}}]: " _SERVICE_NAME
-    SERVICE_NAME="${_SERVICE_NAME:-{{project}}}"
+    read -rp "Service name (e.g. my-api) [stateful_artefacts]: " _SERVICE_NAME
+    SERVICE_NAME="${_SERVICE_NAME:-stateful_artefacts}"
 
     read -rp "Primary port [8080]: " _PORT
     PORT="${_PORT:-8080}"
 
-    read -rp "Container registry [ghcr.io/${OWNER:-{{OWNER}}}]: " _REGISTRY
-    REGISTRY="${_REGISTRY:-ghcr.io/${OWNER:-{{OWNER}}}}"
+    read -rp "Container registry [ghcr.io/${OWNER:-hyperpolymath}]: " _REGISTRY
+    REGISTRY="${_REGISTRY:-ghcr.io/${OWNER:-hyperpolymath}}"
 
     echo ""
     echo "  Service: $SERVICE_NAME"
@@ -429,11 +420,11 @@ container-build *args:
     if [ -f "container/ct-build.sh" ]; then
         cd container && ./ct-build.sh {{args}}
     elif [ -f "container/Containerfile" ]; then
-        podman build -t {{project}}:latest -f container/Containerfile .
+        podman build -t stateful_artefacts:latest -f container/Containerfile .
     elif [ -f "build/Containerfile" ]; then
-        podman build -t {{project}}:latest -f build/Containerfile .
+        podman build -t stateful_artefacts:latest -f build/Containerfile .
     elif [ -f "Containerfile" ]; then
-        podman build -t {{project}}:latest -f Containerfile .
+        podman build -t stateful_artefacts:latest -f Containerfile .
     else
         echo "No Containerfile found in container/, build/, or project root"
         exit 1
@@ -495,12 +486,12 @@ container-push:
         cd container && ./ct-build.sh --push
     else
         echo "No container/ct-build.sh found — falling back to podman push"
-        podman push {{project}}:latest
+        podman push stateful_artefacts:latest
     fi
 
 # Run container interactively (for debugging)
 container-run *args:
-    podman run --rm -it {{project}}:latest {{args}}
+    podman run --rm -it stateful_artefacts:latest {{args}}
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # CI & AUTOMATION
@@ -601,7 +592,7 @@ test-matrix suite="unit" verbosity="normal" parallel="true":
     @echo "Test matrix: suite={{suite}} verbosity={{verbosity}} parallel={{parallel}}"
 
 # Container matrix: [build|run|push|shell|scan] x [registry] x [tag]
-container-matrix action="build" registry="ghcr.io/{{OWNER}}" tag="latest":
+container-matrix action="build" registry="ghcr.io/hyperpolymath" tag="latest":
     @echo "Container matrix: action={{action}} registry={{registry}} tag={{tag}}"
 
 # CI matrix: [lint|test|build|security|all] x [quick|full]
@@ -681,7 +672,7 @@ assail:
 
 # Self-diagnostic — checks dependencies, permissions, paths
 doctor:
-    @echo "Running diagnostics for rsr-template-repo..."
+    @echo "Running diagnostics for stateful-artefacts..."
     @echo "Checking required tools..."
     @command -v just >/dev/null 2>&1 && echo "  [OK] just" || echo "  [FAIL] just not found"
     @command -v git >/dev/null 2>&1 && echo "  [OK] git" || echo "  [FAIL] git not found"
@@ -691,7 +682,7 @@ doctor:
 
 # Guided tour of key features
 tour:
-    @echo "=== rsr-template-repo Tour ==="
+    @echo "=== stateful-artefacts Tour ==="
     @echo ""
     @echo "1. Project structure:"
     @ls -la
@@ -706,12 +697,12 @@ tour:
 
 # Open feedback channel with diagnostic context
 help-me:
-    @echo "=== rsr-template-repo Help ==="
+    @echo "=== stateful-artefacts Help ==="
     @echo "Platform: $(uname -s) $(uname -m)"
     @echo "Shell: $SHELL"
     @echo ""
     @echo "To report an issue:"
-    @echo "  https://github.com/hyperpolymath/rsr-template-repo/issues/new"
+    @echo "  https://github.com/hyperpolymath/stateful-artefacts/issues/new"
     @echo ""
     @echo "Include the output of 'just doctor' in your report."
 

@@ -39,7 +39,7 @@ fail() { red "  FAIL: $1"; FAIL=$((FAIL + 1)); }
 warn() { yellow "  WARN: $1"; WARN=$((WARN + 1)); }
 
 echo "═══════════════════════════════════════════════════════════════"
-echo "  {{PROJECT}} — Aspect Tests (Cross-Cutting Concerns)"
+echo "  STATEFUL_ARTEFACTS — Aspect Tests (Cross-Cutting Concerns)"
 echo "═══════════════════════════════════════════════════════════════"
 echo ""
 
@@ -54,7 +54,7 @@ while IFS= read -r -d '' f; do
         warn "Missing SPDX header: $f"
         MISSING_SPDX=$((MISSING_SPDX + 1))
     fi
-done < <(find src/ -type f \( -name "*.rs" -o -name "*.zig" -o -name "*.res" -o -name "*.ex" -o -name "*.exs" -o -name "*.gleam" -o -name "*.idr" -o -name "*.sh" \) -print0 2>/dev/null)
+done < <(find src/ -type d \( -name '.zig-cache' -o -name 'zig-out' \) -prune -o -type f \( -name "*.rs" -o -name "*.zig" -o -name "*.res" -o -name "*.ex" -o -name "*.exs" -o -name "*.gleam" -o -name "*.idr" -o -name "*.sh" \) -print0 2>/dev/null)
 
 if [ "$MISSING_SPDX" -eq 0 ]; then
     pass "All source files have SPDX headers"
@@ -68,7 +68,7 @@ fi
 bold "Aspect 2: Dangerous patterns"
 
 # Idris2 dangerous patterns
-DANGEROUS_IDRIS=$(grep -rn 'believe_me\|assert_total\|really_believe_me' src/abi/ 2>/dev/null | grep -v "^Binary" | grep -v "test" || true)
+DANGEROUS_IDRIS=$(grep -rn 'believe_me\|assert_total\|really_believe_me' src/interface/Abi/ 2>/dev/null | grep -v "^Binary" | grep -v "test" || true)
 if [ -n "$DANGEROUS_IDRIS" ]; then
     fail "Dangerous Idris2 patterns found:"
     echo "$DANGEROUS_IDRIS" | head -5
@@ -76,8 +76,17 @@ else
     pass "No dangerous Idris2 patterns (believe_me, assert_total)"
 fi
 
-# Coq/Lean dangerous patterns
-DANGEROUS_PROOF=$(grep -rn '\bAdmitted\b\|\bsorry\b\|\bunsafeCoerce\b\|\bObj\.magic\b' src/ verification/ 2>/dev/null | grep -v "test" | grep -v "comment" || true)
+# Coq/Lean/Agda/Haskell dangerous patterns.
+# Scan proof SOURCE files only (prose docs describe the ban and must not trip
+# it). Match real proof-abandoning forms: Coq's `Admitted.` (the cautionary
+# comment "NO Admitted allowed" has no trailing period), Lean/Agda `sorry`,
+# `unsafeCoerce`, `Obj.magic`. Strip single-line comments (--, //, *, #).
+DANGEROUS_PROOF=$(grep -rnE \
+    --include='*.v' --include='*.lean' --include='*.agda' --include='*.idr' --include='*.hs' --include='*.ml' \
+    'Admitted\.|\bsorry\b|\bunsafeCoerce\b|\bObj\.magic\b' \
+    src/ verification/ 2>/dev/null \
+    | grep -vE ':[0-9]+:[[:space:]]*(--|//|\*|#)' \
+    | grep -v "test" || true)
 if [ -n "$DANGEROUS_PROOF" ]; then
     fail "Dangerous proof patterns found:"
     echo "$DANGEROUS_PROOF" | head -5
@@ -86,23 +95,29 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════
-# Aspect 3: ABI/FFI Contract (if applicable)
+# Aspect 3: ABI/FFI Contract parity
 # ═══════════════════════════════════════════════════════════════════════
-# Uncomment if your project has Idris2 ABI + Zig FFI:
-
-# bold "Aspect 3: ABI/FFI contract"
-# if [ -d "src/abi" ] && [ -d "ffi/zig" ]; then
-#     # Check that every exported function in Idris2 ABI has a Zig FFI implementation
-#     ABI_EXPORTS=$(grep -h 'export' src/abi/*.idr 2>/dev/null | wc -l)
-#     FFI_EXPORTS=$(grep -h 'pub export fn' ffi/zig/src/*.zig 2>/dev/null | wc -l)
-#     if [ "$ABI_EXPORTS" -gt 0 ] && [ "$FFI_EXPORTS" -gt 0 ]; then
-#         pass "ABI ($ABI_EXPORTS exports) and FFI ($FFI_EXPORTS exports) both present"
-#     else
-#         fail "ABI/FFI mismatch: $ABI_EXPORTS ABI exports, $FFI_EXPORTS FFI exports"
-#     fi
-# else
-#     pass "ABI/FFI not applicable (no src/abi or ffi/zig)"
-# fi
+bold "Aspect 3: ABI/FFI contract"
+ABI_DIR="src/interface/Abi"
+FFI_DIR="src/interface/ffi/src"
+if [ -d "$ABI_DIR" ] && [ -d "$FFI_DIR" ]; then
+    # Every %foreign binding on the Idris2 side must have a matching
+    # `export fn stateful_artefacts_*` on the Zig side. We compare the
+    # concrete C symbol names so drift (renames, prefix mismatch) fails here.
+    ABI_SYMS=$(grep -rhoP '(?<=C:)stateful_artefacts_[a-z_]+' "$ABI_DIR" 2>/dev/null | sort -u)
+    FFI_SYMS=$(grep -rhoP '(?<=export fn )stateful_artefacts_[a-z_]+' "$FFI_DIR" 2>/dev/null | sort -u)
+    MISSING_EXPORTS=$(comm -23 <(echo "$ABI_SYMS") <(echo "$FFI_SYMS") | grep -v '^$' || true)
+    if [ -z "$MISSING_EXPORTS" ] && [ -n "$ABI_SYMS" ]; then
+        ABI_N=$(echo "$ABI_SYMS" | grep -c .)
+        FFI_N=$(echo "$FFI_SYMS" | grep -c .)
+        pass "ABI/FFI parity: all $ABI_N Idris2 %foreign symbols exported by Zig ($FFI_N exports total)"
+    else
+        fail "ABI/FFI drift: Idris2 binds symbols the Zig layer does not export:"
+        echo "$MISSING_EXPORTS" | head -10
+    fi
+else
+    pass "ABI/FFI not applicable (no $ABI_DIR or $FFI_DIR)"
+fi
 
 # ═══════════════════════════════════════════════════════════════════════
 # Aspect 4: Error Handling (no raw panic in production code)

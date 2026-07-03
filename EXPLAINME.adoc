@@ -1,17 +1,58 @@
 // SPDX-License-Identifier: CC-BY-SA-4.0
 // Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
-= RSR Template Repo - Explainme
+= Stateful Artefacts — Explainme
 image:https://img.shields.io/badge/License-MPL_2.0-blue.svg[License: MPL-2.0,link="https://opensource.org/licenses/MPL-2.0"]
 
 :toc:
 :icons: font
 
-This file explains how the key template claims map to real files.
+This file explains how the repository's claims map to real files — what is
+working, what is scaffolding, and what is pending.
+
+== What the project is
+
+Stateful Artefacts is the state-carrying artefact layer of the Reposystem/OPSM
+stack. Reposystem (https://github.com/hyperpolymath/reposystem) coordinates a
+~300-repo estate as a railway yard and emits artefacts — graph exports,
+scenario states, estate metadata, VeriSimDB feeds. This repo defines the
+canonical *state record* those artefacts carry (identity, provenance,
+lifecycle phase, verification status) and the cross-language tooling to read,
+write, and validate the records.
+
+Caveat:
+
+* The definition is PROVISIONAL: the original split out of reposystem lost the
+  domain content, which is being re-transferred (see `README.adoc`,
+  "Re-transfer status", and `STATE.a2ml` blockers).
+
+== Architecture: the ABI seam
+
+Claim:
+The record format has one binary contract shared by every language.
+
+How this is implemented:
+
+* `src/interface/Abi/Types.idr` — Idris2 types with a `DecEq`-checked `Result`
+  enum and a non-null `Handle` invariant (`So (ptr /= 0)`), `%default total`.
+* `src/interface/Abi/Layout.idr` — C-ABI layout compliance as constructive
+  proofs (`Divides`, `CABICompliant`).
+* `src/interface/Abi/Foreign.idr` — `%foreign` bindings to the
+  `stateful_artefacts_*` C symbols.
+* `src/interface/ffi/src/main.zig` — the Zig implementation exporting those
+  symbols; built by `src/interface/ffi/build.zig` as static + shared
+  `libstateful_artefacts`.
+* `src/interface/generated/abi/stateful_artefacts.h` — hand-maintained C
+  header, the contract for C consumers.
+
+Caveat:
+
+* The Zig side compiles and is tested locally; the Idris2 typecheck runs in CI
+  only (no local Idris2 toolchain is assumed).
 
 == Central Session Protocol Authority
 
 Claim:
-Session protocols are centrally maintained and not duplicated in this template.
+Session protocols are centrally maintained and not duplicated here.
 
 How this is implemented:
 
@@ -28,7 +69,7 @@ Caveat:
 == Canonical Command Surface
 
 Claim:
-Template bindings align to one canonical command model.
+Bindings align to one canonical command model.
 
 How this is implemented:
 
@@ -56,36 +97,17 @@ Caveat:
 
 * Runtime files are intentionally lightweight and require human/agent completion.
 
-== Template Token Policy
+== Honest state
 
-Claim:
-Placeholders are explicit template content until initialization.
-
-How this is implemented:
-
-* `README.adoc` and bootstrap recipes keep `{{TOKEN}}` placeholders visible.
-* `just init` performs token replacement.
-
-Caveat:
-
-* Uninitialized placeholders must not be treated as project-specific truth.
-
-== Julia Registry Packages — Standalone Repo Requirement
-
-Claim:
-If this template is used to create a Julia package, it must remain a standalone repository registered with the Julia package registry.
-
-How this is implemented:
-
-* Julia's package registry (General.jl or other) expects each package to be a standalone GitHub repository with `Project.toml` at the repository root.
-* Installation via `Pkg.add()`, dependency resolution, and automated CI/CD all depend on this canonical structure.
-
-Caveat:
-
-* Do NOT move this repository into a monorepo or subdirectory, as this breaks registry registration and package discoverability.
-* See `JULIA-REGISTRY-REQUIREMENT.md` (workspace root) for the complete list of 34 registered Julia packages and enforcement rationale.
-* Non-registry Julia packages can be organized differently if they are not published to any registry.
-
+* Instantiated from `rsr-template-repo` on 2026-07-02 (`just init` + manual
+  identity pass).
+* The ABI/FFI seam is real code; the domain directories (`src/core`,
+  `src/definitions`, `src/contracts`, `src/errors`, `src/bridges`) are
+  structured scaffolds awaiting the reposystem re-transfer.
+* `verification/proofs/` holds template-level proof scaffolding across
+  Agda/Coq/Lean4/Idris2/TLA+ — to be specialised to the record schema.
+* See `AFFIRMATION.adoc` for the dated snapshot and open questions (including
+  the PMPL-1.0 vs MPL-2.0 licence discrepancy with reposystem).
 
 == License
 

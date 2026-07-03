@@ -1,0 +1,21 @@
+EXHIBIT B — QUANTUM-SAFE COMMITMENT (PROVISIONAL)
+
+TODO(sync with standards canon): the canonical exhibit text lives in the
+hyperpolymath/standards repository, which was unreachable when this repo was
+instantiated. Replace this provisional text with the canonical version at the
+first opportunity; the commitments below are a faithful summary, not the canon.
+
+The maintainers of stateful-artefacts commit to the following with respect to
+cryptographic agility:
+
+1. Any signing or hashing of artefact state records introduced by this
+   project will prefer post-quantum-ready primitives where mature
+   implementations exist, and will never hard-code a single algorithm
+   without an upgrade path.
+2. Record formats reserve space for algorithm identifiers so that
+   signatures and digests can migrate without breaking readers.
+3. Deprecated primitives will be called out in CHANGELOG.md and SECURITY.md
+   with a migration window.
+
+This exhibit expresses the maintainers' intent. It does not modify the
+rights and obligations granted by the Mozilla Public License 2.0.

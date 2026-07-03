@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Intentfile (A2ML Canonical) — north-star contractile (GENERIC TEMPLATE)
+# Intentfile (A2ML Canonical) — north-star contractile
 #
 # Paired runner: intend.ncl
 # Verb:          intend
@@ -19,63 +19,68 @@
 #            contractile for hard gates.
 
 @abstract:
-GENERIC TEMPLATE: North-star contractile. Replace all content below
-with project-specific intents and wishes. This file declares what
-the project IS (purpose), what it is NOT (anti-purpose), and its
-committed next-actions and aspirational wishes.
+North-star contractile for stateful-artefacts: the state-carrying
+artefact layer of the Reposystem/OPSM stack. Declares what the project
+IS (purpose), what it is NOT (anti-purpose), and its committed
+next-actions and aspirational wishes.
 @end
 
 ## Purpose
 
-[REPLACE WITH PROJECT-SPECIFIC PURPOSE]
-
-Example: The {{PROJECT_NAME}} provides {{MAIN_FUNCTION}} for {{TARGET_AUDIENCE}}.
+Stateful Artefacts provides one canonical, machine-readable state schema
+(identity, provenance, lifecycle phase, verification status) carried by the
+artefacts the hyperpolymath estate produces and consumes — graph exports,
+scenario states, estate metadata, VeriSimDB feed records — plus the tooling
+to read, write, and validate those records across languages via a
+formally-typed C ABI. (PROVISIONAL — refine on content re-transfer from
+hyperpolymath/reposystem.)
 
 ## Anti-Purpose
 
-[REPLACE WITH PROJECT-SPECIFIC ANTI-PURPOSE]
-
 This repository is NOT:
-- Example: A general-purpose framework (it solves one specific problem)
-- Example: A runtime library (it is build-time only)
-- Example: A replacement for X (that is handled by Y)
+- A general-purpose metadata framework (it serves the estate's artefact-state schema, nothing broader)
+- The Reposystem graph engine itself (that remains in hyperpolymath/reposystem)
+- A database (VeriSimDB in hyperpolymath/nextgen-databases is the aggregation sink; this layer only emits/validates records)
 
 ## If In Doubt
 
 If you are unsure whether a change is in scope, ask. Sensitive areas:
-[REPLACE WITH PROJECT-SPECIFIC SENSITIVE AREAS]
+the ABI surface (`src/interface/`), the state-record schema, and anything
+touching licensing (MPL-2.0 vs reposystem's PMPL-1.0 is unresolved).
 
 ## Committed Next-Actions
 
-[REPLACE WITH PROJECT-SPECIFIC INTENTS]
+### abi-seam-builds
+- description: The Idris2↔Zig ABI seam compiles and its unit + integration tests pass
+- probe: cd src/interface/ffi && zig build test
+- status: in_progress
+- notes: Symbol prefix stateful_artefacts_*; Result canon shared by both sides
 
-### intent-identifier
-- description: [What this intent achieves]
-- probe: [Test command that returns 0 when intent is satisfied]
-- status: declared | in_progress | done | deferred | retired
-- notes: [Optional additional context]
+### retransfer-domain-content
+- description: Re-transfer the stateful-artefacts slice out of hyperpolymath/reposystem into src/core
+- probe: test -n "$(find src/core -name '*.rs' -o -name '*.zig' | head -1)"
+- status: declared
+- notes: Blocked on maintainer access to $REPOS_DIR; see README re-transfer checklist
 
 ## Wishes
 
-[REPLACE WITH PROJECT-SPECIFIC WISHES]
-
 ### Near Horizon
 
-#### wish-identifier
-- description: [What this wish describes]
+#### verisimdb-feed-stub
+- description: Local hexad-JSON feed emitter writing artefact state records to verisimdb-data/feeds/
 - horizon: near
-- status: declared | in_progress | achieved | abandoned
+- status: declared
 
 ### Mid Horizon
 
-#### wish-identifier
-- description: [What this wish describes]
+#### estate-wide-adoption
+- description: Other estate repos attach stateful-artefacts records to their release artefacts
 - horizon: mid
 - status: declared
 
 ### Far Horizon
 
-#### wish-identifier
-- description: [What this wish describes]
+#### proven-layout-proofs
+- description: Full constructive layout proofs for every record type in the schema (Idris2), mirrored in the C header
 - horizon: far
 - status: declared

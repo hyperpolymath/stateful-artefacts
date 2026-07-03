@@ -39,7 +39,7 @@
 
 * [x] `tests/e2e/template_instantiation_test.sh` — full workflow
 ** Clones template to temp directory
-** Replaces all `{{PLACEHOLDER}}` tokens with test values
+** Replaces all placeholder tokens with test values
 ** Validates resulting structure with `scripts/validate-template.sh`
 ** Verifies Zig build works after instantiation
 ** Checks no remaining placeholders
@@ -57,7 +57,7 @@
 === Zig FFI Tests ✅
 
 * [x] `src/interface/ffi/test/integration_test.zig` — template with examples
-** Converted from `{{project}}` placeholders to "template" namespace
+** Converted from `stateful_artefacts` placeholders to "template" namespace
 ** Added comprehensive comments for how to instantiate
 ** Tests grouped by category (lifecycle, operations, strings, errors, version, memory safety, threading)
 ** Compiles and passes placeholder test

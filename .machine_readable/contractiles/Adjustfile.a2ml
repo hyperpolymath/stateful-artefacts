@@ -19,7 +19,7 @@ not block.
 ### placeholder-drift
 - description: Template placeholders should be replaced when copied
 - tolerance: 0 placeholder markers in copied repos
-- corrective: Search and replace all {{PLACEHOLDER}} markers
+- corrective: Search and replace all remaining placeholder markers
 - severity: advisory
 - notes: This check only applies to repos that copied from this template
 
