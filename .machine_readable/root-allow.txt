@@ -36,6 +36,10 @@ abi.ipkg                   # Idris2 package for the ABI seam; sourcedir=src/inte
 .gitignore
 .tool-versions
 
+# ─── Licence trees ───────────────────────────────────────────────────────────
+LICENSES/                  # REUSE-spec licence texts (MPL-2.0.txt, CC-BY-SA-4.0.txt)
+licensing/                 # exhibits + texts hard-required by build/just/validate.just (validate-rsr)
+
 # ─── Directories ─────────────────────────────────────────────────────────────
 .devcontainer/             # VS Code dev container spec; tool-required at root
 .git/
@@ -51,6 +55,7 @@ session/                   # dispatch.sh, custom-checks.k9, local-hooks.sh
 
 # Source / test / artifact trees (project-specific but conventional)
 src/
+verisimdb-data/            # gitignored runtime feed output (src/bridges/verisimdb-feed.sh); never committed
 tests/
 benches/
 examples/

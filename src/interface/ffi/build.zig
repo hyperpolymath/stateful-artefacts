@@ -16,6 +16,13 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
+    // Domain core (src/core/record.zig) exposed as the "core" module.
+    const core_mod = b.createModule(.{
+        .root_source_file = b.path("../../core/record.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     // The library implementation. It uses std.heap.c_allocator, so it needs libc.
     const lib_mod = b.createModule(.{
         .root_source_file = b.path("src/main.zig"),
@@ -23,6 +30,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
         .link_libc = true,
     });
+    lib_mod.addImport("core", core_mod);
 
     const static_lib = b.addLibrary(.{
         .name = "stateful_artefacts",
@@ -44,6 +52,10 @@ pub fn build(b: *std.Build) void {
     // Unit tests live in main.zig itself.
     const unit_tests = b.addTest(.{ .root_module = lib_mod });
     test_step.dependOn(&b.addRunArtifact(unit_tests).step);
+
+    // Domain-core unit tests (src/core/record.zig).
+    const core_tests = b.addTest(.{ .root_module = core_mod });
+    test_step.dependOn(&b.addRunArtifact(core_tests).step);
 
     // Integration tests call the exported C symbols; link them against the
     // static library so the extern fns resolve.

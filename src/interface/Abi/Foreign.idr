@@ -12,6 +12,7 @@ module Abi.Foreign
 
 import Abi.Types
 import Abi.Layout
+import System.FFI
 
 %default total
 
@@ -76,9 +77,10 @@ prim__lastError : PrimIO (Ptr String)
 %foreign "C:stateful_artefacts_is_initialized,libstateful_artefacts"
 prim__isInitialized : Bits64 -> PrimIO Bits32
 
-||| Null check for FFI string pointers
+||| Null check for FFI string pointers. `prim__isNullAnyPtr` (System.FFI)
+||| returns 1 for a null pointer, 0 otherwise.
 isNullStr : Ptr String -> Bool
-isNullStr p = prim__nullAnyPtr (prim__forgetPtr p) /= 0
+isNullStr p = prim__isNullAnyPtr (prim__forgetPtr p) /= 0
 
 ||| Safe wrapper: the library's pending error message, if any
 export

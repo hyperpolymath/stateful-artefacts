@@ -43,10 +43,10 @@ is a breaking ABI change: update all three sides and bump the ABI version.
 │  - Foreign.idr    (FFI declarations)        │
 └─────────────────┬───────────────────────────┘
                   │
-                  │ generates (at compile time)
+                  │ kept in lock-step (hand-maintained)
                   ▼
 ┌─────────────────────────────────────────────┐
-│  C Headers (auto-generated)                 │
+│  C Header (hand-maintained)                 │
 │  src/interface/generated/abi/stateful_artefacts.h │
 └─────────────────┬───────────────────────────┘
                   │
@@ -71,34 +71,30 @@ is a breaking ABI change: update all three sides and bump the ABI version.
 ## Directory Structure
 
 ```
-stateful_artefacts/
+stateful-artefacts/
 ├── src/
-│   ├── abi/                    # ABI definitions (Idris2)
-│   │   ├── Types.idr           # Core type definitions with proofs
-│   │   ├── Layout.idr          # Memory layout verification
-│   │   └── Foreign.idr         # FFI function declarations
-│   └── lib/                    # Core library (any language)
+│   ├── core/                       # Domain impl (awaits reposystem re-transfer)
+│   └── interface/
+│       ├── Abi/                    # ABI definitions (Idris2, module Abi.*)
+│       │   ├── Types.idr           # Core type definitions with proofs
+│       │   ├── Layout.idr          # Memory layout verification
+│       │   └── Foreign.idr         # FFI function declarations
+│       ├── ffi/                    # FFI implementation (Zig)
+│       │   ├── build.zig           # Build configuration
+│       │   ├── src/
+│       │   │   └── main.zig        # C-compatible FFI implementation
+│       │   └── test/
+│       │       └── integration_test.zig
+│       └── generated/
+│           └── abi/
+│               └── stateful_artefacts.h   # Hand-maintained C header (lock-step)
 │
-├── ffi/
-│   └── zig/                    # FFI implementation (Zig)
-│       ├── build.zig           # Build configuration
-│       ├── build.zig.zon       # Dependencies
-│       ├── src/
-│       │   └── main.zig        # C-compatible FFI implementation
-│       ├── test/
-│       │   └── integration_test.zig
-│       └── include/
-│           └── stateful_artefacts.h   # C header (optional, can be generated)
-│
-├── generated/                  # Auto-generated files
-│   └── abi/
-│       └── stateful_artefacts.h       # Generated from Idris2 ABI
-│
-└── bindings/                   # Language-specific wrappers (optional)
-    ├── rust/
-    ├── rescript/
-    └── julia/
+└── abi.ipkg                        # Idris2 ABI package (typecheck only)
 ```
+
+There is no `bindings/` directory and no `build.zig.zon`: consumers link the
+library through the standard C ABI, and the Zig build has no external
+dependencies.
 
 ## Why Idris2 for ABI?
 
@@ -277,7 +273,7 @@ gcc -o example example.c -lstateful_artefacts -L./zig-out/lib
 ### From Idris2
 
 ```idris
-import STATEFUL_ARTEFACTS.ABI.Foreign
+import Abi.Foreign
 
 main : IO ()
 main = do
@@ -355,9 +351,12 @@ zig build test
 
 ### Integration Tests
 
+`build.zig` defines a single combined `test` step that runs both the Zig unit
+tests and the C-ABI integration tests, so the same command covers both:
+
 ```bash
 cd src/interface/ffi
-zig build test-integration
+zig build test
 ```
 
 ### ABI Verification (Idris2)

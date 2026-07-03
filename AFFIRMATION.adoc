@@ -4,7 +4,7 @@
 :toc:
 
 *Repository:* hyperpolymath/stateful-artefacts +
-*Snapshot date:* 2026-07-02 +
+*Snapshot date:* 2026-07-03 +
 *Affirmed by:* Jonathan D.A. Jewell (hyperpolymath), via Claude Code
 
 This file is the dated, honest snapshot of what is actually true in this
@@ -23,20 +23,35 @@ README / EXPLAINME / AFFIRMATION trio. Update it whenever the real state moves.
   Zig 0.15.2.
 * `just validate`, `bash scripts/validate-template.sh .`, `just verify-template`,
   and `bash tests/aspect_tests.sh` pass locally.
+* A *v0 artefact-state-record* slice now exists and is exercised end-to-end:
+  the record + its two state machines (forward-only `phase`, monotonic
+  `verification`) are implemented in `src/core/record.zig`, exposed over the C
+  ABI (`stateful_artefacts_record_*`, mirrored in the hand-maintained header and
+  bound in `Abi/Record.idr`), and covered by Zig unit + integration tests
+  (16 total pass) plus a C smoke test linked against the static lib. The record
+  is *PROVISIONAL* and *additive-only* (docs/spec/ARTEFACT-STATE-RECORD.adoc).
 
 == What is NOT true yet (do not overstate)
 
-* *There is no domain implementation.* `src/core`, `src/definitions`,
-  `src/contracts`, `src/errors`, and `src/bridges` are structured scaffolds
-  (README + AI-MANIFEST only). The project's actual behaviour is pending a
-  content re-transfer from `hyperpolymath/reposystem` (the original split lost
-  the content). See the re-transfer checklist in `README.adoc`.
+* *The reposystem domain content is still missing.* `src/contracts`,
+  `src/errors`, and most of `src/definitions` remain structured scaffolds; the
+  reposystem-specific behaviour (graph exports, scenario state, VeriSimDB) is
+  pending a content re-transfer from `hyperpolymath/reposystem` (the original
+  split lost it). The v0 artefact-state-record above is this repo's *own*
+  deliverable, not the reposystem content. See the re-transfer checklist in
+  `README.adoc`.
 * The project definition in `STATE.a2ml` / `README.adoc` is marked
   *PROVISIONAL* and may be refined once the re-transfer clarifies the scope.
-* The formal proofs under `verification/proofs/` are template-level; they have
-  not been specialised to the artefact-state schema, and Idris2/Agda/Coq/Lean
-  were *not* run in this environment (no toolchains present) — only the Zig
-  side was executed. The Idris2 typecheck is expected to run in CI.
+* *Formal proofs are authored but not machine-checked here.* The v0 lifecycle
+  proofs (`src/interface/Abi/Record.idr` typed transitions; the fixed
+  `Abi/Foreign.idr`; `verification/proofs/tlaplus/ArtefactLifecycle.tla`) were
+  written but *not* run: no idris2/Agda/Coq/Lean/TLC toolchain is present, and
+  the idris-lang GitHub source is blocked in this environment. They run via
+  `just typecheck-abi` / `just proof-check-idris2` / `tlc` where those
+  toolchains are installable. *No idris2 CI step was added* because a
+  SHA-pinned idris2 setup action could not be resolved here without re-breaking
+  the workflow-security linter — recommended follow-up: add
+  `idris-community/setup-idris` (SHA-pinned) + `just typecheck-abi` to CI.
 * The `k9.ncl` self-validating contractiles and Nickel policies were *not*
   verified locally (no `nickel` / `k9-svc` available).
 

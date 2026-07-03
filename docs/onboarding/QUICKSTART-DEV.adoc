@@ -34,7 +34,8 @@ nix develop
 ----
 git clone https://github.com/hyperpolymath/stateful-artefacts.git
 cd stateful-artefacts
-just setup-dev
+# Install the toolchain pinned in .tool-versions (Zig 0.15.2+, just; Idris2 optional)
+just doctor                      # verify the required tools are present
 ----
 
 == Build
@@ -76,7 +77,7 @@ just build          # Build the project
 just test           # Run tests
 just doctor         # Self-diagnostic
 just lint           # Lint and format
-just panic-scan     # Security scan via panic-attacker
+just assail         # Security scan via panic-attacker
 just tour           # Guided tour of the codebase
 ----
 
@@ -86,7 +87,7 @@ just tour           # Guided tour of the codebase
 ----
 just lint           # Format and lint
 just test           # All tests pass
-just panic-scan     # No new security issues
+just assail         # No new security issues
 ----
 
 == Contractile Invariants
@@ -101,14 +102,9 @@ Key invariants that must never be violated:
 
 == LLM/AI Agent Development
 
-If using an AI assistant, load the warmup context first:
-
-[source,bash]
-----
-just llm-context    # Outputs role-appropriate context
-----
-
-Or read `0-AI-MANIFEST.a2ml` and `.claude/CLAUDE.md` directly.
+If using an AI assistant, load its warmup context by reading the universal
+entry point `0-AI-MANIFEST.a2ml`, then the structured project state under
+`.machine_readable/` (start with `.machine_readable/6a2/STATE.a2ml`).
 
 == Get Help
 

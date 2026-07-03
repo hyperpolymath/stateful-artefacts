@@ -1,0 +1,65 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+= Architecture Decision Record: 0002-extraction-from-reposystem
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
+<!-- Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk> -->
+
+# 2. Extraction from reposystem
+
+Date: 2026-07-02
+
+## Status
+
+Accepted
+
+## Context
+
+`stateful-artefacts` is the state-carrying artefact layer of the
+Reposystem/OPSM stack. Its domain content originates in
+`hyperpolymath/reposystem`. The initial extraction into this repository failed:
+only the RSR template shell landed, so `src/core` is empty scaffolding and the
+project definition is PROVISIONAL pending a re-transfer.
+
+A decision was needed on how the extracted component should be structured — in
+particular which language owns the domain core and how the cross-language
+boundary is defined and verified — so that the re-transfer has a stable target
+to land into.
+
+## Decision
+
+Extract `stateful-artefacts` as a standalone RSR repository with a
+language-split architecture:
+
+- **Rust** is planned for the domain core (`src/core`). It is not present yet;
+  it lands with the reposystem content re-transfer. Rust CI and
+  `deny.toml` are retained on that expectation.
+- **Zig** owns the C-ABI/FFI seam (`src/interface/ffi/`), exposing the domain
+  through a stable, libc-only C ABI.
+- **Idris2** owns the ABI proofs and type definitions (`src/interface/Abi/`),
+  keeping the layout/typing of the boundary formally checked.
+- The C header (`src/interface/generated/abi/stateful_artefacts.h`) is
+  hand-maintained and kept in lock-step with the Zig exports and the Idris2
+  `%foreign` bindings.
+
+## Consequences
+
+What becomes easier or more difficult because of this change.
+
+### Positive
+
+- The ABI/FFI seam can be built, tested, and proven before the domain core
+  exists, giving the re-transfer a verified boundary to target.
+- Language responsibilities are explicit: Rust for logic, Zig for the C ABI,
+  Idris2 for proofs.
+
+### Negative
+
+- The repository is non-functional as a domain component until the re-transfer
+  lands; documentation must clearly flag this PROVISIONAL state.
+- Retaining Rust tooling before any Rust exists risks drift if the domain turns
+  out not to be Rust.
+
+### Neutral
+
+- The licence question (this repo's MPL-2.0 vs reposystem's PMPL-1.0) is left
+  unresolved by this ADR; see the open questions in `AFFIRMATION.adoc`.

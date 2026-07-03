@@ -19,6 +19,7 @@ extern "C" {
 #endif
 
 #include <stdint.h>
+#include <stddef.h>
 
 /* Result codes (ADR-003 canon — identical to the Zig and Idris2 sides). */
 typedef enum {
@@ -62,6 +63,61 @@ int stateful_artefacts_register_callback(stateful_artefacts_handle *handle,
 
 /* Utilities. Returns 1 if the handle is initialized, 0 otherwise. */
 uint32_t stateful_artefacts_is_initialized(stateful_artefacts_handle *handle);
+
+/*
+ * Artefact state record (v0).
+ * Spec: docs/spec/ARTEFACT-STATE-RECORD.adoc. Enum codes are stable and shared
+ * with src/core/record.zig and src/interface/Abi/Record.idr.
+ */
+
+typedef enum {
+    STATEFUL_ARTEFACTS_KIND_BINARY = 0,
+    STATEFUL_ARTEFACTS_KIND_CONTAINER = 1,
+    STATEFUL_ARTEFACTS_KIND_DATASET = 2,
+    STATEFUL_ARTEFACTS_KIND_DOCUMENT = 3,
+    STATEFUL_ARTEFACTS_KIND_OTHER = 4
+} stateful_artefacts_kind_t;
+
+typedef enum {
+    STATEFUL_ARTEFACTS_PHASE_DRAFT = 0,
+    STATEFUL_ARTEFACTS_PHASE_BUILT = 1,
+    STATEFUL_ARTEFACTS_PHASE_RELEASED = 2,
+    STATEFUL_ARTEFACTS_PHASE_SUPERSEDED = 3,
+    STATEFUL_ARTEFACTS_PHASE_WITHDRAWN = 4
+} stateful_artefacts_phase_t;
+
+typedef enum {
+    STATEFUL_ARTEFACTS_VERIFICATION_UNVERIFIED = 0,
+    STATEFUL_ARTEFACTS_VERIFICATION_VERIFIED = 1,
+    STATEFUL_ARTEFACTS_VERIFICATION_REJECTED = 2
+} stateful_artefacts_verification_t;
+
+/* Opaque artefact-state-record handle. */
+typedef struct stateful_artefacts_record stateful_artefacts_record;
+
+/* Create/destroy. new() returns NULL on failure (null/over-long id, bad kind). */
+stateful_artefacts_record *stateful_artefacts_record_new(const char *id, int kind);
+void stateful_artefacts_record_free(stateful_artefacts_record *rec);
+
+/* Field accessors. Return the enum code, or -1 on NULL. */
+int stateful_artefacts_record_phase(stateful_artefacts_record *rec);
+int stateful_artefacts_record_verification(stateful_artefacts_record *rec);
+
+/* Provenance. source_ref/produced_by may be NULL (left unset). */
+int stateful_artefacts_record_set_provenance(stateful_artefacts_record *rec,
+                                             const char *source_ref,
+                                             const char *produced_by,
+                                             int64_t timestamp);
+
+/* State machines. Illegal transitions return invalid_param and change nothing. */
+int stateful_artefacts_record_advance_phase(stateful_artefacts_record *rec, int to);
+int stateful_artefacts_record_set_verification(stateful_artefacts_record *rec, int to);
+/* The only path back to UNVERIFIED (explicit re-assessment). */
+int stateful_artefacts_record_reopen_verification(stateful_artefacts_record *rec);
+
+/* Serialize (v0 key=value form) into buf; returns bytes written or -1. */
+int stateful_artefacts_record_serialize(stateful_artefacts_record *rec,
+                                        unsigned char *buf, size_t len);
 
 #ifdef __cplusplus
 }

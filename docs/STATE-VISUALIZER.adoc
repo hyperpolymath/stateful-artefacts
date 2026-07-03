@@ -1,6 +1,25 @@
 // SPDX-License-Identifier: CC-BY-SA-4.0
 // Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 = Project State Visualizer
+
+[NOTE]
+====
+*This page is an ILLUSTRATIVE FORMAT SAMPLE.* It demonstrates the layout and
+notation of the RSR state-visualizer dashboard — it is *not* a report of this
+repository's actual state. The percentages, bars, and "certified/verified"
+labels below are placeholder examples, not measurements.
+
+For this repository's real, evidence-based state see:
+
+* `.machine_readable/6a2/STATE.a2ml` (authoritative machine-readable state),
+* link:status/READINESS.adoc[READINESS.adoc] (Component Readiness Grade), and
+* link:../AFFIRMATION.adoc[AFFIRMATION.adoc] (honest scope of what exists).
+
+As of this writing the project is early alpha (grade X): the ABI/FFI seam
+builds, there is no domain implementation yet, and the licence question is
+unresolved.
+====
+
 [source]
 ----
 <!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
@@ -66,34 +85,34 @@
 COMPONENT                          STATUS              NOTES
 ─────────────────────────────────  ──────────────────  ─────────────────────────────────
 CORE STANDARDS
-  ABI/FFI Standard (Idris2/Zig)     ██████████ 100%    Universal interface stable
-  AI Gatekeeper (0-AI-MANIFEST)     ██████████ 100%    Universal entry point active
-  TOPOLOGY.md Standard              ██████████ 100%    Visual summary guide active
-  6SCM Metadata Structure           ██████████ 100%    Machine-readable state stable
+  ABI/FFI Standard (Idris2/Zig)     ‹illustrative›    Universal interface stable
+  AI Gatekeeper (0-AI-MANIFEST)     ‹illustrative›    Universal entry point active
+  TOPOLOGY.md Standard              ‹illustrative›    Visual summary guide active
+  6SCM Metadata Structure           ‹illustrative›    Machine-readable state stable
 
 INFRASTRUCTURE
-  Justfile Automation               ██████████ 100%    Standard build/verify tasks
-  CI/CD Workflow Templates          ██████████ 100%    GH/GL scaffolding verified
-  Multi-Forge Sync                  ██████████ 100%    Hub-and-spoke mirroring stable
+  Justfile Automation               ‹illustrative›    Standard build/verify tasks
+  CI/CD Workflow Templates          ‹illustrative›    GH/GL scaffolding (sample)
+  Multi-Forge Sync                  ‹illustrative›    Hub-and-spoke mirroring stable
 
 CONTAINER ECOSYSTEM (Phase 2)
-  Containerfile (OCI build)         ██████████ 100%    Multi-stage Chainguard base
-  selur-compose orchestration       ██████████ 100%    Template + concrete example
-  cerro-torre manifest              ██████████ 100%    Bundle metadata & signing
-  svalinn gateway policy            ██████████ 100%    .gatekeeper.yaml active
-  vordr runtime monitoring          ██████████ 100%    Runtime config template
-  k9-svc deployment (Nickel)        ██████████ 100%    Hunt-level deploy descriptor
-  ct-build.sh pipeline              ██████████ 100%    Build/sign/verify script
-  Justfile container-* recipes      ██████████ 100%    8 recipes integrated
-  Trustfile CONTAINER_SUPPLY_CHAIN  ██████████ 100%    Supply chain section added
+  Containerfile (OCI build)         ‹illustrative›    Multi-stage Chainguard base
+  selur-compose orchestration       ‹illustrative›    Template + concrete example
+  cerro-torre manifest              ‹illustrative›    Bundle metadata & signing
+  svalinn gateway policy            ‹illustrative›    .gatekeeper.yaml active
+  vordr runtime monitoring          ‹illustrative›    Runtime config template
+  k9-svc deployment (Nickel)        ‹illustrative›    Hunt-level deploy descriptor
+  ct-build.sh pipeline              ‹illustrative›    Build/sign/verify script
+  Justfile container-* recipes      ‹illustrative›    8 recipes integrated
+  Trustfile CONTAINER_SUPPLY_CHAIN  ‹illustrative›    Supply chain section added
 
 REPO INFRASTRUCTURE
-  .machine_readable/                ██████████ 100%    STATE/META/ECOSYSTEM active
-  Governance & License              ██████████ 100%    PMPL & Ethical use verified
-  Development Shells (Nix/Guix)     ██████████ 100%    Reproducible env stable
+  .machine_readable/                ‹illustrative›    STATE/META/ECOSYSTEM active
+  Governance & License              ‹illustrative›    ‹illustrative note›
+  Development Shells (Nix/Guix)     ‹illustrative›    ‹illustrative note›
 
 ─────────────────────────────────────────────────────────────────────────────
-OVERALL:                            ██████████ 100%    RSR Template Stable & Certified
+OVERALL:                            ‹illustrative›    ‹illustrative sample — not this repo's real state›
 ```
 
 ## Key Dependencies

@@ -1,0 +1,118 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+= Artefact State Record — v0 Specification
+:toc:
+:toclevels: 3
+
+[NOTE]
+====
+*PROVISIONAL — v0.* This is `stateful-artefacts`' own canonical deliverable: a
+small, machine-readable *state record* that any estate artefact (binary,
+container, dataset, document) can carry. The four top-level fields
+(identity, provenance, lifecycle phase, verification status) are fixed by the
+project's stated purpose (README/EXPLAINME/STATE/ECOSYSTEM/Intentfile). The
+*sub-fields and serialization* below are v0 and may be refined when the
+domain content is re-transferred from `hyperpolymath/reposystem`. Evolution is
+*additive-only* (see <<Compatibility>>).
+====
+
+== Purpose
+
+An artefact state record answers, in one self-describing unit: _what is this
+artefact, where did it come from, where is it in its lifecycle, and has it been
+verified?_ Producers (Reposystem, CI) attach a record to an artefact; consumers
+(vordr, cerro-torre, svalinn, VeriSimDB) read and act on it. This spec defines
+the v0 record, its two state machines, and a deterministic serialization. The
+layout is proven C-ABI-compliant (Idris2) and exposed through the
+`stateful_artefacts_*` C ABI.
+
+== Record shape (v0)
+
+[cols="1,1,3",options="header"]
+|===
+| Field | Type | Meaning
+
+| `schema-version` | u32 | Record schema version. v0 = `1`.
+| `identity.id` | string (≤255) | Stable identifier for the artefact.
+| `identity.kind` | enum `Kind` | `binary` \| `container` \| `dataset` \| `document` \| `other`.
+| `provenance.source-ref` | string (≤255) | Where it came from (e.g. `repo://…`, a URL).
+| `provenance.produced-by` | string (≤255) | The tool/agent that produced it.
+| `provenance.timestamp` | i64 | Unix seconds; `0` = unset.
+| `provenance.signature-ref` | string (≤255, optional) | Detached-signature locator; empty = none.
+| `phase` | enum `Phase` | Lifecycle position (see <<Lifecycle>>).
+| `verification` | enum `Verification` | `unverified` \| `verified` \| `rejected`.
+| `verification.evidence-ref` | string (≤255, optional) | Locator for verification evidence; empty = none.
+|===
+
+Enum numeric codes (stable; shared by the C header and the Idris2 model):
+`Kind` binary=0, container=1, dataset=2, document=3, other=4 ·
+`Phase` draft=0, built=1, released=2, superseded=3, withdrawn=4 ·
+`Verification` unverified=0, verified=1, rejected=2.
+
+[[Lifecycle]]
+== Lifecycle state machine (`phase`)
+
+Phase only ever moves *forward*; there is no silent regression.
+
+----
+draft ──▶ built ──▶ released ──▶ superseded
+  │         │          │
+  └────────┴──────────┴──────────▶ withdrawn        (terminal)
+superseded, withdrawn: terminal (no outgoing edges)
+----
+
+Legal transitions (everything else is rejected with `invalid_param`):
+
+* `draft → built`, `draft → withdrawn`
+* `built → released`, `built → withdrawn`
+* `released → superseded`, `released → withdrawn`
+* `superseded`, `withdrawn` — terminal.
+
+== Verification state machine (`verification`)
+
+The governing invariant is *verification-monotonicity*: a record never
+*silently* loses a verification verdict. Moving away from `verified`/`rejected`
+back to `unverified` is possible only through an explicit *reopen* operation.
+
+* `set-verification(verified|rejected)` — allowed from `unverified`, and between
+  `verified`↔`rejected` (evidence changed). Setting `unverified` this way is
+  refused (`invalid_param`).
+* `reopen()` — the *only* path back to `unverified`; models a deliberate
+  re-assessment.
+
+== Serialization (v0)
+
+A deterministic, line-oriented `key=value` text form, one field per line, in
+the field order of the table above. Optional fields with empty values are
+omitted. Example:
+
+----
+schema-version=1
+id=repo://hyperpolymath/stateful-artefacts@dbca601
+kind=0
+source-ref=github://hyperpolymath/stateful-artefacts
+produced-by=ci/e2e
+timestamp=1751500000
+phase=1
+verification=0
+----
+
+[[Compatibility]]
+== Compatibility rule (additive-only)
+
+* New fields are *appended*; existing keys keep their meaning and numeric codes.
+* Readers *ignore unknown keys* (forward-compatible) and *tolerate missing
+  optional keys* (backward-compatible).
+* Removing or renumbering a field, or narrowing an enum, is a *breaking* change
+  that bumps `schema-version`.
+
+This rule is the machine-checked target of the `additive-schema` /
+`backward-readability` invariant in
+`verification/proofs/tlaplus/ArtefactLifecycle.tla`.
+
+== Out of scope for v0 (do not assume)
+
+* The VeriSimDB *hexad* feed layout (named but never specified upstream) — the
+  local emitter in `src/bridges/` is a clearly-marked stub.
+* Reposystem's domain semantics (yard/track/switch-point records, graph-export
+  and scenario-state schemas) — those arrive with the re-transfer.
