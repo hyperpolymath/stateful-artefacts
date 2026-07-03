@@ -1,23 +1,55 @@
 // SPDX-License-Identifier: CC-BY-SA-4.0
 // Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
-= YOUR Template Repo Roadmap
+= Stateful Artefacts Roadmap
+
+The authoritative, machine-readable roadmap lives in
+`.machine_readable/6a2/STATE.a2ml` under `[route-to-mvp]`. This page is a
+human-readable summary of it.
 
 == Current Status
 
-Initial development phase.
+Early *alpha* (Component Readiness Grade *X*). The repository was instantiated
+from the RSR template; the ABI/FFI seam builds and its Zig tests pass, but there
+is *no domain implementation yet* — `src/core` is empty scaffolding pending a
+content re-transfer from `hyperpolymath/reposystem`. The project definition is
+*PROVISIONAL* and the licence question (MPL-2.0 here vs reposystem's PMPL-1.0)
+is *unresolved*. See link:READINESS.adoc[READINESS.adoc] and
+link:../../AFFIRMATION.adoc[AFFIRMATION.adoc].
 
-== Milestones
+== Milestones (route to MVP)
 
-=== v0.1.0 - Foundation
-* [ ] Core functionality
-* [ ] Basic documentation
-* [ ] CI/CD pipeline
+=== Phase A — Template instantiation and identity — *done*
+* [x] Instantiated from `rsr-template-repo`; project identity normalised.
 
-=== v1.0.0 - Stable Release
-* [ ] Full feature set
-* [ ] Comprehensive tests
-* [ ] Production ready
+=== Phase B — Repair template defects — *done*
+* [x] ABI path/drift fixes, validator fixes, missing-doc backfill.
 
-== Future Directions
+=== Phase C — ABI/FFI seam builds and passes tests — *done*
+* [x] Idris2 ABI typechecks and Zig FFI builds.
+* [x] Zig unit + integration tests pass through the C ABI.
+* [x] `gcc -fsyntax-only` verifies the hand-maintained C header.
+* [ ] Wire the Idris2 ABI typecheck into CI (not yet run in CI).
 
-_To be determined based on community feedback._
+=== Phase D — v0 artefact-state-record + Zig core + proofs — *pending*
+* [ ] Finalise the v0 `artefact-state-record` schema
+  (`src/definitions/artefact-state-record.a2ml`).
+* [ ] Implement the Zig core behind the existing C-ABI seam.
+* [ ] Discharge the ABI/layout proofs beyond template scaffolding.
+
+=== Phase E — Domain re-transfer from reposystem — *pending / PROVISIONAL*
+* [ ] Re-transfer the stateful-artefacts slice from
+  `hyperpolymath/reposystem` into `src/core` (maintainer-only).
+* [ ] Resolve the PMPL-1.0 vs MPL-2.0 licence question.
+* [ ] Confirm or drop the Rust core (Rust CI is retained on the expectation
+  the domain is Rust; delete if not).
+
+=== Phase F — Estate integrations — *pending / PROVISIONAL*
+* [ ] VeriSimDB feed emitter (hexad JSON; local stub first).
+* [ ] Register the Groove port in the standards PORT-REGISTRY and the clade
+  prefix in `gv-clade-index`.
+
+== Notes
+
+Phases D onward are *provisional*: their scope depends on the outcome of the
+reposystem re-transfer and the licence decision, either of which may reshape
+this roadmap.

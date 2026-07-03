@@ -1,0 +1,63 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+= Architecture Decision Record: 0003-abi-result-canon
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
+<!-- Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk> -->
+
+# 3. ABI Result canon
+
+Date: 2026-07-02
+
+## Status
+
+Accepted
+
+## Context
+
+The ABI/FFI seam is expressed in three places that must agree exactly: the Zig
+implementation (`src/interface/ffi/src/main.zig`), the Idris2 ABI
+(`src/interface/Abi/`), and the hand-maintained C header
+(`src/interface/generated/abi/stateful_artefacts.h`). Every operation that can
+fail needs a single, shared way to report success or failure across that
+boundary. Divergent or ad-hoc error encodings between the three sides would be
+undetectable at the C ABI and would silently break callers.
+
+## Decision
+
+Adopt a single canonical `Result` enum, shared *verbatim* by all three sides,
+with exactly five values and fixed integer codes:
+
+| Code | Name |
+|------|------|
+| 0 | `ok` / `Ok` |
+| 1 | `error` / `Error` |
+| 2 | `invalid_param` / `InvalidParam` |
+| 3 | `out_of_memory` / `OutOfMemory` |
+| 4 | `null_pointer` / `NullPointer` |
+
+The Zig side declares `Result = enum(c_int)`, the Idris2 side declares the
+matching `data Result` with `resultCode` / `resultFromCode` conversions, and
+the C header declares the identical enum. Adding, removing, or renumbering a
+value is a breaking ABI change: all three sides must be updated together and the
+ABI version bumped. `tests/aspect_tests.sh` checks Idris2↔Zig symbol parity.
+
+## Consequences
+
+What becomes easier or more difficult because of this change.
+
+### Positive
+
+- One error vocabulary across C, Zig, and Idris2 — no per-function error
+  conventions to reconcile.
+- The five-value canon is small enough to keep in lock-step by hand and to
+  verify with a parity check.
+
+### Negative
+
+- Any new failure mode must be expressed within these five values or forces a
+  breaking ABI change plus a version bump.
+
+### Neutral
+
+- The canon says nothing about human-readable error detail; that remains the
+  job of `stateful_artefacts_last_error()`.

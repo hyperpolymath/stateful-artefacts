@@ -33,7 +33,7 @@ Output: `src/interface/ffi/zig-out/lib/libstateful_artefacts.{a,so}`
 
 [source,bash]
 ----
-guix build -f guix.scm
+guix build -f build/guix.scm
 ----
 
 === Nix
@@ -43,19 +43,29 @@ guix build -f guix.scm
 nix build
 ----
 
-=== Container (Stapeln)
+=== Container (stapeln ecosystem)
 
 [source,bash]
 ----
-just stapeln-export    # Generates Containerfile
-podman build -t stateful-artefacts .
+just container-build    # Build the image (build/Containerfile via cerro-torre / podman)
+just container-sign     # Build, pack, sign and verify the bundle
 ----
 
 === Manual Package
 
+NOTE: `just install` is currently a TODO stub. stateful-artefacts is a library
+with no runnable binary today, so until the install recipe is wired up, package
+by copying the built artefacts into your prefix:
+
 [source,bash]
 ----
-just install --prefix=/usr/local
+just build-release
+install -Dm644 src/interface/ffi/zig-out/lib/libstateful_artefacts.a \
+        "$PREFIX/lib/libstateful_artefacts.a"
+install -Dm644 src/interface/ffi/zig-out/lib/libstateful_artefacts.so \
+        "$PREFIX/lib/libstateful_artefacts.so"
+install -Dm644 src/interface/generated/abi/stateful_artefacts.h \
+        "$PREFIX/include/stateful_artefacts.h"
 ----
 
 Files installed:
@@ -64,20 +74,14 @@ Files installed:
 |===
 | Path | Contents
 
-| `$PREFIX/bin/`
-| Executables
+| `$PREFIX/lib/`
+| Static/shared library (`libstateful_artefacts.{a,so}`)
 
-| `$PREFIX/share/stateful-artefacts/`
-| Data files, assets
+| `$PREFIX/include/`
+| C ABI header (`stateful_artefacts.h`)
 
 | `$PREFIX/share/doc/stateful-artefacts/`
 | Documentation
-
-| `$PREFIX/share/applications/`
-| .desktop file (Linux, if GUI)
-
-| `$PREFIX/share/man/man1/`
-| Man pages
 |===
 
 == Configuration
@@ -90,9 +94,7 @@ Fallback: `$HOME/.config/stateful-artefacts/config.toml`
 
 [source,bash]
 ----
-just doctor            # Full diagnostic
-just run --version   # Version check
-just run --selftest  # Built-in self-test
+just doctor            # Full diagnostic (checks tools, paths)
 ----
 
 == Updating
@@ -101,8 +103,9 @@ just run --selftest  # Built-in self-test
 ----
 git pull
 just build-release
-just install --prefix=/usr/local
 ----
+
+Then re-run the manual package step above to refresh the installed artefacts.
 
 Or via OPSM: `opsm update stateful-artefacts`
 
@@ -110,20 +113,9 @@ Or via OPSM: `opsm update stateful-artefacts`
 
 * License: MPL-2.0 (Mozilla Public License 2.0)
 * All dependencies SHA-pinned
-* `panic-attacker` scan results: link:INSTALL-SECURITY-REPORT.adoc[]
+* Run the `panic-attacker` scans with `just assail` (pre-commit) or
+  `just maint-assault` (high-rigor)
 * OpenSSF Scorecard: see badge in README
-
-== Multi-Instance Deployment
-
-For deploying multiple instances (e.g., different users or tenants):
-
-[source,bash]
-----
-just install --prefix=/opt/stateful-artefacts-instance1 --config=/etc/stateful-artefacts/instance1.toml
-just install --prefix=/opt/stateful-artefacts-instance2 --config=/etc/stateful-artefacts/instance2.toml
-----
-
-Each instance has isolated config, data, and logs.
 
 == Reporting Issues
 

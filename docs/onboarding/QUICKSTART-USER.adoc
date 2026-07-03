@@ -100,10 +100,10 @@ just heal
 
 == Get Help
 
-* **In-app**: `just run --help`
+* **Library docs**: link:../developer/ABI-FFI-README.adoc[ABI-FFI-README] and link:../spec/ARTEFACT-STATE-RECORD.adoc[the record spec] (stateful-artefacts is a library, not a runnable app)
 * **Guided tour**: `just tour`
 * **Report a problem**: `just help-me` (pre-fills diagnostic context)
-* **Wiki**: https://github.com/hyperpolymath/rsr-template-repo/wiki
+* **Wiki**: https://github.com/hyperpolymath/stateful-artefacts/wiki
 
 == Uninstall
 

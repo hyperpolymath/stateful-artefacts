@@ -65,7 +65,7 @@ Below B, any publication must be explicitly abstract or provisional.
 |===
 | Metric | Value | Source
 
-| Test count | _<N>_ | `.machine_readable/6a2/STATE.a2ml` or CI
+| Test count | 3 Zig unit + 9 Zig integration (ABI/FFI seam); domain core 0 | `src/interface/ffi/`
 | Formal-verification posture | _<N `believe_me` / `sorry` / `Admitted` — irreducible only>_ | grep of proof dirs
 | Dangerous patterns (`assert_total`, `unsafeCoerce`, `Obj.magic`) | _<N>_ | grep 2026-07-02
 | Per-unit README coverage | _<M/N (percentage)>_ | filesystem scan of unit dirs
@@ -87,9 +87,9 @@ unless noted.
 |===
 | Component | Grade | Posture | Evidence Summary | Promotion blocker | Last Assessed
 
-| _<component 1>_ | X/F/E/D/C/B/A | _<shorthand>_ | _<what was checked + counts>_ | _<specific, actionable gap to next grade>_ | 2026-07-02
-| _<component 2>_ | … | … | … | … | 2026-07-02
-| _<component 3>_ | … | … | … | … | 2026-07-02
+| ABI/FFI seam (`src/interface/ffi`, `src/interface/Abi`) | D | `alpha-unstable` | 20 `export fn stateful_artefacts_*` symbols; 3 Zig unit tests + 9 integration tests pass through the C ABI; hand-maintained header `src/interface/generated/abi/stateful_artefacts.h` passes `gcc -fsyntax-only`. Idris2 ABI typechecks locally. | Run the Idris2 typecheck + Zig tests in CI (currently local only); add per-directory annotation. Not dogfooded → cannot reach C. | 2026-07-02
+| Domain core (`src/core`) | X | — | Empty scaffolding only (`0.2-AI-MANIFEST.a2ml`); no implementation, no tests. Awaits content re-transfer from `hyperpolymath/reposystem`. | Land the reposystem re-transfer, then implement + test against the v0 `artefact-state-record` schema. | 2026-07-02
+| Formal proofs (`verification/proofs`) | X | — | Template-level scaffolding only; not yet discharged for this repo's domain. | Author real ABI/layout proofs and wire proof-check into CI. | 2026-07-02
 |===
 
 *Rules of thumb for populating this table:*
@@ -166,9 +166,13 @@ Real-world external feedback confirming value. Populate
 
 == 7. Summary (2026-07-02)
 
-* Project grade: _<grade>_. Why: _<1-2 line justification>_.
-* Delta since last assessment: _<what changed; none if first assessment>_.
-* Next milestone: _<specific promotion target + timeline>_.
+* Project grade: *X*. Why: the weakest in-scope components (domain core, formal
+  proofs) are untested/absent, and the project's grade is set by its weakest
+  link. The ABI/FFI seam is the only component with evidence (grade D).
+* Delta since last assessment: first assessment — none.
+* Next milestone: land the reposystem domain re-transfer and run the ABI
+  typecheck + tests in CI, promoting the domain core off X and the ABI seam
+  toward C.
 * Machine-readable grade line present (§ header) for `just crg-grade` / `just crg-badge`.
 
 '''
