@@ -9,7 +9,7 @@ image:https://img.shields.io/badge/OpenSSF-Best_Practices-green?logo=opensources
 image:https://img.shields.io/badge/License-MPL_2.0-blue.svg[License: MPL-2.0,link="https://opensource.org/licenses/MPL-2.0"]
 image:https://api.thegreenwebfoundation.org/greencheckimage/github.com[Green Web,link="https://www.thegreenwebfoundation.org/green-web-check/?url=github.com"]
 
-State-carrying artefact layer of the Reposystem/OPSM stack: schemas and tooling for artefacts that carry machine-readable state (identity, provenance, lifecycle, verification) across the hyperpolymath estate.
+State-carrying artefact layer of the Reposystem/OPSM stack: schemas and tooling for artefacts that carry machine-readable state (identity, provenance, lifecycle, verification) across the git forges and estates.
 
 == What this is
 
