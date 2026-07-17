@@ -1,0 +1,154 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+= Reposystem Re-Transfer Runbook
+:toc:
+:toclevels: 3
+
+The original split of `stateful-artefacts` out of
+https://github.com/hyperpolymath/reposystem[hyperpolymath/reposystem] lost the
+domain content — only the RSR template shell arrived. This runbook is the
+*harness* for re-doing that transfer correctly: the extraction steps, a
+reconciliation map onto the v0 artefact-state-record, and verification. Every
+step up to "run it" is prepared here; the run itself is maintainer-only, because
+reposystem is not reachable from this repo's CI/sandbox.
+
+[NOTE]
+====
+The reposystem layout below is taken from *reposystem's own README* (its
+"Project Structure" section). *Confirm it against the actual tree* before
+extracting — paths may have moved.
+====
+
+== 0. Prerequisites
+
+* A local clone of reposystem (this is your `$REPOS_DIR/reposystem` on the
+  machine that has the estate).
+* `git-filter-repo` installed (`pipx install git-filter-repo` or distro package).
+* This repo checked out on a fresh branch off `main`.
+
+== 1. Decide the slice
+
+`stateful-artefacts` is the *state-carrying* layer — reposystem remains the graph
+engine. Transfer only the pieces that define, produce, or persist artefact
+*state*; leave the yard/track/switch-point graph logic and the TUI/CLI in
+reposystem. Candidate paths (from reposystem's README):
+
+[cols="2,3,2",options="header"]
+|===
+| reposystem path | What it is | Take?
+
+| `src/verisimdb.rs` | VeriSimDB persistence client | *Yes* — state persistence
+| `src/graph.rs` (export/serialize parts) | DOT/JSON/estate-export serializers | *Partial* — the state/metadata export, not the graph build
+| `src/lib.rs` (types) | `Estate`, `ExternalSeam`, `GraphStore`, `RelationType` | *Partial* — the record/state types, not `GraphStore` internals
+| scenario state (in `src/commands/scenario`) | scenario state model | *Yes* — a scenario is a stateful artefact
+| `src/abi/` | Ada/Idris ABI surface | *Reconcile* — see <<abi-reconciliation>>
+| `spec/DATA-MODEL.adoc` | entity specifications | *Yes* — into `docs/spec/`
+| `src/main.rs`, `src/tui.rs`, `src/commands/*` (scan/plan/apply/...) | CLI/TUI | *No* — stays in reposystem
+| `src/scanner.rs`, `src/importers/` | repo/forge scanners | *No* — reposystem concern
+|===
+
+== 2. Extract with history
+
+Use `scripts/retransfer-from-reposystem.sh` (dry-run by default). It clones
+reposystem into a scratch dir, runs `git filter-repo --path <each slice path>`
+to keep only the chosen paths *with their history*, and prints the merge
+commands. Example:
+
+[source,bash]
+----
+REPOS_DIR=~/repos \
+SLICE="src/verisimdb.rs src/graph.rs src/lib.rs spec/DATA-MODEL.adoc" \
+  bash scripts/retransfer-from-reposystem.sh          # DRY RUN — prints the plan
+
+# When the plan looks right, run for real:
+REPOS_DIR=~/repos SLICE="..." DRY_RUN=0 \
+  bash scripts/retransfer-from-reposystem.sh
+----
+
+The script leaves the filtered history on a remote you then merge:
+
+[source,bash]
+----
+git merge --allow-unrelated-histories reposystem-slice/main
+----
+
+(If history preservation is not needed, a plain copy of the files is fine — the
+script supports `MODE=copy`.)
+
+== 3. Land + reconcile onto the v0 record
+
+The v0 artefact-state-record (`docs/spec/ARTEFACT-STATE-RECORD.adoc`) is the
+*state wrapper*; reposystem's entities are the *content* that gets wrapped.
+Place and reconcile as follows:
+
+[cols="2,2,3",options="header"]
+|===
+| reposystem piece | Lands in | Reconciliation
+
+| VeriSimDB client (`verisimdb.rs`) | `src/bridges/` | Reconcile with the PROVISIONAL `verisimdb-feed.sh` stub; this is where the *real* hexad feed format finally gets specified (retire "provisional-v0").
+| Estate/export serializers | `src/core/` + `src/definitions/` | Each emitted artefact (graph export, estate metadata) should carry a state record: identity (what), provenance (which scan/commit produced it), phase, verification.
+| Scenario state | `src/core/` | Model a scenario as an artefact with its own lifecycle; reuse the `Phase`/`Verification` enums where they fit, or extend them (additive-only — bump `schema-version`).
+| `DATA-MODEL.adoc` | `docs/spec/` | Merge with `ARTEFACT-STATE-RECORD.adoc`; where reposystem entities carry identity/provenance/lifecycle/verification, unify on the v0 record's four fields rather than duplicating.
+| Canonical types (`Estate`, `RelationType`, ...) | `src/definitions/` (+ `src/core/` impl) | Express as schemas alongside `artefact-state-record.a2ml`.
+|===
+
+Key rule: *do not fork the state model.* If a reposystem type already carries
+"who produced this / has it been verified", map it onto the v0 record's
+`provenance`/`verification` rather than inventing a parallel one.
+
+[[abi-reconciliation]]
+=== ABI reconciliation (needs a decision)
+
+reposystem's README describes its ABI surface as *Ada/Idris*; this repo's seam
+is *Idris2/Zig* (`src/interface/`). Decide one canon and record it as an ADR:
+
+* Keep the Idris2/Zig seam (this repo's), and port reposystem's ABI-surfaced
+  operations onto the `stateful_artefacts_*` C ABI; or
+* Adopt reposystem's Ada surface as a second FFI backend behind the same C ABI.
+
+Either way the C header (`src/interface/generated/abi/stateful_artefacts.h`)
+stays the single contract, and `tests/aspect_tests.sh` keeps symbol parity.
+
+== 4. Decisions to make during the re-transfer (ADRs)
+
+. *Core language.* reposystem's core is Rust (+ ReScript data model); this repo's
+  v0 core is Zig, with Rust only "planned". Decide: Rust domain core alongside
+  the Zig ABI seam, or port to Zig? Update `META.a2ml` `languages` and add an ADR.
+. *ABI canon* — see <<abi-reconciliation>>.
+. *Licence.* reposystem declares *PMPL-1.0*; this repo is normalised to MPL-2.0
+  (code) + CC-BY-SA-4.0 (docs). Resolve before merging content
+  (`AFFIRMATION.adoc` tracks this as open).
+. *Hexad feed format.* Specify it for real when `verisimdb.rs` lands; retire the
+  `provisional-v0` stub.
+
+== 5. After the transfer — update state + delete PROVISIONAL markers
+
+* `META.a2ml`: add the new language(s); add ADRs for the decisions above.
+* `STATE.a2ml`: bump `completion-percentage`; move the "Re-transfer" milestone to
+  done; drop the PROVISIONAL note in `[project-context].purpose`.
+* `README.adoc`: remove the PROVISIONAL admonition and the "Re-transfer status"
+  section (or turn it into a "history" note).
+* `AFFIRMATION.adoc`: refresh the snapshot; close the "reposystem domain content
+  is missing" item; record the licence and ABI decisions.
+* `.machine_readable/6a2/anchors/ANCHOR.a2ml`: extend `allowed` languages if Rust
+  is added.
+
+== 6. Verification (same gates the rest of the repo uses)
+
+[source,bash]
+----
+# structure + estate rules
+just validate
+bash scripts/check-root-shape.sh .
+bash scripts/check-no-md-in-docs.sh .
+bash scripts/check-no-*lang.sh .          # the estate V-language ban (allows Zig)
+just verify-template
+
+# the seam + new domain code
+cd src/interface/ffi && zig build test && cd -
+bash tests/aspect_tests.sh                # SPDX, dangerous-patterns, ABI/FFI parity
+cargo test                                # if a Rust core was added
+just typecheck-abi                        # idris2 --typecheck abi.ipkg (needs idris2)
+----
+
+Everything must be green before opening the re-transfer PR.

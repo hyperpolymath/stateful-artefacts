@@ -105,6 +105,7 @@ sync_report*.txt
 .zig-cache/
 zig-out/
 verisimdb-data/
+.retransfer-scratch/
 target/
 node_modules/
 _build/
