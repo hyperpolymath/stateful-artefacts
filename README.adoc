@@ -97,15 +97,21 @@ link:docs/onboarding/QUICKSTART-MAINTAINER.adoc[QUICKSTART-MAINTAINER].
 == Re-transfer status
 
 The domain content still lives in `hyperpolymath/reposystem` and must be
-re-extracted by the maintainer (that repo is not reachable from CI here):
+re-extracted by the maintainer (that repo is not reachable from CI here). The
+full harness — extraction, a reconciliation map onto the v0 record, the
+decisions to make (core language, ABI canon, licence, hexad format), and the
+verification gates — is in link:docs/RE-TRANSFER-RUNBOOK.adoc[the re-transfer
+runbook], driven by `scripts/retransfer-from-reposystem.sh` (dry-run by default).
+
+In brief:
 
 1. Decide the slice — candidates: `src/verisimdb.rs`, the exporter/state parts
    of `src/graph.rs`, scenario state, `spec/DATA-MODEL.adoc`.
-2. Extract with history: `git filter-repo --path <each-path>` in a clone of
-   reposystem, then merge into this repo with `--allow-unrelated-histories`.
-3. Land code in `src/core` / `src/definitions` / `src/bridges`, specs in
-   `docs/`; update `META.a2ml` languages and `STATE.a2ml` completion; delete
-   the PROVISIONAL markers here and in `STATE.a2ml`.
+2. Extract with history via the script (`git filter-repo`), then merge with
+   `--allow-unrelated-histories`.
+3. Land + reconcile onto the v0 artefact-state-record (`src/core` /
+   `src/definitions` / `src/bridges`, specs in `docs/`); do not fork the state
+   model; update `META.a2ml` / `STATE.a2ml` and drop the PROVISIONAL markers.
 4. Resolve the licence question: reposystem declares PMPL-1.0; this repo is
    normalised to MPL-2.0 (code) + CC-BY-SA-4.0 (docs).
 
