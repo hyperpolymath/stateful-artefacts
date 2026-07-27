@@ -21,8 +21,10 @@ README / EXPLAINME / AFFIRMATION trio. Update it whenever the real state moves.
   `src/interface/Abi/` (Idris2) binds them with a shared 5-value `Result`
   canon (ADR-003). Zig unit and integration tests pass locally under
   Zig 0.15.2.
-* `just validate`, `bash scripts/validate-template.sh .`, `just verify-template`,
-  and `bash tests/aspect_tests.sh` pass locally.
+* `just validate`, `just verify-template`, and `bash tests/aspect_tests.sh`
+  pass locally. (`scripts/validate-template.sh` and
+  `tests/e2e/template_instantiation_test.sh` were template-only machinery —
+  useful only pre-instantiation — and have been removed.)
 * A *v0 artefact-state-record* slice now exists and is exercised end-to-end:
   the record + its two state machines (forward-only `phase`, monotonic
   `verification`) are implemented in `src/core/record.zig`, exposed over the C

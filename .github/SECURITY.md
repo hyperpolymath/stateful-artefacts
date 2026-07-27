@@ -360,7 +360,7 @@ When using Stateful Artefacts, we recommend:
 |---------|---------|
 | **Security issues** | [Report via GitHub](https://github.com/hyperpolymath/stateful-artefacts/security/advisories/new) or j.d.a.jewell@open.ac.uk |
 | **General questions** | [GitHub Discussions](https://github.com/hyperpolymath/stateful-artefacts/discussions) |
-| **Other enquiries** | See [README](README.md) for contact information |
+| **Other enquiries** | See [README](../README.adoc) for contact information |
 
 ---
 

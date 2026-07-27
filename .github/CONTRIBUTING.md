@@ -2,56 +2,63 @@
 SPDX-License-Identifier: CC-BY-SA-4.0
 Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 -->
+# Contributing to Stateful Artefacts
+
+Stateful Artefacts is the state-carrying artefact layer of the
+Reposystem/OPSM stack: one canonical, machine-readable *state record*
+(identity, provenance, lifecycle phase, verification status), plus the
+tooling to read, write, and validate those records via a formally-typed C
+ABI (Idris2-proven layout, Zig implementation). See [README.adoc](../README.adoc)
+for the full pitch and [EXPLAINME.adoc](../EXPLAINME.adoc) for the
+engineering deep-dive.
+
+## Getting Started
+
+```bash
 # Clone the repository
 git clone https://github.com/hyperpolymath/stateful-artefacts.git
 cd stateful-artefacts
 
-# Using Nix (recommended for reproducibility)
+# Using Guix (preferred, reproducible)
+guix shell -D -f build/guix.scm
+
+# Or using Nix (fallback)
 nix develop
 
-# Or using toolbox/distrobox
-toolbox create stateful-artefacts-dev
-toolbox enter stateful-artefacts-dev
-# Install dependencies manually
+# Or install the pinned toolchain manually (see .tool-versions):
+# Zig 0.15.2+, just 1.40.0+, Idris2 (optional, ABI typecheck only)
 
 # Verify setup
-just check   # or: cargo check / mix compile / etc.
-just test    # Run test suite
+just doctor   # self-diagnostic: checks required tools
+just build    # build the FFI seam
+just test     # run the Zig unit + integration tests
 ```
 
 ### Repository Structure
+
 ```
 stateful-artefacts/
-├── src/                 # Source code (Perimeter 1-2)
-├── lib/                 # Library code (Perimeter 1-2)
-├── extensions/          # Extensions (Perimeter 2)
-├── plugins/             # Plugins (Perimeter 2)
-├── tools/               # Tooling (Perimeter 2)
-├── docs/                # Documentation (Perimeter 3)
-│   ├── architecture/    # ADRs, specs (Perimeter 2)
-│   └── proposals/       # RFCs (Perimeter 3)
-├── examples/            # Examples (Perimeter 3)
-├── spec/                # Spec tests (Perimeter 3)
-├── tests/               # Test suite (Perimeter 2-3)
-├── .machine_readable/   # ALL machine-readable content (Perimeter 1)
-│   ├── *.a2ml           # State files (STATE, META, ECOSYSTEM, etc.)
-│   ├── bot_directives/  # Bot configs
-│   └── contractiles/    # Policy contracts (k9, dust, lust, must, trust)
-├── .well-known/         # Protocol files (Perimeter 1-3)
-├── .github/             # GitHub config (Perimeter 1)
-│   ├── ISSUE_TEMPLATE/
+├── 0-AI-MANIFEST.a2ml        # Universal entry point for AI agents
+├── src/core/                 # Domain core — the v0 artefact-state-record (record.zig)
+├── src/definitions/          # Machine-readable schemas (artefact-state-record.a2ml)
+├── src/bridges/              # Estate adapters (verisimdb-feed.sh)
+├── src/interface/Abi/        # Idris2 ABI definitions and layout proofs
+├── src/interface/ffi/        # Zig FFI bridge — the C ABI implementation
+├── src/interface/generated/  # Generated C header (stateful_artefacts.h)
+├── verification/proofs/      # Idris2/TLA+ lifecycle proofs (+ Agda/Coq/Lean4 scaffolding)
+├── docs/                     # Spec, onboarding, status, governance, decisions
+├── tests/, benches/          # Test suites and benchmarks
+├── .machine_readable/        # Project metadata, policies, contractiles, AI configs
+├── .github/                  # GitHub config
 │   └── workflows/
 ├── CHANGELOG.md
-├── CODE_OF_CONDUCT.md
-├── CONTRIBUTING.md      # This file
-├── GOVERNANCE.md
-├── LICENSE
-├── MAINTAINERS.md
+├── LICENSE                   # MPL-2.0 (code)
+├── LICENSES/                 # MPL-2.0.txt, CC-BY-SA-4.0.txt (docs)
 ├── README.adoc
-├── SECURITY.md
-├── flake.nix            # Nix flake — fallback (Perimeter 1)
-├── guix.scm             # Guix package — primary (Perimeter 1)
-└── Justfile             # Task runner (Perimeter 1)
+├── .github/SECURITY.md
+├── flake.nix                 # Nix flake — fallback
+├── build/guix.scm            # Guix package — primary
+└── Justfile                  # Task runner (`just` lists all recipes)
 ```
 
 ---
@@ -62,43 +69,36 @@ stateful-artefacts/
 
 **Before reporting**:
 1. Search existing issues
-2. Check if it's already fixed in `main`
-3. Determine which perimeter the bug affects
+2. Check if it's already fixed on `main`
 
-**When reporting**:
-
-Use the [bug report template](.github/ISSUE_TEMPLATE/bug_report.md) and include:
+**When reporting**, please include:
 
 - Clear, descriptive title
-- Environment details (OS, versions, toolchain)
+- Environment details (OS, Zig version, toolchain)
 - Steps to reproduce
 - Expected vs actual behaviour
-- Logs, screenshots, or minimal reproduction
+- Relevant logs or `zig build test` output
+
+There is currently no `.github/ISSUE_TEMPLATE/` directory, so just
+[open a new issue](https://github.com/hyperpolymath/stateful-artefacts/issues/new)
+with that information.
 
 ### Suggesting Features
 
-**Before suggesting**:
-1. Check the [roadmap](ROADMAP.md) if available
-2. Search existing issues and discussions
-3. Consider which perimeter the feature belongs to
-
-**When suggesting**:
-
-Use the [feature request template](.github/ISSUE_TEMPLATE/feature_request.md) and include:
-
-- Problem statement (what pain point does this solve?)
-- Proposed solution
-- Alternatives considered
-- Which perimeter this affects
+Given the current [re-transfer status](../README.adoc#re-transfer-status) —
+the reposystem domain content is still being re-extracted — please open an
+issue describing the problem and proposed solution before starting
+substantial work, so it can be reconciled against the v0 artefact-state-record
+and the re-transfer plan in
+[docs/RE-TRANSFER-RUNBOOK.adoc](../docs/RE-TRANSFER-RUNBOOK.adoc).
 
 ### Your First Contribution
 
 Look for issues labelled:
 
-- [`good first issue`](https://github.com/hyperpolymath/stateful-artefacts/labels/good%20first%20issue) — Simple Perimeter 3 tasks
-- [`help wanted`](https://github.com/hyperpolymath/stateful-artefacts/labels/help%20wanted) — Community help needed
-- [`documentation`](https://github.com/hyperpolymath/stateful-artefacts/labels/documentation) — Docs improvements
-- [`perimeter-3`](https://github.com/hyperpolymath/stateful-artefacts/labels/perimeter-3) — Community sandbox scope
+- [`good first issue`](https://github.com/hyperpolymath/stateful-artefacts/labels/good%20first%20issue)
+- [`help wanted`](https://github.com/hyperpolymath/stateful-artefacts/labels/help%20wanted)
+- [`documentation`](https://github.com/hyperpolymath/stateful-artefacts/labels/documentation)
 
 ---
 
@@ -106,12 +106,12 @@ Look for issues labelled:
 
 ### Branch Naming
 ```
-docs/short-description       # Documentation (P3)
-test/what-added              # Test additions (P3)
-feat/short-description       # New features (P2)
-fix/issue-number-description # Bug fixes (P2)
-refactor/what-changed        # Code improvements (P2)
-security/what-fixed          # Security fixes (P1-2)
+docs/short-description       # Documentation
+test/what-added              # Test additions
+feat/short-description       # New features
+fix/issue-number-description # Bug fixes
+refactor/what-changed        # Code improvements
+security/what-fixed          # Security fixes
 ```
 
 ### Commit Messages
@@ -123,3 +123,41 @@ We follow [Conventional Commits](https://www.conventionalcommits.org/):
 [optional body]
 
 [optional footer]
+```
+
+### Before Submitting a PR
+
+```bash
+just quality   # fmt-check + test
+just fmt       # if quality found formatting issues
+just aspect    # SPDX headers, dangerous-pattern scan, ABI/Zig symbol parity
+just assail    # panic-attacker pre-commit scan
+```
+
+Then fill in the [PR template](pull_request_template.md) checklist — all
+"Required" items must be checked before a PR can merge.
+
+### Invariants that must never be violated
+
+Read `.machine_readable/contractiles/` before making structural changes. In
+particular:
+
+- Every exported C symbol is prefixed `stateful_artefacts_` and declared on
+  both the Zig side (`src/interface/ffi/`) and the Idris2 side
+  (`src/interface/Abi/`).
+- The Idris2 ABI layer stays `%default total` — no `believe_me` /
+  `assert_total`.
+- No TypeScript, npm, or bun anywhere in the repo (CI-enforced).
+- Artefact state records remain backward-readable: schema changes are
+  additive only.
+
+## Code of Conduct
+
+This project follows the [Code of Conduct](CODE_OF_CONDUCT.md). By
+participating, you agree to abide by its terms.
+
+## License
+
+By contributing, you agree that your contributions will be licensed under
+the same terms as the project: MPL-2.0 for code, CC-BY-SA-4.0 for
+documentation. See [LICENSE](../LICENSE).

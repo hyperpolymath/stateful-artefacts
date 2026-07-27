@@ -1,21 +1,22 @@
 // SPDX-License-Identifier: CC-BY-SA-4.0
 // Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
-= LLM Warmup — rsr-template-repo (User)
+= LLM Warmup — stateful-artefacts (User)
 
-== What is rsr-template-repo?
+== What is stateful-artefacts?
 
-See `README.adoc` for overview.
+A library, not a runnable application: the state-carrying artefact layer of
+the Reposystem/OPSM stack, exposed over a formally-typed C ABI. See
+`README.adoc` for the full overview.
 
 == Key Commands
 
-* `just setup` — set up development environment
-* `just build` — build the project
-* `just test` — run tests
-* `just doctor` — diagnose issues
-* `just heal` — attempt auto-repair
+* `just build-release` — build the library for consumption
+* `just doctor` — self-diagnostic (checks required tools)
+* `just test` — run the test suite
 
 == Quick Context
 
-* License: MPL-2.0
-* Part of hyperpolymath ecosystem
-* See `EXPLAINME.adoc` for architecture
+* License: MPL-2.0 (code), CC-BY-SA-4.0 (docs)
+* Part of the hyperpolymath estate
+* See `docs/onboarding/QUICKSTART-USER.adoc` for how to link against the
+  built library

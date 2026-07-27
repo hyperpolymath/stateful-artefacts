@@ -5,8 +5,9 @@
 # check-root-shape.sh — fail when the repository root contains entries that
 # are not on the canonical allowlist (.machine_readable/root-allow.txt).
 #
-# Companion to scripts/validate-template.sh: that script enforces required
-# files; this one enforces that nothing else has crept in.
+# Companion to `just validate` (build/just/validate.just): that recipe checks
+# required files/metadata are present; this script enforces that nothing else
+# has crept in at root.
 #
 # Exit codes:
 #   0 — root matches allowlist
