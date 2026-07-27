@@ -39,11 +39,7 @@ jobs:
 
       - name: Validate A2ML manifests
         if: steps.detect.outputs.count > 0
-        uses: hyperpolymath/a2ml-ecosystem/validate-action@aa4b836bd969df2bc58128cb8e3d20bbc88d5e79 # main
-        with:
-          path: '.'
-          strict: 'false'
-
+        run: bash .githooks/validate-a2ml.sh
       - name: Write summary
         run: |
           A2ML_COUNT="${{ steps.detect.outputs.count }}"
@@ -88,33 +84,7 @@ jobs:
 
       - name: Validate K9 contracts
         if: steps.detect.outputs.k9_count > 0
-        uses: hyperpolymath/k9-ecosystem/validate-action@89f3c2702f4f650a92aa7411502f38da06abd562 # main
-        with:
-          path: '.'
-          strict: 'false'
-          # Local override of the action's default paths-ignore, pending
-          # hyperpolymath/k9-ecosystem#<TBD> (adds the same three entries to
-          # the action's own default so wrapper repos won't need this
-          # override once that PR merges and this pin is refreshed).
-          # coordination.k9 / session/custom-checks.k9 are the estate-standard
-          # session-management coordination bindings (plain YAML, unrelated
-          # to K9 pedigree contracts). methodology-guard.k9.ncl is a K9
-          # *validator definition*, not a pedigree target. None of the three
-          # were ever meant to satisfy the K9!/pedigree schema this action
-          # checks for.
-          paths-ignore: |
-            vendor/
-            vendored/
-            verified-container-spec/
-            .audittraining/
-            integration/fixtures/
-            test/fixtures/
-            tests/fixtures/
-            absolute-zero/
-            coordination.k9
-            session/custom-checks.k9
-            self-validating/methodology-guard.k9.ncl
-
+        run: bash .githooks/validate-k9.sh
       - name: Write summary
         run: |
           K9_COUNT="${{ steps.detect.outputs.k9_count }}"
