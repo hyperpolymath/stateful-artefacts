@@ -116,9 +116,11 @@ enforcement-workflow = ".github/workflows/estate-rules.yml"
 # 2. chore/remove-zig      Purge zig remnants (gen-v-connector recipe,
 #                             "V-TRIPLE" section header, "V-triple
 #                             connectors" comment in groove.a2ml).
-# 3. chore/md-to-adoc         Port general docs in docs/ from .md to .adoc;
-#                             update validate-template.sh to accept .adoc
-#                             fallbacks.
+# 3. chore/md-to-adoc         Port general docs in docs/ from .md to .adoc.
+#                             (Downstream template repos still carrying
+#                             scripts/validate-template.sh should update it to
+#                             accept .adoc fallbacks; this repo has removed
+#                             that script as post-instantiation dead weight.)
 # 4. chore/estate-rules-ci    Add scripts/check-no-md-in-docs.sh + check-no-
 #                             vlang.sh + .github/workflows/estate-rules.yml.
 # 5. chore/<repo>-hygiene     Repo-specific drift cleanup (case collisions,
@@ -128,7 +130,9 @@ enforcement-workflow = ".github/workflows/estate-rules.yml"
 # scripts/check-root-shape.sh      Root allowlist validator
 # scripts/check-no-md-in-docs.sh   AsciiDoc-by-default validator
 # scripts/check-no-vlang.sh        zig ban validator
-# scripts/validate-template.sh     Aggregate RSR compliance (workflows, SPDX, etc.)
+# (scripts/validate-template.sh — aggregate RSR compliance across workflows/
+#  SPDX/build/docs — was template-only machinery; removed post-instantiation.
+#  `just validate` covers required-file/metadata compliance for this repo.)
 
 # === Reference memory entries (for AI agents) ===
 # feedback_adoc_default_md_for_githealth   AsciiDoc-by-default rule

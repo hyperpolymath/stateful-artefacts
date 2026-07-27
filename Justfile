@@ -100,20 +100,17 @@ build-release *args:
     fi
     @echo "Release build complete"
 
-# Build and watch for changes (requires entr or similar)
+# Build and watch for changes (requires entr)
 build-watch:
     @echo "Watching for changes..."
-    # TODO: Customize file patterns for your language
-    # Examples:
-    #   find src -name '*.rs' | entr -c just build
-    #   mix compile --force --warnings-as-errors
-    #   deno task dev
+    @command -v entr >/dev/null 2>&1 && \
+        find src -name '*.zig' | entr -c just build || \
+        echo "entr not found — install entr, or just re-run 'just build' manually"
 
 # Clean build artifacts [reversible: rebuild with `just build`]
 clean:
     @echo "Cleaning..."
-    # TODO: Customize for your build system
-    rm -rf target/ _build/ build/ dist/ out/ obj/ bin/
+    rm -rf src/interface/ffi/zig-out/ src/interface/ffi/.zig-cache/ .zig-cache/
 
 # Deep clean including caches [reversible: rebuild]
 clean-all: clean
@@ -133,24 +130,34 @@ test *args:
     fi
     @echo "Tests passed!"
 
-# Run tests with verbose output
+# Run tests with verbose per-test output
 test-verbose:
     @echo "Running tests (verbose)..."
-    # TODO: Replace with verbose test command
+    @if command -v zig >/dev/null 2>&1; then \
+        cd src/interface/ffi && zig build test --summary all; \
+    else \
+        echo "zig not found — skipping FFI tests (install Zig 0.15.2+)"; \
+    fi
 
-# Smoke test
+# Smoke test — the library builds and its own build graph is sound
 test-smoke:
     @echo "Smoke test..."
-    # TODO: Add basic sanity checks
+    @if command -v zig >/dev/null 2>&1; then \
+        cd src/interface/ffi && zig build && echo "  build OK"; \
+    else \
+        echo "zig not found — skipping (install Zig 0.15.2+)"; \
+    fi
 
-# Run end-to-end tests (full pipeline: build → run → verify)
+# See .github/workflows/e2e.yml for the CI equivalent.
+# Run end-to-end tests (build the FFI seam, run it through the C ABI, verify)
 e2e:
     @echo "Running E2E tests..."
-    # TODO: Replace with your E2E test command. Examples:
-    #   bash tests/e2e.sh                    # Shell-based E2E
-    #   npx playwright test                  # Browser E2E
-    #   mix test test/integration/e2e_test.exs  # Elixir E2E
-    #   cargo test --test end_to_end         # Rust E2E
+    @if command -v zig >/dev/null 2>&1; then \
+        cd src/interface/ffi && zig build test --summary all; \
+    else \
+        echo "zig not found — skipping FFI E2E (install Zig 0.15.2+)"; \
+    fi
+    @bash tests/e2e.sh
     @echo "E2E tests passed!"
 
 # Run aspect tests (cross-cutting concern validation)
@@ -162,19 +169,8 @@ aspect:
 # Run benchmarks (performance regression detection)
 bench:
     @echo "Running benchmarks..."
-    # TODO: Replace with your benchmark command. Examples:
-    #   cargo bench                           # Rust criterion
-    #   zig build bench                       # Zig benchmarks
-    #   mix run bench/benchmarks.exs          # Elixir benchee
-    #   deno bench                            # Deno bench
+    @bash benches/template_bench.sh . human
     @echo "Benchmarks complete!"
-
-# Run readiness tests (Component Readiness Grade: D/C/B)
-readiness:
-    @echo "Running readiness tests..."
-    # TODO: Replace with your readiness test command. Examples:
-    #   cargo test --test readiness -- --nocapture
-    @echo "Readiness tests complete!"
 
 # Print the current CRG grade (reads from docs/status/READINESS.adoc '*Current Grade:* X' line)
 crg-grade:
@@ -198,13 +194,18 @@ crg-badge:
     esac; \
     echo "[![CRG $grade](https://img.shields.io/badge/CRG-$grade-$color?style=flat-square)](https://github.com/hyperpolymath/standards/tree/main/component-readiness-grades)"
 
+# Per STANDING rule: P2P + E2E + aspect + execution + lifecycle + bench.
+# No separate `readiness` step: the CRG grade in docs/status/READINESS.adoc
+# is an asserted human/AI assessment, not an automatable test — see `crg-grade`.
 # Run the full merge-requirement test suite (ALL categories)
-# Per STANDING rule: P2P + E2E + aspect + execution + lifecycle + bench
-test-all: test e2e aspect bench readiness
+test-all: test e2e aspect bench
     @echo "All test categories passed — safe to merge!"
 
+# No separate `lint` step: Zig has no standalone linter distinct from
+# `zig fmt` and the compiler's own diagnostics, which `fmt-check` and `test`
+# already cover.
 # Run all quality checks
-quality: fmt-check lint test
+quality: fmt-check test
     @echo "All quality checks passed!"
 
 # Fix all auto-fixable issues [reversible: git checkout]
@@ -218,72 +219,44 @@ fix: fmt
 # Format all source files [reversible: git checkout]
 fmt:
     @echo "Formatting source files..."
-    # TODO: Replace with your formatter
-    # Examples:
-    #   cargo fmt
-    #   mix format
-    #   gleam format
-    #   deno fmt
+    @if command -v zig >/dev/null 2>&1; then \
+        zig fmt src/core src/interface/ffi; \
+    else \
+        echo "zig not found — skipping (install Zig 0.15.2+)"; \
+    fi
 
 # Check formatting without changes
 fmt-check:
     @echo "Checking formatting..."
-    # TODO: Replace with your format check
-    # Examples:
-    #   cargo fmt --check
-    #   mix format --check-formatted
-    #   gleam format --check
-
-# Run linter
-lint:
-    @echo "Linting source files..."
-    # TODO: Replace with your linter
-    # Examples:
-    #   cargo clippy -- -D warnings
-    #   mix credo --strict
-    #   gleam check
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# RUN & EXECUTE
-# ═══════════════════════════════════════════════════════════════════════════════
-
-# Run the application
-run *args: build
-    # TODO: Replace with your run command
-    echo "Run not configured yet"
-
-# Run with verbose output
-run-verbose *args: build
-    # TODO: Replace with verbose run command
-    echo "Run not configured yet"
-
-# Install to user path
-install: build-release
-    @echo "Installing stateful_artefacts..."
-    # TODO: Replace with your install command
+    @if command -v zig >/dev/null 2>&1; then \
+        zig fmt --check src/core src/interface/ffi; \
+    else \
+        echo "zig not found — skipping (install Zig 0.15.2+)"; \
+    fi
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # DEPENDENCIES
 # ═══════════════════════════════════════════════════════════════════════════════
+# (No RUN & EXECUTE section: stateful-artefacts is a headless C-ABI library
+# with no runnable binary — there is no "run the application" or "install to
+# user path" concept here. See docs/onboarding/QUICKSTART-MAINTAINER.adoc for
+# the manual packaging steps consumers actually need.)
 
+# Zig is the only toolchain dependency; see build.zig — no external packages pulled in.
 # Install/check all dependencies
 deps:
     @echo "Checking dependencies..."
-    # TODO: Replace with your dependency check
-    # Examples:
-    #   cargo check
-    #   mix deps.get
-    #   gleam deps download
+    @if command -v zig >/dev/null 2>&1; then \
+        zig version; \
+    else \
+        echo "zig not found — see .tool-versions for the required version (0.15.2)"; \
+    fi
     @echo "All dependencies satisfied"
 
 # Audit dependencies for vulnerabilities
 deps-audit:
     @echo "Auditing for vulnerabilities..."
-    # TODO: Replace with your audit command
-    # Examples:
-    #   cargo audit
-    #   mix audit
-    @command -v trivy >/dev/null && trivy fs --severity HIGH,CRITICAL --quiet . || true
+    @command -v trivy >/dev/null && trivy fs --severity HIGH,CRITICAL --quiet . || echo "trivy not found — install trivy for a real scan"
     @echo "Audit complete"
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -507,7 +480,6 @@ install-hooks:
     @cat > .git/hooks/pre-commit << 'HOOKEOF'
     #!/bin/bash
     just fmt-check || exit 1
-    just lint || exit 1
     just assail || exit 1
     HOOKEOF
     @chmod +x .git/hooks/pre-commit
@@ -555,11 +527,11 @@ state-phase:
 
 # Enter Guix development shell (primary)
 guix-shell:
-    guix shell -D -f guix.scm
+    guix shell -D -f build/guix.scm
 
 # Build with Guix
 guix-build:
-    guix build -f guix.scm
+    guix build -f build/guix.scm
 
 # Enter Nix development shell (fallback)
 nix-shell:
@@ -573,7 +545,7 @@ nix-shell:
 automate task="all":
     #!/usr/bin/env bash
     case "{{task}}" in
-        all) just fmt && just lint && just test && just docs && just state-touch ;;
+        all) just fmt && just test && just docs && just state-touch ;;
         cleanup) just clean && find . -name "*.orig" -delete && find . -name "*~" -delete ;;
         update) just deps && just validate ;;
         *) echo "Unknown: {{task}}. Use: all, cleanup, update" && exit 1 ;;

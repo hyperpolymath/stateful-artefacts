@@ -76,7 +76,7 @@ stateful-artefacts/
 just build          # Build the project
 just test           # Run tests
 just doctor         # Self-diagnostic
-just lint           # Lint and format
+just quality        # Format-check + test
 just assail         # Security scan via panic-attacker
 just tour           # Guided tour of the codebase
 ----
@@ -85,8 +85,8 @@ just tour           # Guided tour of the codebase
 
 [source,bash]
 ----
-just lint           # Format and lint
-just test           # All tests pass
+just fmt            # Format (zig fmt)
+just quality        # Format-check + test
 just assail         # No new security issues
 ----
 

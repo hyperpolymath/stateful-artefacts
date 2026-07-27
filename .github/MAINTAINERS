@@ -2,9 +2,8 @@
 # MAINTAINERS - Project maintainers and contact information
 #
 # Format: Name <email> (role)
-# Replace placeholders with actual maintainer information.
 
 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk> (Lead Maintainer)
 
-# Additional maintainers:
+# Additional maintainers, when added, go here in the same format:
 # Name <email> (role)

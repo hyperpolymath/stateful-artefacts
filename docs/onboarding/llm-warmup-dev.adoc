@@ -1,21 +1,26 @@
 // SPDX-License-Identifier: CC-BY-SA-4.0
 // Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
-= LLM Warmup — rsr-template-repo (Developer)
+= LLM Warmup — stateful-artefacts (Developer)
 
-== What is rsr-template-repo?
+== What is stateful-artefacts?
 
-See `README.adoc` for overview.
+The state-carrying artefact layer of the Reposystem/OPSM stack: a canonical
+machine-readable state record (identity, provenance, lifecycle, verification)
+exposed over a formally-typed C ABI (Idris2-proven layout, Zig
+implementation). See `README.adoc` for the full overview, and
+`0-AI-MANIFEST.a2ml` for the universal AI-agent entry point.
 
 == Key Commands
 
-* `just setup` — set up development environment
-* `just build` — build the project
-* `just test` — run tests
-* `just doctor` — diagnose issues
-* `just heal` — attempt auto-repair
+* `just doctor` — self-diagnostic (checks required tools)
+* `just build` — build the FFI seam
+* `just test` — run Zig unit + integration tests
+* `just quality` — format-check + test
+* `just aspect` — SPDX/dangerous-pattern/ABI-parity checks
 
 == Quick Context
 
-* License: MPL-2.0
-* Part of hyperpolymath ecosystem
-* See `EXPLAINME.adoc` for architecture
+* License: MPL-2.0 (code), CC-BY-SA-4.0 (docs)
+* Part of the hyperpolymath estate
+* See `EXPLAINME.adoc` for architecture and `AFFIRMATION.adoc` for the honest,
+  dated snapshot of what is actually implemented today

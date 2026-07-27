@@ -53,9 +53,9 @@ just container-sign     # Build, pack, sign and verify the bundle
 
 === Manual Package
 
-NOTE: `just install` is currently a TODO stub. stateful-artefacts is a library
-with no runnable binary today, so until the install recipe is wired up, package
-by copying the built artefacts into your prefix:
+NOTE: There is no `just install` recipe. stateful-artefacts is a library with
+no runnable binary, so there is no "install to user path" step to automate —
+package by copying the built artefacts into your prefix:
 
 [source,bash]
 ----
