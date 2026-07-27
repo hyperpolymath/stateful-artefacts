@@ -92,6 +92,28 @@ jobs:
         with:
           path: '.'
           strict: 'false'
+          # Local override of the action's default paths-ignore, pending
+          # hyperpolymath/k9-ecosystem#<TBD> (adds the same three entries to
+          # the action's own default so wrapper repos won't need this
+          # override once that PR merges and this pin is refreshed).
+          # coordination.k9 / session/custom-checks.k9 are the estate-standard
+          # session-management coordination bindings (plain YAML, unrelated
+          # to K9 pedigree contracts). methodology-guard.k9.ncl is a K9
+          # *validator definition*, not a pedigree target. None of the three
+          # were ever meant to satisfy the K9!/pedigree schema this action
+          # checks for.
+          paths-ignore: |
+            vendor/
+            vendored/
+            verified-container-spec/
+            .audittraining/
+            integration/fixtures/
+            test/fixtures/
+            tests/fixtures/
+            absolute-zero/
+            coordination.k9
+            session/custom-checks.k9
+            self-validating/methodology-guard.k9.ncl
 
       - name: Write summary
         run: |
