@@ -15,11 +15,13 @@ K9!
 
 # The component's pedigree (self-description across five layers)
 let component_pedigree = {
+    name = "deploy.k9.ncl",
+    security = { leash = 'Yard },
   # ─────────────────────────────────────────────────────────────
   # L1: The Snout — Identity
   # ─────────────────────────────────────────────────────────────
   metadata = {
-    name = "stateful-artefacts-deploy",
+    
     version = "0.1.0",
     breed = "application/vnd.k9+nickel",
     magic_number = "K9!",
@@ -150,7 +152,7 @@ echo "K9: Rollback complete."
   # block rather than evaluating Nickel — can see the required fields
   # without having to resolve the let-binding indirection.
   pedigree = component_pedigree & {
-    name = "stateful-artefacts-deploy",
+    
     version = "0.1.0",
     leash = 'Hunt,
   },

@@ -19,5 +19,7 @@ checks:
 {
   pedigree = {
     name = "custom-checks.k9",
-    security = { leash = "Yard" }, schema_version = "1.0.0" }
+    security = { leash = "Yard" },
+    
+     schema_version = "1.0.0" }
 }
