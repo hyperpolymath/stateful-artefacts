@@ -2,6 +2,8 @@
 name: Central Estate CI/CD Audit
 
 on:
+permissions:
+  contents: read
   push:
     branches: [ "main" ]
   pull_request:
