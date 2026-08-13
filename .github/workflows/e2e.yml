@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
+# This workflow is managed by gh actions-lock.
 # Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
 #
 # E2E + Aspect — exercises the Idris2/Zig ABI/FFI seam end-to-end.
@@ -33,8 +34,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-      - uses: goto-bus-stop/setup-zig@abea47f85e598557f500fa1fd2ab7464fcb39406 # v2.2.1
+      - uses: actions/checkout@v7.0.1
+      - uses: goto-bus-stop/setup-zig@v2.2.1
         with:
           version: 0.15.2
       - name: Build + test the ABI/FFI seam
