@@ -17,5 +17,7 @@ checks:
     requirement: "Recommended next protocol is set"
 
 {
-  pedigree = { schema_version = "1.0.0" }
+  pedigree = {
+    name = "custom-checks.k9",
+    security = { leash = "Yard" }, schema_version = "1.0.0" }
 }
