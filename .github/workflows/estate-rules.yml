@@ -24,7 +24,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout
-        uses: actions/checkout@v7.0.1
+        uses: actions/checkout@v7
       - name: Root shape allowlist
         run: bash scripts/check-root-shape.sh .
       - name: AsciiDoc by default (no .md under docs/)
