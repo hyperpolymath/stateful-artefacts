@@ -4,66 +4,66 @@
 version: 'v0.0.2'
 workflows:
     '.github/workflows/boj-build.yml':
-        - 'actions/checkout@v7.0.1'
+        - 'actions/checkout@v7'
     '.github/workflows/codeql.yml':
-        - 'actions/checkout@v7.0.1'
+        - 'actions/checkout@v7'
         - 'github/codeql-action@v4.37.9'
     '.github/workflows/dependabot-automerge.yml':
         - 'dependabot/fetch-metadata@v3.1.0'
     '.github/workflows/dogfood-gate.yml':
-        - 'actions/checkout@v7.0.1'
+        - 'actions/checkout@v7'
     '.github/workflows/e2e.yml':
-        - 'actions/checkout@v7.0.1'
+        - 'actions/checkout@v7'
         - 'goto-bus-stop/setup-zig@v2.2.1'
     '.github/workflows/estate-rules.yml':
-        - 'actions/checkout@v7.0.1'
+        - 'actions/checkout@v7'
     '.github/workflows/governance.yml': []
     '.github/workflows/guix-nix-policy.yml':
-        - 'actions/checkout@v7.0.1'
+        - 'actions/checkout@v7'
     '.github/workflows/hypatia-scan.yml': []
     '.github/workflows/instant-sync.yml':
         - 'peter-evans/repository-dispatch@v4.0.1'
     '.github/workflows/label-triage.yml': []
     '.github/workflows/labels.yml': []
     '.github/workflows/main-estate-audit.yml':
-        - 'actions/checkout@v7.0.1'
+        - 'actions/checkout@v7'
         - 'hyperpolymath/cicd-suite@main'
     '.github/workflows/mirror.yml': []
     '.github/workflows/openssf-compliance.yml':
-        - 'actions/checkout@v7.0.1'
+        - 'actions/checkout@v7'
     '.github/workflows/pages.yml':
-        - 'actions/checkout@v7.0.1'
+        - 'actions/checkout@v7'
         - 'actions/deploy-pages@v5.0.1'
         - 'actions/upload-pages-artifact@v5.0.0'
     '.github/workflows/push-email-notify.yml':
-        - 'dawidd6/action-send-mail@v3.12.0'
+        - 'dawidd6/action-send-mail@v18'
     '.github/workflows/quality.yml':
-        - 'actions/checkout@v7.0.1'
+        - 'actions/checkout@v7'
         - 'editorconfig-checker/action-editorconfig-checker@v3.0.0'
     '.github/workflows/release.yml':
-        - 'actions/checkout@v7.0.1'
+        - 'actions/checkout@v7'
         - 'actions/upload-artifact@v7.0.1'
         - 'softprops/action-gh-release@v3.0.3'
     '.github/workflows/rhodibot.yml':
-        - 'actions/checkout@v7.0.1'
+        - 'actions/checkout@v7'
     '.github/workflows/runtime-policy.yml':
-        - 'actions/checkout@v7.0.1'
+        - 'actions/checkout@v7'
     '.github/workflows/scorecard.yml': []
     '.github/workflows/secret-scanner.yml': []
     '.github/workflows/security-policy.yml':
-        - 'actions/checkout@v7.0.1'
+        - 'actions/checkout@v7'
     '.github/workflows/static-analysis-gate.yml':
-        - 'actions/checkout@v7.0.1'
+        - 'actions/checkout@v7'
         - 'actions/download-artifact@v8.0.1'
         - 'actions/upload-artifact@v7.0.1'
         - 'erlef/setup-beam@v1.24.1'
     '.github/workflows/wellknown-enforcement.yml':
-        - 'actions/checkout@v7.0.1'
+        - 'actions/checkout@v7'
     '.github/workflows/workflow-linter.yml':
-        - 'actions/checkout@v7.0.1'
+        - 'actions/checkout@v7'
 dependencies:
-    'actions/checkout@v7.0.1':
-        ref: 'v7.0.1'
+    'actions/checkout@v7':
+        ref: 'v7'
         commit: 'sha1-3d3c42e5aac5ba805825da76410c181273ba90b1'
         owner_id: 44036562
         repo_id: 197814629
@@ -94,8 +94,8 @@ dependencies:
         repo_id: 496012378
         uses:
             - 'actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f'
-    'dawidd6/action-send-mail@v3.12.0':
-        ref: 'v3.12.0'
+    'dawidd6/action-send-mail@v18':
+        ref: 'v18'
         commit: 'sha1-94de994a9f6fffee200243214e17002e2920bb59'
         owner_id: 9713907
         repo_id: 222439721
@@ -126,7 +126,7 @@ dependencies:
         repo_id: 212984112
     'hyperpolymath/cicd-suite@main':
         ref: 'main'
-        commit: 'sha1-0405f138caa8e9ac10bc181f3b46224bbdcda693'
+        commit: 'sha1-31b5b45a89c9c05b8d20d50fd3bee56f4959952e'
         owner_id: 6759885
         repo_id: 1326697643
         uses:
@@ -134,7 +134,7 @@ dependencies:
             - 'hyperpolymath/k9-ecosystem@main'
     'hyperpolymath/deed-ecosystem@main':
         ref: 'main'
-        commit: 'sha1-f7a40a4d5cc82b2e73f861119baa6818d77a448d'
+        commit: 'sha1-f9d999b60cb5f383679ea19912bcdc49c944973a'
         owner_id: 6759885
         repo_id: 1275649586
     'hyperpolymath/k9-ecosystem@main':
