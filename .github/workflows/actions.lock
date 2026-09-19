@@ -45,7 +45,7 @@ workflows:
         - 'actions/upload-artifact@v7.0.1'
         - 'softprops/action-gh-release@v3.0.3'
     '.github/workflows/rhodibot.yml':
-        - 'actions/checkout@v7'
+        - 'actions/checkout@v7.0.1'
     '.github/workflows/runtime-policy.yml':
         - 'actions/checkout@v7'
     '.github/workflows/scorecard.yml': []
