@@ -36,7 +36,7 @@ workflows:
         - 'actions/deploy-pages@v5.0.1'
         - 'actions/upload-pages-artifact@v5.0.0'
     '.github/workflows/push-email-notify.yml':
-        - 'dawidd6/action-send-mail@v18'
+        - 'dawidd6/action-send-mail@v3.12.0'
     '.github/workflows/quality.yml':
         - 'actions/checkout@v7'
         - 'editorconfig-checker/action-editorconfig-checker@v3.0.0'
@@ -67,6 +67,11 @@ dependencies:
         commit: 'sha1-3d3c42e5aac5ba805825da76410c181273ba90b1'
         owner_id: 44036562
         repo_id: 197814629
+    'actions/checkout@v7.0.1':
+        ref: 'v7.0.1'
+        commit: 'sha1-3d3c42e5aac5ba805825da76410c181273ba90b1'
+        owner_id: 44036562
+        repo_id: 197814629
     'actions/deploy-pages@v5.0.1':
         ref: 'v5.0.1'
         commit: 'sha1-368f82528645a54fb793d4d04e342629a3f51346'
@@ -94,9 +99,9 @@ dependencies:
         repo_id: 496012378
         uses:
             - 'actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f'
-    'dawidd6/action-send-mail@v18':
-        ref: 'v18'
-        commit: 'sha1-94de994a9f6fffee200243214e17002e2920bb59'
+    'dawidd6/action-send-mail@v3.12.0':
+        ref: 'v3.12.0'
+        commit: 'sha1-2cea9617b09d79a095af21254fbcb7ae95903dde'
         owner_id: 9713907
         repo_id: 222439721
     'dependabot/fetch-metadata@v3.1.0':
@@ -126,17 +131,29 @@ dependencies:
         repo_id: 212984112
     'hyperpolymath/cicd-suite@main':
         ref: 'main'
-        commit: 'sha1-31b5b45a89c9c05b8d20d50fd3bee56f4959952e'
+        commit: 'sha1-180b419825d238f8b606584c970a81dfa7cb6f81'
         owner_id: 6759885
         repo_id: 1326697643
         uses:
+            - 'hyperpolymath/deed-ecosystem@f9d999b60cb5f383679ea19912bcdc49c944973a'
             - 'hyperpolymath/deed-ecosystem@main'
+            - 'hyperpolymath/k9-ecosystem@2155aa26a21758f2ba119f61bc7e0e1981c106fb'
             - 'hyperpolymath/k9-ecosystem@main'
+    'hyperpolymath/deed-ecosystem@f9d999b60cb5f383679ea19912bcdc49c944973a':
+        ref: 'main'
+        commit: 'sha1-f9d999b60cb5f383679ea19912bcdc49c944973a'
+        owner_id: 6759885
+        repo_id: 1275649586
     'hyperpolymath/deed-ecosystem@main':
         ref: 'main'
         commit: 'sha1-f9d999b60cb5f383679ea19912bcdc49c944973a'
         owner_id: 6759885
         repo_id: 1275649586
+    'hyperpolymath/k9-ecosystem@2155aa26a21758f2ba119f61bc7e0e1981c106fb':
+        ref: 'main'
+        commit: 'sha1-2155aa26a21758f2ba119f61bc7e0e1981c106fb'
+        owner_id: 6759885
+        repo_id: 1275650185
     'hyperpolymath/k9-ecosystem@main':
         ref: 'main'
         commit: 'sha1-2155aa26a21758f2ba119f61bc7e0e1981c106fb'
