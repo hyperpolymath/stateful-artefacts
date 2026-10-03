@@ -100,3 +100,35 @@ These repairs do not establish that a tagged release, remote mirror, or Pages
 publication has succeeded. Those require their respective configured services
 and actual workflow evidence. Do not publish a test release merely to make a
 metadata PR look complete.
+
+== Hosted-check follow-up (2026-10-03)
+
+PR https://github.com/hyperpolymath/stateful-artefacts/pull/69[#69] runs the
+real hosted checks. The metadata contract, E2E/C-ABI/aspect pipeline, CodeQL,
+required `scan / gitleaks`, K9, well-known validation, workflow/lock checks,
+and most shared governance checks passed on the first revision.
+
+Remaining upstream blockers are recorded with concrete reproductions:
+
+* https://github.com/hyperpolymath/cicd-suite/issues/42[cicd-suite#42]: the
+  FFI-side-effect grep scans all Zig and rejects the domain core's pure
+  `std.io.fixedBufferStream` serialization. Do not rewrite correct memory-only
+  code merely to evade a grep. Downstream audit steps after this failure have
+  not yet run and must still be checked after the upstream repair.
+* https://github.com/hyperpolymath/standards/issues/1140[standards#1140]: the
+  existing clade UUID is v5, and the checker lacks the typed legacy/external
+  identity preservation mechanism its error recommends. Do not invent a new
+  registry identity without a migration mapping.
+
+The root-allowlist growth is declared in a `Ratchet-exception:` commit trailer:
+it admits the existing architecture overview, not arbitrary future paths.
+The inline Hypatia scan now builds the same vetted scanner commit as the
+shared workflow (`51ab6496bf47e30a0576d503df31fec30f3cfe56`) and fails on
+setup/build errors rather than substituting a clean result. The previous
+floating-main copy disagreed with the shared scanner's severity policy.
+
+Issue #66 also remains blocked on the live settings permission described
+above. Do not enable auto-merge merely because the single branch-required
+secret-scanning context passes while other checks remain red. After resolving
+these dependencies, rerun all checks, verify the live description, merge
+through the normal PR path, and verify default-branch runs before closure.
