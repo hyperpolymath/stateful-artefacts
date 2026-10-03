@@ -13,20 +13,20 @@ for mode in --source --mixed-content; do
         printf '<a href="%s">link</a>\n' "$url" > "$file"
         bash "$check" "$mode" "$source_dir"
     done
-    for url in http://external.invalid/a http://localhost.evil/a http://example.com.evil/a http://localhost@external.invalid/a http://external.invalid/example http://external.invalid/path/http://localhost; do
+    for url in http://external.invalid/a http://localhost.evil/a http://example.com.evil/a http://localhost@external.invalid/a http://external.invalid/example http://external.invalid/path/http://localhost 'HTTP://EXTERNAL.INVALID/image'; do
         # Mixed safe/unsafe URLs on the same line must still fail. Single quotes
         # and uppercase HTML attributes/schemes must not hide mixed content.
         printf '<a href="http://localhost/a">safe</a><IMG SRC=\047%s\047>\n' "$url" > "$file"
         if bash "$check" "$mode" "$source_dir" > "$work/log"; then echo "FAIL: accepted $url"; exit 1; fi
         grep -Fq "$file:1:" "$work/log"
     done
-    printf '<IMG SRC="HTTP://EXTERNAL.INVALID/image">\n' > "$file"
-    if bash "$check" "$mode" "$source_dir"; then echo 'FAIL: accepted uppercase HTTP'; exit 1; fi
     rm -- "$file"
 done
 mkdir -p "$source_dir/.git" "$source_dir/node_modules"
-printf 'http://external.invalid/\n' > "$source_dir/.git/internal.ts"
-printf 'http://external.invalid/\n' > "$source_dir/node_modules/vendor.ts"
+# Fixture URLs are data, not printf format strings or network commands.
+unsafe_fixture='http://external.invalid/'
+printf '%s\n' "$unsafe_fixture" > "$source_dir/.git/internal.ts"
+printf '%s\n' "$unsafe_fixture" > "$source_dir/node_modules/vendor.ts"
 bash "$check" --source "$source_dir"
 if bash "$check" --unknown "$source_dir"; then echo 'FAIL: accepted unknown mode'; exit 1; fi
 echo 'PASS: 24 URL cases, generated/VCS exclusions and invalid invocation'
