@@ -29,7 +29,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: RFC 9116 security.txt validation
         run: |
           SECTXT=""
@@ -83,14 +83,7 @@ jobs:
             echo "✅ RSR well-known compliant"
           fi
       - name: Mixed content check
-        run: |
-          MIXED=$(grep -rE 'src="http://|href="http://' --include="*.html" --include="*.htm" . 2>/dev/null | grep -vE 'localhost|127\.0\.0\.1|example\.com' | head -5 || true)
-          if [ -n "$MIXED" ]; then
-            echo "::error::Mixed content (HTTP in HTML)"
-            echo "$MIXED"
-            exit 1
-          fi
-          echo "✅ No mixed content"
+        run: bash scripts/check-http-urls.sh --mixed-content .
       - name: DNS security records check
         if: hashFiles('CNAME') != ''
         run: |

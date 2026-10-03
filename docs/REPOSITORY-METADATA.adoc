@@ -137,7 +137,7 @@ Issue #66 also remains blocked on the live settings permission described
 above. Do not enable auto-merge merely because the single branch-required
 secret-scanning context passes while other checks remain red. After resolving
 these dependencies, rerun all checks, verify the live description, merge
-through the normal PR path, and verify default-branch runs before closure.
+through the normal PR path, and verify default-branch runs before claiming resolution.
 
 The follow-up critical findings are repaired at source, not baselined away:
 
@@ -170,3 +170,29 @@ link:RELEASING.adoc[Release packaging] now builds and tests the actual libraries
 retains assets, supplies real provenance subjects, and orders publication after
 provenance success. PR/manual runs never publish. Tag-based OIDC signing and
 publication still require a deliberate release after main is clean.
+
+== Post-merge verification
+
+GitHub records that `hyperpolymath` merged PR #69 as
+`d457edf8ca323320dc4575d743d4ef7f13a995ca` at 2026-10-03 13:57:55 UTC and
+closed #66 immediately afterwards. This session did not initiate that merge.
+The live description read-back was still null after the merge.
+
+PR packaging passed before merge, but default-branch validation was not clean:
+the live-description, estate-audit and UUID checks failed; SonarCloud also
+reported existing workflow security findings in its broader main analysis.
+The follow-up keeps every action at the same vetted SHA while making pins
+explicit for analyzers, limits Pages write tokens to deployment, enforces HTTPS
+on scanner downloads and redirects, and extracts URL-literal inspection into a
+tested script. The URL checks make no network requests; the old regular-expression
+strings were incorrectly treated as cleartext network operations by the analyzer.
+The new tests also prevent a localhost/example URL from excusing another unsafe
+URL on the same line. No Sonar finding is suppressed or accepted as a workaround.
+
+Registry inspection established a different registered identity, not absence of
+registration. See link:upstream/README.adoc[the evidence and coordinated handoff]
+and https://github.com/hyperpolymath/gv-clade-index/issues/98[registry #98]. The
+provisional clade classification is reconciled, but the local UUID is preserved.
+Settings write access, upstream patch landing, reviewed identity reconciliation
+and a fresh full default-branch validation remain prerequisites for completion,
+regardless of the closed issue or merged PR status.

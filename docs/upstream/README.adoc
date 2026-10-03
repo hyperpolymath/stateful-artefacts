@@ -32,10 +32,9 @@ gh actions-lock --verify
 
 Then open a PR referencing https://github.com/hyperpolymath/cicd-suite/issues/42[#42],
 run hosted tests and merge the reviewed upstream fix. Only afterwards update
-this repository's native pin for `.github/workflows/main-estate-audit.yml`
-with `gh actions-lock .github/workflows/main-estate-audit.yml --relock --no-narrow`.
-Review that the resolved commit includes the upstream merge, verify the lock,
-and rerun the entire estate audit. Do not point production CI at the unmerged patch commit.
+the cicd-suite action SHAs in `.github/workflows/main-estate-audit.yml` to the
+reviewed upstream merge commit, then run `gh actions-lock --no-narrow`.
+Verify the native lock and rerun the entire estate audit. Do not point production CI at the unmerged patch commit.
 
 == Confirmed registry mismatch and coordinated migration
 
