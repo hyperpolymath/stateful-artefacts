@@ -120,8 +120,9 @@ Remaining upstream blockers are recorded with concrete reproductions:
   identity preservation mechanism its error recommends. Do not invent a new
   registry identity without a migration mapping.
 
-The root-allowlist growth is declared in a `Ratchet-exception:` commit trailer:
-it admits the existing architecture overview, not arbitrary future paths.
+The root-allowlist growth is declared in a ledger-specific commit trailer:
+`Ratchet-exception(.machine_readable/root-allow.txt):` admits the existing
+architecture overview, not arbitrary future paths or other exemption ledgers.
 The inline Hypatia scan now builds the same vetted scanner commit as the
 shared workflow (`51ab6496bf47e30a0576d503df31fec30f3cfe56`) and fails on
 setup/build errors rather than substituting a clean result. The previous
