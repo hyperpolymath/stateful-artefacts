@@ -80,6 +80,7 @@ for case_name in missing duplicate reversed empty blank unclosed; do
         empty) sed -i '/^The approved/d; /^provenance/d' "$scratch/README.adoc" ;;
         blank) sed -i '/^provenance/i\ ' "$scratch/README.adoc" ;;
         unclosed) sed -i '/repository-description-end/d' "$scratch/README.adoc" ;;
+        *) echo "Unknown fixture: $case_name" >&2; exit 1 ;;
     esac
     reject --print
     pass "malformed block rejected: $case_name"
