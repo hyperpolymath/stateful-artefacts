@@ -35,8 +35,10 @@ items = [
 
 [session-2026-10-03]
 task = "Issue #66 / D183: README-derived repository description, drift prevention, and CI dependency audit"
-status = "PR #69 open; local validation passed. Hosted checks expose upstream blockers cicd-suite#42 and standards#1140. Live description requires Administration write; no merge or issue closure claimed."
+status = "PR #69 merged externally by hyperpolymath as d457edf on 2026-10-03; #66 was closed but live description remains null. Main has failing description, estate-audit, UUID and Sonar checks. Follow-up source security fixes and registry reconciliation findings are in this branch; no clean-main claim."
 
 upstream-patch = "docs/upstream/cicd-suite-42.patch; 18 local regression cases pass; upstream push/PR creation denied with HTTP 403"
 optional-work = "Wiki-format policy reconciled and tested; real ReleaseSafe packaging and non-publishing CI dry run replace release template. No release or OIDC/provenance verification claimed."
-identity-decision = "Clade registry registration remains unknown; preserve identity until reviewed migration/alias decision."
+identity-decision = "Registry inspection found a DIFFERENT registered UUID and clade rm (gv-clade-index#98). Classification reconciled; UUID unchanged pending consumer inventory and reviewed alias/migration."
+
+validation-boundary = "PR check rollups omit some Actions startup failures. Native lock fully regenerated from unchanged SHA set; inspect run conclusions separately. Initial hosted release dry run failed startup despite local packaging success."
