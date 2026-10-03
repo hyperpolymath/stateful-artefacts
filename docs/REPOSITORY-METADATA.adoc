@@ -206,3 +206,10 @@ the set of dependency commits. Check Actions workflow-run conclusions as well
 as PR check rollups: a `startup_failure` can otherwise disappear from a
 check-summary-only audit. A fresh non-publishing release dispatch is required
 to establish hosted packaging evidence; local tests alone are not that evidence.
+
+A subsequent release-only startup failure identified an unrecorded transitive
+SLSA reusable-workflow dependency. The broken template generator is now replaced
+by explicitly pinned GitHub artifact attestations with a complete composite
+lock. This changes the provenance mechanism and makes no SLSA L3 claim. Manual
+workflow dispatch was denied by the integration; PR coverage now includes all
+package inputs and native-lock changes, without enabling publication on PRs.
