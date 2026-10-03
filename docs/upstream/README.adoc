@@ -1,7 +1,12 @@
 // SPDX-License-Identifier: CC-BY-SA-4.0
 = Upstream patch handoff
 
-== cicd-suite #42
+== cicd-suite #42 (generic upstream fix)
+
+The owner has since merged CodeRabbit PR #70, which uses bounded
+`std.fmt.bufPrint` serialization and no longer matches the old grep. Preserve
+that concurrent source change. The generic upstream patch below remains useful,
+but does not need to block this repository if the complete estate audit passes.
 
 `cicd-suite-42.patch` is an apply-ready Git patch based on upstream commit
 `4c772eb235b04455307d5c03cbbc4f45130f7f0f`.
