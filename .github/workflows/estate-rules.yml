@@ -6,8 +6,7 @@
 #
 # Estate Rules — enforces hyperpolymath estate-wide conventions:
 #   * root shape (allowlist of permitted root entries)
-#   * AsciiDoc-by-default (no .md files under docs/)
-#   * zig is banned (no zig scaffolding or references)
+#   * AsciiDoc-by-default (Markdown confined to wiki homes)
 #
 # Each rule is enforced by an executable check script under scripts/. Failures
 # are surfaced as workflow errors so the rule can't silently regress.
@@ -28,5 +27,7 @@ jobs:
         uses: actions/checkout@v7.0.1
       - name: Root shape allowlist
         run: bash scripts/check-root-shape.sh .
-      - name: AsciiDoc by default (no .md under docs/)
+      - name: AsciiDoc by default (Markdown only in wiki homes)
         run: bash scripts/check-no-md-in-docs.sh .
+      - name: Documentation format regression tests
+        run: bash tests/docs-format_test.sh

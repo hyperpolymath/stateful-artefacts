@@ -35,13 +35,13 @@ jobs:
           failed=0
           for file in .github/workflows/*.yml .github/workflows/*.yaml; do
             [ -f "$file" ] || continue
-            if ! head -1 "$file" | grep -q "^# SPDX-License-Identifier:"; then
+            if ! head -10 "$file" | grep -q "^# SPDX-License-Identifier:"; then
               echo "ERROR: $file missing SPDX header"
               failed=1
             fi
           done
           if [ $failed -eq 1 ]; then
-            echo "Add '# SPDX-License-Identifier: MPL-2.0' as first line"
+            echo "Add '# SPDX-License-Identifier: MPL-2.0' within the first ten lines"
             exit 1
           fi
           echo "All workflows have SPDX headers"
@@ -63,24 +63,14 @@ jobs:
           fi
           echo "All workflows have permissions declared"
 
-      - name: Check SHA-Pinned Actions
+      - name: Verify native action lockfile
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          echo "=== Checking Action Pinning ==="
-          # Find any uses: lines that don't have @SHA format
-          # Pattern: uses: owner/repo@<40-char-hex>
-          unpinned=$(grep -rnE "^[[:space:]]+uses:" .github/workflows/ | \
-            grep -v "@[a-f0-9]\{40\}" | \
-            grep -v "uses: \./\|uses: docker://\|uses: actions/github-script" || true)
-
-          if [ -n "$unpinned" ]; then
-            echo "ERROR: Found unpinned actions:"
-            echo "$unpinned"
-            echo ""
-            echo "Replace version tags with SHA pins, e.g.:"
-            echo "  uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6.0.1"
-            exit 1
-          fi
-          echo "All actions are SHA-pinned"
+          # Native locks pin tag-based actions and transitive dependencies.
+          # A grep for @SHA rejects valid locks and misses '- uses:' steps.
+          gh extension install github/gh-actions-lock --pin v0.1.6
+          gh actions-lock --verify --json=valid,findings
 
       - name: Check for Duplicate Workflows
         run: |

@@ -1,0 +1,172 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+= Repository description and CI maintenance
+:toc:
+
+== Authority and source of truth
+
+https://github.com/hyperpolymath/stateful-artefacts/issues/66[Issue #66]
+reports an absent GitHub repository description (Hypatia ABS-001).
+The owner's D183 ruling in that issue authorizes a one-line description derived
+from the README's first sentence. The opening prose in `README.adoc`, delimited
+by `repository-description-begin` / `repository-description-end` AsciiDoc
+comments, is that source. The comments do not change the rendered README.
+There is no second, independently authored description file.
+
+Do not infer that the provisional domain re-transfer is complete, or claim
+new ABI, lifecycle or VeriSimDB capabilities when updating this sentence.
+The metadata change does not alter the artefact-state-record schema or ABI.
+
+== Review, apply, verify
+
+[source,bash]
+----
+# Offline: derive the exact single-line setting (including wrapped prose).
+bash scripts/repository-description.sh --print
+bash tests/repository-description_test.sh
+
+# Read-only: compare GitHub's live setting with the approved local source.
+bash scripts/repository-description.sh --check hyperpolymath/stateful-artefacts
+
+# Explicit maintainer operation after reviewing the README on main.
+bash scripts/repository-description.sh --apply hyperpolymath/stateful-artefacts
+----
+
+`--apply` uses the existing authenticated `gh` connection and reads back the
+setting. It changes only the description: not topics, visibility, homepage,
+branch rules or other repository settings. It requires repository
+Administration write access; normal Actions `contents: read` is insufficient.
+Do not put credentials in files, pull requests, or chat. An HTTP 403 is a failed
+operation, not a successful metadata update.
+
+The live setting is outside Git. Merging the tooling alone does *not* resolve
+#66. Close that issue only after the live comparison passes. On 2026-10-03 the
+session's attempt to set the description was rejected with HTTP 403
+(`Resource not accessible by integration`); the setting remained empty.
+
+== Continuous checks and downstream consumers
+
+The Code Quality workflow tests the extraction and CLI contract on every PR.
+It compares live metadata on default-branch pushes, weekly, and manual runs
+on the default branch. PRs may propose wording without changing the live
+repository or requiring a privileged token. The live comparison fails on an
+empty description, drift or API errors; it does not silently synthesize prose
+or grant CI Administration write access.
+
+When changing the description, review and merge the README first, apply it
+with an authorized maintainer connection, then rerun Code Quality. A brief
+post-merge drift failure is expected until the separately authorized setting
+is applied. GitHub's About surface and API consumers (including Hypatia's
+absence scanner and estate discovery) will then see the same approved text.
+No cross-repository schema migration is needed.
+
+== CI repair provenance
+
+The CI audit accompanying #66 found failures predating this change:
+
+* Governance, Hypatia and Scorecard referenced unpublished/missing standards
+  commits. They now use the inspected published standards commit
+  `a9a3281d620bdd195369c9a6f0bc1d661910965a`.
+* CodeQL's workflow requested 4.38.2 while its native Actions lock still
+  referenced 4.38.0. `gh actions-lock` regenerated the lock and refreshed the
+  central estate audit to `4c772eb235b04455307d5c03cbbc4f45130f7f0f`.
+* The workflow linter rejected native tag-based locks, missed `- uses:` steps,
+  and required SPDX on line one despite the lock generator's preamble. It now
+  verifies the native lock (including transitive actions) and checks SPDX
+  within the first ten lines. The estate audit now declares read-only
+  permissions and a timeout; the release workflow's duplicate permissions
+  key is removed.
+* The K9 hook is synchronized with the maintained validator already used by
+  the central audit. See `.github/hooks/README.adoc`. The source-template
+  follow-up is
+  https://github.com/hyperpolymath/rsr-template-repo/issues/226[rsr-template-repo#226].
+* The root allowlist now includes the existing architecture overview.
+* The well-known check and Pages artifact now consume `www/.well-known/`,
+  rather than missing the relocated files. Invalid expiry dates and expiry
+  within the last day no longer pass. Security-file links use the actual
+  source and policy locations.
+* `tests/e2e.sh` now builds the real library and executes Zig unit/C-ABI tests
+  plus aspect checks, replacing a template that passed with zero tests.
+* The provisional VeriSimDB adapter remains explicitly provisional. Its
+  existing implementation debt is tracked at
+  https://github.com/hyperpolymath/stateful-artefacts/issues/68[#68], not hidden
+  by disabling the hygiene gate.
+
+For future workflow dependency changes, install `github/gh-actions-lock`
+(version 0.1.6 for this update), run `gh actions-lock --no-narrow`, inspect the generated
+lock diff, and run `gh actions-lock --verify --json=valid,findings`.
+Use `--no-narrow` to preserve the explicit SHA on the credentialed dispatch
+hardening action as well as its native lock: some external security analyzers
+do not yet recognize native locks. Do not hand-edit the generated lock or
+suppress missing-pin failures.
+
+These repairs do not establish that a tagged release, remote mirror, or Pages
+publication has succeeded. Those require their respective configured services
+and actual workflow evidence. Do not publish a test release merely to make a
+metadata PR look complete.
+
+== Hosted-check follow-up (2026-10-03)
+
+PR https://github.com/hyperpolymath/stateful-artefacts/pull/69[#69] runs the
+real hosted checks. The metadata contract, E2E/C-ABI/aspect pipeline, CodeQL,
+required `scan / gitleaks`, K9, well-known validation, workflow/lock checks,
+and most shared governance checks passed on the first revision.
+
+Remaining upstream blockers are recorded with concrete reproductions:
+
+* https://github.com/hyperpolymath/cicd-suite/issues/42[cicd-suite#42]: the
+  FFI-side-effect grep scans all Zig and rejects the domain core's pure
+  `std.io.fixedBufferStream` serialization. Do not rewrite correct memory-only
+  code merely to evade a grep. Downstream audit steps after this failure have
+  not yet run and must still be checked after the upstream repair.
+* https://github.com/hyperpolymath/standards/issues/1140[standards#1140]: the
+  existing clade UUID is v5, and the checker lacks the typed legacy/external
+  identity preservation mechanism its error recommends. Do not invent a new
+  registry identity without a migration mapping.
+
+The root-allowlist growth is declared in a ledger-specific commit trailer:
+`Ratchet-exception(.machine_readable/root-allow.txt):` admits the existing
+architecture overview, not arbitrary future paths or other exemption ledgers.
+The inline Hypatia scan now builds the same vetted scanner commit as the
+shared workflow (`51ab6496bf47e30a0576d503df31fec30f3cfe56`) and fails on
+setup/build errors rather than substituting a clean result. The previous
+floating-main copy was not reproducible. Pinning alone did not remove existing
+findings: the shared scan is advisory by default, whereas the local critical
+gate enforces them. A green advisory scan is not a clean security result.
+
+Issue #66 also remains blocked on the live settings permission described
+above. Do not enable auto-merge merely because the single branch-required
+secret-scanning context passes while other checks remain red. After resolving
+these dependencies, rerun all checks, verify the live description, merge
+through the normal PR path, and verify default-branch runs before closure.
+
+The follow-up critical findings are repaired at source, not baselined away:
+
+* The retired metadata tree is relocated to `.machine_readable/descriptiles/`
+  with the manifests, Just recipes, OpenSSF workflow, contractiles and
+  documentation updated together. The clade identity is preserved unchanged.
+* Setup no longer pipes a remote installer into a shell. Unsupported package
+  managers or missing packages fail with manual verified-install guidance.
+* Dependabot's guarded auto-merge job receives the `contents: write` permission
+  its operation actually needs; other jobs stay read-only. Optional forge
+  dispatch explicitly skips an absent credential rather than claiming success.
+
+== Additional validation and optional repairs
+
+The upstream Zig fix is retained as link:upstream/cicd-suite-42.patch[an apply-ready patch]
+with link:upstream/README.adoc[review and landing instructions]. This connection
+cannot push or create a PR in cicd-suite (HTTP 403). Its apparent repository
+role does not override the GitHub integration's missing write authorization.
+
+Running the later audit steps locally exposed a genuine wiki-format conflict.
+Wiki sources now use Markdown and a linted DEED, while general documentation
+remains AsciiDoc. Regression tests confine the exception to actual wiki homes;
+this is not a blanket Markdown allowlist. All 25 non-manifest composite checks
+pass locally with the patched Zig guard. Some upstream checks are advisory or
+placeholders; a zero exit status is not evidence of full semantic compliance.
+The manifest validators are checked separately. Hosted audit completion remains
+blocked until the upstream fix lands and the lock is refreshed.
+
+link:RELEASING.adoc[Release packaging] now builds and tests the actual libraries,
+retains assets, supplies real provenance subjects, and orders publication after
+provenance success. PR/manual runs never publish. Tag-based OIDC signing and
+publication still require a deliberate release after main is clean.

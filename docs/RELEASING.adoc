@@ -1,0 +1,54 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+= Release packaging and publication
+
+== Dry run
+
+[source,bash]
+----
+# Linux x86_64, Zig 0.15.2, GNU tar/coreutils, gzip, git and bash.
+bash tests/package-release_test.sh
+bash scripts/package-release.sh /tmp/stateful-release
+(cd /tmp/stateful-release && sha256sum --check SHA256SUMS)
+----
+
+The contract suite uses hermetic tool fixtures. The second command performs
+the real ReleaseSafe static/shared library build, runs the 16 Zig/core/C-ABI
+integration tests and four source-level aspect checks, and packages the libraries,
+C header, README and licence texts. The tarball and `SHA256SUMS` are never
+added to Git. Archive metadata is normalized, but this is not a claim of
+bit-for-bit compiler reproducibility.
+
+PRs touching the release workflow or library run this packaging path. Manual
+`Release` workflow dispatch is also a dry run. Both retain the package as an
+Actions artifact without creating a GitHub release or requesting provenance
+signing. Hosted builds use Ubuntu 24.04 x86_64; no macOS, Windows, musl or older
+glibc compatibility is implied.
+
+== Intentional publication
+
+Only a pushed `vMAJOR.MINOR.PATCH` tag (optionally with a prerelease suffix)
+can publish. Its base version must match `const VERSION` in
+`src/interface/ffi/src/main.zig`, and its commit must be an ancestor of
+`origin/main`. Do not tag this unmerged PR to exercise publication.
+
+The pipeline is ordered:
+
+. Build, run tests, package, compute SHA-256 subjects and retain the assets.
+. Run the SHA-pinned isolated SLSA generator with those actual subjects. The
+  generator is compiled from source because binary download requires a tag
+  ref, while this workflow deliberately pins a commit.
+. Download the package and signed provenance; verify the package checksums.
+. Publish the archive, `SHA256SUMS` and signed `.intoto.jsonl` provenance,
+  with GitHub-generated release notes.
+
+A failed build or provenance job prevents publication. No unverified remote
+shell installer is used to generate changelogs. The template's empty provenance
+subjects and asset-free release have been removed.
+
+== Verification boundary
+
+Local and PR packaging do not verify OIDC signing or GitHub release creation.
+Those require a deliberately authorized tagged release after main is clean.
+Inspect the provenance and verify its signature, source commit, builder identity
+and artifact digest with a trusted verifier before asserting a SLSA level.
+This work does not publish a release or assert a certified supply-chain level.

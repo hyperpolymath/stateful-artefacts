@@ -8,7 +8,9 @@
 image:https://img.shields.io/badge/OpenSSF-Best_Practices-green?logo=opensourcesecurity[OpenSSF Best Practices,link="https://www.bestpractices.dev/en/projects/new?repo_url=https://github.com/hyperpolymath/stateful-artefacts"]
 image:https://img.shields.io/badge/License-MPL_2.0-blue.svg[License: MPL-2.0,link="https://opensource.org/licenses/MPL-2.0"]
 
+// repository-description-begin
 State-carrying artefact layer of the Reposystem/OPSM stack: schemas and tooling for artefacts that carry machine-readable state (identity, provenance, lifecycle, verification) across the git forges and estates.
+// repository-description-end
 
 == What this is
 
@@ -59,7 +61,7 @@ link:docs/onboarding/QUICKSTART-MAINTAINER.adoc[QUICKSTART-MAINTAINER].
 
 == What you get
 
-* *Machine-readable metadata* (`.machine_readable/6a2/`) — `STATE`, `META`,
+* *Machine-readable metadata* (`.machine_readable/descriptiles/`) — `STATE`, `META`,
   `ECOSYSTEM`, `PLAYBOOK`, `AGENTIC`, `NEUROSYM`, `CLADE`, and `anchors/ANCHOR`,
   in a2ml, so tools and agents can read the project's state and boundaries.
 * *AI gatekeeper protocol* — `0-AI-MANIFEST.a2ml` is the universal entry point that
@@ -119,6 +121,8 @@ In brief:
 * `EXPLAINME.adoc` — the engineering deep-dive: how the pieces actually work.
 * `AFFIRMATION.adoc` — the dated, signed honesty snapshot of the repo's true state.
 * `AUDIT.adoc` — the release audit gate.
+* link:docs/REPOSITORY-METADATA.adoc[Repository metadata] — README-derived
+  GitHub description, maintainer update procedure, and CI drift checks.
 
 == Licence
 

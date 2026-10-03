@@ -130,7 +130,7 @@ stays the single contract, and `tests/aspect_tests.sh` keeps symbol parity.
   section (or turn it into a "history" note).
 * `AFFIRMATION.adoc`: refresh the snapshot; close the "reposystem domain content
   is missing" item; record the licence and ABI decisions.
-* `.machine_readable/6a2/anchors/ANCHOR.a2ml`: extend `allowed` languages if Rust
+* `.machine_readable/descriptiles/anchors/ANCHOR.a2ml`: extend `allowed` languages if Rust
   is added.
 
 == 6. Verification (same gates the rest of the repo uses)

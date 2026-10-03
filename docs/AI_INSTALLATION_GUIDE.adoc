@@ -23,8 +23,8 @@ cd stateful-artefacts
 
 # 2. Read the machine-readable entry points BEFORE mutating anything
 #    - 0-AI-MANIFEST.a2ml            (gatekeeper protocol; agent roles)
-#    - .machine_readable/6a2/STATE.a2ml   (current phase, blockers, next actions)
-#    - .machine_readable/6a2/anchors/ANCHOR.a2ml  (semantic authority, golden path)
+#    - .machine_readable/descriptiles/STATE.a2ml   (current phase, blockers, next actions)
+#    - .machine_readable/descriptiles/anchors/ANCHOR.a2ml  (semantic authority, golden path)
 
 # 3. Build the ABI/FFI seam
 just build                 # or: cd src/interface/ffi && zig build

@@ -1,158 +1,98 @@
 # This workflow is managed by gh actions-lock.
 # SPDX-License-Identifier: MPL-2.0
-# This workflow is managed by gh actions-lock.
-# This workflow is managed by gh actions-lock.
 # Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
-#
-# Release workflow — triggered by version tags (v*).
-# Builds artifacts, generates changelog via git-cliff, creates a GitHub Release,
-# and produces SLSA provenance attestations.
 name: Release
 on:
   push:
-    tags:
-      - 'v*'
+    tags: ['v*']
+  pull_request:
+    paths:
+      - '.github/workflows/release.yml'
+      - 'scripts/package-release.sh'
+      - 'tests/package-release_test.sh'
+      - 'src/core/**'
+      - 'src/interface/**'
+  # Dispatch is a packaging dry run, never a publication trigger.
+  workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 jobs:
   build:
-    name: Build Artifacts
-    runs-on: ubuntu-latest
+    name: Build and verify release package
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@v7.0.1
-      - name: Detect project type and build
-        id: build
-        run: |
-          # Auto-detect build system from project files.
-          # Order matters: more specific markers checked first.
-          if [ -f "mix.exs" ]; then
-            echo "::notice::Detected Elixir/Gleam project (mix.exs)"
-            echo "build_type=mix" >> "$GITHUB_OUTPUT"
-            mix local.hex --force --if-missing
-            mix local.rebar --force --if-missing
-            mix deps.get --only prod
-            MIX_ENV=prod mix release
-          elif [ -f "Cargo.toml" ]; then
-            echo "::notice::Detected Rust project (Cargo.toml)"
-            echo "build_type=cargo" >> "$GITHUB_OUTPUT"
-            cargo build --release
-          elif [ -f "build.zig" ]; then
-            echo "::notice::Detected Zig project (build.zig)"
-            echo "build_type=zig" >> "$GITHUB_OUTPUT"
-            zig build -Doptimize=ReleaseSafe
-          elif [ -f "deno.json" ] || [ -f "deno.jsonc" ]; then
-            echo "::notice::Detected Deno project (deno.json)"
-            echo "build_type=deno" >> "$GITHUB_OUTPUT"
-            deno task build
-          elif [ -f "gossamer.conf.json" ]; then
-            echo "::notice::Detected Gossamer project (gossamer.conf.json)"
-            echo "build_type=gossamer" >> "$GITHUB_OUTPUT"
-            gossamer build
-          elif [ -f "gleam.toml" ]; then
-            echo "::notice::Detected Gleam project (gleam.toml)"
-            echo "build_type=gleam" >> "$GITHUB_OUTPUT"
-            gleam build
-          elif [ -f "rebar.config" ]; then
-            echo "::notice::Detected Erlang/Rebar project (rebar.config)"
-            echo "build_type=rebar" >> "$GITHUB_OUTPUT"
-            rebar3 as prod release
-          elif [ -f "Justfile" ] || [ -f "justfile" ]; then
-            echo "::notice::Detected Justfile — running 'just build'"
-            echo "build_type=just" >> "$GITHUB_OUTPUT"
-            just build
-          else
-            echo "::error::No recognised build system found."
-            echo "Expected one of: mix.exs, Cargo.toml, build.zig, deno.json, gossamer.conf.json, gleam.toml, rebar.config, Justfile"
-            exit 1
-          fi
-        # TODO: Upload build artifacts if needed
-        # - uses: actions/upload-artifact@v4
-        #   with:
-        #     name: release-artifacts
-        #     path: target/release/
-  changelog:
-    name: Generate Changelog
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    permissions:
-      contents: read
     outputs:
-      changelog: ${{ steps.cliff.outputs.content }}
-      version: ${{ steps.version.outputs.version }}
+      hashes: ${{ steps.package.outputs.hashes }}
+      version: ${{ steps.package.outputs.version }}
     steps:
-      - uses: actions/checkout@v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-      - name: Extract version from tag
-        id: version
-        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
-      - name: Install git-cliff
-        run: |
-          curl -sSfL https://github.com/orhun/git-cliff/releases/latest/download/git-cliff-$(uname -m)-unknown-linux-gnu.tar.gz \
-            | tar -xz --strip-components=1 -C /usr/local/bin/ git-cliff-*/git-cliff
-      - name: Generate changelog for this release
-        id: cliff
-        run: |
-          # Generate changelog for the current tag only
-          CHANGELOG=$(git cliff --latest --strip header)
-          # Write to output using delimiter to handle multiline
-          {
-            echo "content<<CLIFF_EOF"
-            echo "$CHANGELOG"
-            echo "CLIFF_EOF"
-          } >> "$GITHUB_OUTPUT"
-      - name: Update full CHANGELOG.md
-        run: |
-          git cliff --output CHANGELOG.md
-      - name: Upload updated CHANGELOG.md
-        uses: actions/upload-artifact@v7.0.1
+          persist-credentials: false
+      - name: Require tagged source to have landed on main
+        if: github.event_name == 'push' && github.ref_type == 'tag'
+        run: git merge-base --is-ancestor HEAD origin/main
+      - uses: goto-bus-stop/setup-zig@abea47f85e598557f500fa1fd2ab7464fcb39406 # v2.2.1
         with:
-          name: changelog
-          path: CHANGELOG.md
-          retention-days: 5
-  release:
-    name: Create GitHub Release
-    needs: [build, changelog]
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v7.0.1
-      # TODO: Download build artifacts if uploading to the release
-      # - uses: actions/download-artifact@v4
-      #   with:
-      #     name: release-artifacts
-      #     path: artifacts/
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v3.0.3
+          version: 0.15.2
+      - name: Packaging contract tests
+        run: bash tests/package-release_test.sh
+      - name: Build, test and package the actual library
+        id: package
+        run: bash scripts/package-release.sh "$RUNNER_TEMP/release"
+      - name: Retain package and checksums
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          body: ${{ needs.changelog.outputs.changelog }}
-          draft: false
-          prerelease: ${{ contains(github.ref_name, '-rc') || contains(github.ref_name, '-beta') || contains(github.ref_name, '-alpha') }}
-          generate_release_notes: false
-          # TODO: Add artifact files to the release
-          # files: |
-          #   artifacts/*
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: release-package
+          path: ${{ runner.temp }}/release/
+          if-no-files-found: error
+          retention-days: 14
   provenance:
-    name: SLSA Provenance
-    needs: [build]
+    if: github.event_name == 'push' && github.ref_type == 'tag'
+    needs: build
     permissions:
-      contents: read
-      security-events: write
       actions: read
       id-token: write
       contents: write
-    # SLSA generator must run in a separate, isolated workflow
-    # See: https://slsa.dev/spec/v1.0/requirements#build-l3
+    # SHA-pinned isolated generator; compile because its binary download path
+    # requires a version tag rather than a commit SHA. Subjects are real hashes.
     uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@f7dd8c54c2067bafc12ca7a55595d5ee9b75204a # v2.1.0
     with:
-      base64-subjects: ""
-      # TODO: Replace with actual artifact hashes
-      # Generate with: sha256sum artifact | base64 -w0
-      # base64-subjects: "${{ needs.build.outputs.hashes }}"
+      base64-subjects: ${{ needs.build.outputs.hashes }}
+      compile-generator: true
+      provenance-name: stateful-artefacts.intoto.jsonl
+  release:
+    name: Publish verified package and provenance
+    if: github.event_name == 'push' && github.ref_type == 'tag'
+    needs: [build, provenance]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: release-package
+          path: release
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ${{ needs.provenance.outputs.provenance-name }}
+          path: provenance
+      - name: Verify downloaded package integrity
+        working-directory: release
+        run: sha256sum --check SHA256SUMS
+      - name: Create release with real assets
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        with:
+          draft: false
+          prerelease: ${{ contains(needs.build.outputs.version, '-') }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: |
+            release/*.tar.gz
+            release/SHA256SUMS
+            provenance/*.intoto.jsonl
