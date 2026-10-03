@@ -5,11 +5,12 @@
 # check-no-md-in-docs.sh — enforce "AsciiDoc by default for general docs".
 #
 # Estate rule: .adoc for general docs (TOPOLOGY, READINESS, ROADMAP, etc.);
-# .md only for files GitHub's community-health rules special-case by name
+# .md is also the required format in the estate wiki homes docs/wiki/ and
+# docs/wikis/. Outside those homes it is only for community-health special cases
 # (CONTRIBUTING, CODE_OF_CONDUCT, SECURITY, CHANGELOG, etc.) — those live at
 # root or in .github/, never under docs/.
 #
-# Fails if any .md files exist under docs/. Add justified entries to the
+# Fails for .md outside the wiki homes under docs/. Add justified entries to the
 # ALLOWED list below if a docs/-rooted .md is genuinely needed (rare).
 #
 # Exit codes:
@@ -36,6 +37,9 @@ EXTRAS=()
 for hit in "${HITS[@]}"; do
     rel="${hit#"$REPO_ROOT/"}"
     skip=0
+    case "$rel" in
+        docs/wiki/*|docs/wikis/*) continue ;;
+    esac
     for allowed in "${ALLOWED[@]}"; do
         if [ "$rel" = "$allowed" ]; then skip=1; break; fi
     done
@@ -43,7 +47,7 @@ for hit in "${HITS[@]}"; do
 done
 
 if [ ${#EXTRAS[@]} -eq 0 ]; then
-    echo "PASS: no .md files under docs/ (${#HITS[@]} total found, ${#ALLOWED[@]} allow-listed)"
+    echo "PASS: Markdown is confined to wiki homes or explicit exceptions (${#HITS[@]} total found)"
     exit 0
 fi
 

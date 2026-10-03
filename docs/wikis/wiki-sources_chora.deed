@@ -1,0 +1,8 @@
+;; SPDX-License-Identifier: MPL-2.0
+(repo-deed
+  :schema-version "1.0.0"
+  :canonical-name "stateful-artefacts-wiki-sources"
+  (identity :id "wikis-track" :level 2 :parent "../0.1-AI-MANIFEST.a2ml")
+  (purpose :description "Forge-hosted wiki sources; canonical project docs are linked, not duplicated.")
+  (invariants :wiki-format "Markdown" :general-documentation-format "AsciiDoc")
+  (publication :status "not-configured"))

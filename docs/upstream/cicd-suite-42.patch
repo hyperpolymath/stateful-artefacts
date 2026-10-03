@@ -1,0 +1,261 @@
+From 0badfcd445417301d45343aa749ca7691b03ae2c Mon Sep 17 00:00:00 2001
+From: hyperpolymath <6759885+hyperpolymath@users.noreply.github.com>
+Date: Sat, 3 Oct 2026 13:49:01 +0000
+Subject: [PATCH] fix: distinguish pure buffer serialization from external Zig
+ I/O
+
+---
+ .github/workflows/code-hygiene-self-test.yml  |  3 +
+ .../zig-unified-api-adapter-check/README.adoc | 21 +++++
+ .../zig-unified-api-adapter-check/action.yml  | 17 +---
+ .../zig-unified-api-adapter-check/check.sh    | 82 +++++++++++++++++++
+ actions/zig-unified-api-adapter-check/test.sh | 67 +++++++++++++++
+ 5 files changed, 175 insertions(+), 15 deletions(-)
+ create mode 100644 actions/zig-unified-api-adapter-check/README.adoc
+ create mode 100644 actions/zig-unified-api-adapter-check/check.sh
+ create mode 100644 actions/zig-unified-api-adapter-check/test.sh
+
+diff --git a/.github/workflows/code-hygiene-self-test.yml b/.github/workflows/code-hygiene-self-test.yml
+index b8ca743..3a7fd10 100644
+--- a/.github/workflows/code-hygiene-self-test.yml
++++ b/.github/workflows/code-hygiene-self-test.yml
+@@ -15,6 +15,7 @@ on:
+       - 'actions/manifest-check/**'
+       - 'actions/required-files-check/**'
+       - 'actions/spdx-license-check/**'
++      - 'actions/zig-unified-api-adapter-check/**'
+       - 'tests/**'
+       - '.github/workflows/code-hygiene-self-test.yml'
+       - '.github/workflows/actions.lock'
+@@ -28,6 +29,7 @@ on:
+       - 'actions/manifest-check/**'
+       - 'actions/required-files-check/**'
+       - 'actions/spdx-license-check/**'
++      - 'actions/zig-unified-api-adapter-check/**'
+       - 'tests/**'
+       - '.github/workflows/code-hygiene-self-test.yml'
+       - '.github/workflows/actions.lock'
+@@ -60,6 +62,7 @@ jobs:
+           # lock-transitive-closure.sh compares the actions/ tree at the commit
+           # the lockfile pins against HEAD's, so it needs that commit present.
+           fetch-depth: 0
++      - run: bash actions/zig-unified-api-adapter-check/test.sh
+       - run: bash tests/composite-shell-contract.sh
+       - run: bash tests/lock-transitive-closure.sh
+
+diff --git a/actions/zig-unified-api-adapter-check/README.adoc b/actions/zig-unified-api-adapter-check/README.adoc
+new file mode 100644
+index 0000000..db7ba73
+--- /dev/null
++++ b/actions/zig-unified-api-adapter-check/README.adoc
+@@ -0,0 +1,21 @@
++// SPDX-License-Identifier: MPL-2.0
++= Zig I/O lexical guard
++
++This gate scans tracked and non-ignored untracked Zig source throughout the
++repository, including modules imported by an FFI. It is not an effect-system
++proof and does not resolve import aliases or external library effects.
++
++Direct `std.fs`, `std.io`, and `std.Io` accesses are rejected except for the
++exact, memory-only `fixedBufferStream(...)` call. Allowing that call does not
++allow other I/O on the same line, namespace aliases, or similarly named APIs.
++Comments and string literals are not interpreted as executable source.
++Ordinary Zig compilation remains necessary; malformed source is not validated
++by this lexical check.
++
++This keeps the old repository-wide safety horizon while repairing the false
++positive for stateful-artefacts' pure domain serializer (issue #42). No
++whole-file or whole-namespace exclusion is introduced.
++
++Run `bash actions/zig-unified-api-adapter-check/test.sh`. The test is wired into
++the independent Composite shell contract CI job, so a broken transitive action
++pin cannot prevent the positive and negative controls from executing.
+diff --git a/actions/zig-unified-api-adapter-check/action.yml b/actions/zig-unified-api-adapter-check/action.yml
+index 9cd8615..458703d 100644
+--- a/actions/zig-unified-api-adapter-check/action.yml
++++ b/actions/zig-unified-api-adapter-check/action.yml
+@@ -1,21 +1,8 @@
+ name: 'Zig UnifiedApiAdapter Check'
+-description: 'Checks that Zig FFI implementations adhere to the unified-api-adapter and are pure.'
++description: 'Lexical guard against direct Zig filesystem/I/O use; permits bounded in-memory serialization, not a proof of purity.'
+ runs:
+   using: 'composite'
+   steps:
+     - name: Run Zig UnifiedApiAdapter Check
+       shell: bash
+-      run: |
+-        echo "Validating the Zig unified-api-adapter..."
+-        if find . -name "*.zig" | grep -q .; then
+-          # Ensure it doesn't use standard library io or std.fs directly for FFI
+-          if git grep -E 'std\.fs|std\.io' -- '*.zig'; then
+-            echo "::error::Zig FFI modules contain prohibited side-effects (std.fs/std.io). Must use the unified-api-adapter."
+-            exit 1
+-          fi
+-          echo "Zig unified-api-adapter check passed."
+-        else
+-          echo "No Zig files found. Skipping check."
+-        fi
+-
+-# 2026-09-21: cache-bust touch — negative resolution cache for this path poisoned since merge (run 35548451498 "Can't find action.yml").
++      run: bash "$GITHUB_ACTION_PATH/check.sh"
+diff --git a/actions/zig-unified-api-adapter-check/check.sh b/actions/zig-unified-api-adapter-check/check.sh
+new file mode 100644
+index 0000000..832ee82
+--- /dev/null
++++ b/actions/zig-unified-api-adapter-check/check.sh
+@@ -0,0 +1,82 @@
++#!/usr/bin/env bash
++# SPDX-License-Identifier: MPL-2.0
++# Lexical guard, not an effect-system proof. Preserve the existing repository-
++# wide horizon: core modules can be imported by an FFI. Permit only the known
++# memory-only fixedBufferStream call, not the entire std.io namespace.
++set -euo pipefail
++work="$(mktemp)"
++trap 'rm -f -- "$work"' EXIT
++# Capture discovery separately so a git failure cannot become an empty pass.
++git ls-files --cached --others --exclude-standard -z -- '*.zig' > "$work"
++count=0
++failed=0
++while IFS= read -r -d '' file; do
++    [[ -f "$file" ]] || continue
++    count=$((count + 1))
++    if ! awk '
++        function reject() {
++            printf "%s:%d: external or unclassified std.fs/std.io use\n", FILENAME, start
++            failed = 1
++            state = 0
++        }
++        function token(t) {
++            if (state == 0) {
++                if (t == "std") { state = 1; start = NR }
++            } else if (state == 1) {
++                state = (t == "." ? 2 : 0)
++            } else if (state == 2) {
++                if (t == "fs") reject()
++                else state = (t == "io" || t == "Io" ? 3 : 0)
++            } else if (state == 3) {
++                if (t == ".") state = 4
++                else reject()
++            } else if (state == 4) {
++                if (t == "fixedBufferStream") state = 5
++                else reject()
++            } else {
++                if (t == "(") state = 0
++                else reject()
++            }
++        }
++        {
++            # Zig multiline-string lines start with two backslashes.
++            if ($0 ~ /^[[:space:]]*\\\\/) next
++            word = ""
++            quote = ""
++            escaped = 0
++            for (i = 1; i <= length($0); i++) {
++                c = substr($0, i, 1)
++                if (quote != "") {
++                    if (escaped) escaped = 0
++                    else if (c == "\\") escaped = 1
++                    else if (c == quote) quote = ""
++                    continue
++                }
++                if (c ~ /[A-Za-z0-9_]/) { word = word c; continue }
++                if (word != "") { token(word); word = "" }
++                if (c == "/" && substr($0, i + 1, 1) == "/") break
++                if (c == "\"" || c == sprintf("%c", 39)) {
++                    quote = c
++                    # A string is not a namespace member or a function call.
++                    token("string")
++                } else if (c !~ /[[:space:]]/) token(c)
++            }
++            if (word != "") token(word)
++        }
++        END {
++            if (state >= 3) reject()
++            exit failed
++        }
++    ' "./$file"; then
++        failed=1
++    fi
++done < "$work"
++if [[ "$failed" -ne 0 ]]; then
++    echo '::error::Zig I/O gate failed: external I/O must use the unified-api-adapter.'
++    exit 1
++fi
++if [[ "$count" -eq 0 ]]; then
++    echo 'No Zig files found; this lexical check is not applicable.'
++else
++    echo "Zig I/O lexical check passed ($count files); this is not a proof of purity."
++fi
+diff --git a/actions/zig-unified-api-adapter-check/test.sh b/actions/zig-unified-api-adapter-check/test.sh
+new file mode 100644
+index 0000000..785488c
+--- /dev/null
++++ b/actions/zig-unified-api-adapter-check/test.sh
+@@ -0,0 +1,67 @@
++#!/usr/bin/env bash
++# SPDX-License-Identifier: MPL-2.0
++set -euo pipefail
++check="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)/check.sh"
++work="$(mktemp -d)"
++trap 'rm -rf -- "$work"' EXIT
++# Fixtures need an index, not a branch or a commit.
++git init -q "$work"
++cd "$work"
++mkdir -p src/core src/interface/ffi
++pass=0
++expect() {
++    local want="$1" label="$2" got=0
++    bash --noprofile --norc -e -o pipefail "$check" > result.log 2>&1 || got=$?
++    if [[ "$got" != "$want" ]]; then
++        echo "FAIL: $label (expected $want, got $got)" >&2
++        cat result.log >&2
++        exit 1
++    fi
++    pass=$((pass + 1))
++    echo "PASS: $label"
++}
++expect 0 'no Zig source is explicitly inapplicable'
++cat > src/core/record.zig <<'ZIG'
++const std = @import("std");
++fn serialize(out: []u8) void {
++    var w = std.io.fixedBufferStream(out);
++    _ = w;
++}
++ZIG
++expect 0 'untracked pure domain serializer'
++git add src/core/record.zig
++expect 0 'tracked pure domain serializer'
++cat > src/interface/ffi/main.zig <<'ZIG'
++// Documentation about std.fs and std.io.getStdOut must not be executed as code.
++const message = "std.fs.cwd() and std.io.getStdOut()";
++const multiline =
++    \\std.fs.cwd()
++;
++ZIG
++expect 0 'comments and strings are not I/O'
++for expression in 'std.fs.cwd()' 'std.io.getStdOut()' 'std.Io.getStdOut()' \
++    'std.io.fixedBufferStreamEvil(out)' 'std.io.fixedBufferStream' 'std.io'; do
++    printf 'const x = %s;\n' "$expression" > 'src/interface/ffi/file with spaces.zig'
++    expect 1 "reject $expression"
++done
++printf 'const x = std.io.fixedBufferStream(out); std.fs.cwd();\n' > 'src/interface/ffi/file with spaces.zig'
++expect 1 'memory call does not excuse external I/O on the same line'
++printf 'const x = std\n . io\n . getStdOut();\n' > 'src/interface/ffi/file with spaces.zig'
++expect 1 'external I/O split across lines'
++# Valid Zig line comments between tokens must not change the verdict.
++printf 'const x = std // namespace\n . fs.cwd();\n' > 'src/interface/ffi/file with spaces.zig'
++expect 1 'line comments cannot hide an external I/O access'
++printf 'const x = std\n . io . fixedBufferStream\n (out);\n' > 'src/interface/ffi/file with spaces.zig'
++expect 0 'memory-only call split across lines'
++printf 'const alias = std.io;\n' > src/core/record.zig
++expect 1 'I/O aliases and imported domain code remain within the guard horizon'
++printf 'const x = std.io.fixedBufferStream(out);\n' > src/core/record.zig
++printf 'const x = std.fs.cwd();\n' > ./-leading-dash.zig
++expect 1 'untracked filename beginning with dash is scanned'
++rm ./-leading-dash.zig
++printf 'std.fs.cwd();\n' > ignored.zig
++printf 'ignored.zig\n' > .gitignore
++expect 0 'ignored generated source is excluded'
++printf 'std.fs.cwd();\n' > src/core/record.zig
++expect 1 'working-tree edits to tracked source are scanned'
++echo "$pass Zig I/O gate tests passed."

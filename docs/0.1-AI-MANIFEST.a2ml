@@ -29,5 +29,5 @@ canonical_locations:
   wikis: "wikis/"
 
 invariants:
-  - "Primary documentation format MUST be AsciiDoc (.adoc)"
+  - "General documentation MUST be AsciiDoc (.adoc); forge wiki sources in wikis/ use Markdown (.md)"
   - "Root docs/ MUST only contain pillar entry points"

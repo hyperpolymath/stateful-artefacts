@@ -149,3 +149,24 @@ The follow-up critical findings are repaired at source, not baselined away:
 * Dependabot's guarded auto-merge job receives the `contents: write` permission
   its operation actually needs; other jobs stay read-only. Optional forge
   dispatch explicitly skips an absent credential rather than claiming success.
+
+== Additional validation and optional repairs
+
+The upstream Zig fix is retained as link:upstream/cicd-suite-42.patch[an apply-ready patch]
+with link:upstream/README.adoc[review and landing instructions]. This connection
+cannot push or create a PR in cicd-suite (HTTP 403). Its apparent repository
+role does not override the GitHub integration's missing write authorization.
+
+Running the later audit steps locally exposed a genuine wiki-format conflict.
+Wiki sources now use Markdown and a linted DEED, while general documentation
+remains AsciiDoc. Regression tests confine the exception to actual wiki homes;
+this is not a blanket Markdown allowlist. All 25 non-manifest composite checks
+pass locally with the patched Zig guard. Some upstream checks are advisory or
+placeholders; a zero exit status is not evidence of full semantic compliance.
+The manifest validators are checked separately. Hosted audit completion remains
+blocked until the upstream fix lands and the lock is refreshed.
+
+link:RELEASING.adoc[Release packaging] now builds and tests the actual libraries,
+retains assets, supplies real provenance subjects, and orders publication after
+provenance success. PR/manual runs never publish. Tag-based OIDC signing and
+publication still require a deliberate release after main is clean.

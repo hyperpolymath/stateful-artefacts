@@ -43,7 +43,9 @@ workflows:
         - 'editorconfig-checker/action-editorconfig-checker@v3.0.0'
     '.github/workflows/release.yml':
         - 'actions/checkout@v7.0.1'
+        - 'actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c'
         - 'actions/upload-artifact@v7.0.1'
+        - 'goto-bus-stop/setup-zig@abea47f85e598557f500fa1fd2ab7464fcb39406'
         - 'softprops/action-gh-release@v3.0.3'
     '.github/workflows/rhodibot.yml':
         - 'actions/checkout@v7.0.1'
@@ -73,6 +75,11 @@ dependencies:
         commit: 'sha1-368f82528645a54fb793d4d04e342629a3f51346'
         owner_id: 44036562
         repo_id: 438112499
+    'actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c':
+        ref: 'v8.0.1'
+        commit: 'sha1-3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c'
+        owner_id: 44036562
+        repo_id: 192626254
     'actions/download-artifact@v8.0.1':
         ref: 'v8.0.1'
         commit: 'sha1-3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c'
@@ -120,6 +127,11 @@ dependencies:
         commit: 'sha1-2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2'
         owner_id: 9919
         repo_id: 259445878
+    'goto-bus-stop/setup-zig@abea47f85e598557f500fa1fd2ab7464fcb39406':
+        ref: 'v2.2.1'
+        commit: 'sha1-abea47f85e598557f500fa1fd2ab7464fcb39406'
+        owner_id: 1006268
+        repo_id: 212984112
     'goto-bus-stop/setup-zig@v2.2.1':
         ref: 'v2.2.1'
         commit: 'sha1-abea47f85e598557f500fa1fd2ab7464fcb39406'

@@ -1,0 +1,47 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+= Upstream patch handoff
+
+== cicd-suite #42
+
+`cicd-suite-42.patch` is an apply-ready Git patch based on upstream commit
+`4c772eb235b04455307d5c03cbbc4f45130f7f0f`.
+It permits Zig's pure `std.io.fixedBufferStream` call while retaining the
+repository-wide lexical check for filesystem and other I/O APIs. It does not
+claim to prove purity or resolve imported namespace aliases.
+
+Local verification: 18 regression cases, ShellCheck, code-hygiene guard and
+native Actions lock verification passed. The upstream workflow's existing
+`$/actions/manifest-check` references are not understood by local actionlint;
+full hosted upstream CI is still required.
+
+The GitHub connection rejected both upstream branch push and PR creation with
+HTTP 403. No upstream PR was created or merged. The patch is retained here so
+that the work does not depend on an ephemeral tool cache or authenticated access.
+
+A maintainer with write access should apply it to an upstream review branch:
+
+[source,bash]
+----
+# From a clean cicd-suite checkout; substitute the downloaded patch's path.
+git apply --check /path/to/cicd-suite-42.patch
+git am /path/to/cicd-suite-42.patch
+bash actions/zig-unified-api-adapter-check/test.sh
+shellcheck actions/zig-unified-api-adapter-check/{check,test}.sh
+gh actions-lock --verify
+----
+
+Then open a PR referencing https://github.com/hyperpolymath/cicd-suite/issues/42[#42],
+run hosted tests and merge the reviewed upstream fix. Only afterwards update
+this repository's native pin for `.github/workflows/main-estate-audit.yml`
+with `gh actions-lock .github/workflows/main-estate-audit.yml --relock --no-narrow`.
+Review that the resolved commit includes the upstream merge, verify the lock,
+and rerun the entire estate audit. Do not point production CI at the unmerged patch commit.
+
+== Unresolved identity policy
+
+https://github.com/hyperpolymath/standards/issues/1140[standards #1140] remains
+open. This patch does not change the clade identity or weaken UUID validation.
+Registration in the external clade registry has not been established. The
+owner must identify whether the current ID has consumers before choosing a
+reviewed alias/migration with inventory and rollback, or authorizing replacement
+of a confirmed unregistered ID. Unknown registration is not proof of absence.
