@@ -115,21 +115,25 @@ pub fn reopenVerification(rec: *Record) void {
 /// Serialize `rec` into `out`. Returns the number of bytes written, or
 /// error.BufferTooSmall. Optional fields with empty values are omitted.
 pub fn serialize(rec: *const Record, out: []u8) error{BufferTooSmall}!usize {
-    var w = std.io.fixedBufferStream(out);
-    const s = w.writer();
-    s.print("schema-version={d}\n", .{rec.schema_version}) catch return error.BufferTooSmall;
-    s.print("id={s}\n", .{rec.id.slice()}) catch return error.BufferTooSmall;
-    s.print("kind={d}\n", .{@intFromEnum(rec.kind)}) catch return error.BufferTooSmall;
-    s.print("source-ref={s}\n", .{rec.source_ref.slice()}) catch return error.BufferTooSmall;
-    s.print("produced-by={s}\n", .{rec.produced_by.slice()}) catch return error.BufferTooSmall;
-    s.print("timestamp={d}\n", .{rec.timestamp}) catch return error.BufferTooSmall;
+    var pos: usize = 0;
+    try put(out, &pos, "schema-version={d}\n", .{rec.schema_version});
+    try put(out, &pos, "id={s}\n", .{rec.id.slice()});
+    try put(out, &pos, "kind={d}\n", .{@intFromEnum(rec.kind)});
+    try put(out, &pos, "source-ref={s}\n", .{rec.source_ref.slice()});
+    try put(out, &pos, "produced-by={s}\n", .{rec.produced_by.slice()});
+    try put(out, &pos, "timestamp={d}\n", .{rec.timestamp});
     if (!rec.signature_ref.isEmpty())
-        s.print("signature-ref={s}\n", .{rec.signature_ref.slice()}) catch return error.BufferTooSmall;
-    s.print("phase={d}\n", .{@intFromEnum(rec.phase)}) catch return error.BufferTooSmall;
-    s.print("verification={d}\n", .{@intFromEnum(rec.verification)}) catch return error.BufferTooSmall;
+        try put(out, &pos, "signature-ref={s}\n", .{rec.signature_ref.slice()});
+    try put(out, &pos, "phase={d}\n", .{@intFromEnum(rec.phase)});
+    try put(out, &pos, "verification={d}\n", .{@intFromEnum(rec.verification)});
     if (!rec.evidence_ref.isEmpty())
-        s.print("evidence-ref={s}\n", .{rec.evidence_ref.slice()}) catch return error.BufferTooSmall;
-    return w.pos;
+        try put(out, &pos, "evidence-ref={s}\n", .{rec.evidence_ref.slice()});
+    return pos;
+}
+
+fn put(out: []u8, pos: *usize, comptime fmt: []const u8, args: anytype) error{BufferTooSmall}!void {
+    const written = std.fmt.bufPrint(out[pos.*..], fmt, args) catch return error.BufferTooSmall;
+    pos.* += written.len;
 }
 
 //==============================================================================
