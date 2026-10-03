@@ -8,6 +8,11 @@ on:
   pull_request:
     paths:
       - '.github/workflows/release.yml'
+      - '.github/workflows/actions.lock'
+      - 'tests/aspect_tests.sh'
+      - 'LICENSE'
+      - 'LICENSES/**'
+      - 'README.adoc'
       - 'scripts/package-release.sh'
       - 'tests/package-release_test.sh'
       - 'src/core/**'

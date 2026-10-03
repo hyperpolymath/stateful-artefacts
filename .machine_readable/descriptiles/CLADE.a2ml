@@ -7,13 +7,13 @@ uuid = "dbc2ef6f-015c-525d-bed8-ed0d04788cf1"
 primary-forge = "github"
 primary-owner = "hyperpolymath"
 canonical-name = "stateful-artefacts"
-prefixed-name = "gv-stateful-artefacts"  # TODO: confirm clade prefix against gv-clade-index (registry unreachable at instantiation time)
+prefixed-name = "rm-stateful-artefacts"  # Confirmed against gv-clade-index; UUID reconciliation is separate.
 
 [clade]
-primary = "gv"
+primary = "rm"
 secondary = []
-assigned = "2026-07-02"
-rationale = "Estate-tooling component (Reposystem/OPSM stack); prefix provisional pending gv-clade-index registration."
+assigned = "2026-10-03"
+rationale = "Repo Management & Tooling, confirmed against gv-clade-index at 7f875de3c39931775213a98a5c2e4e0a3c3fd8a0. Preserve the existing UUID pending coordinated reconciliation in gv-clade-index#98 and standards#1140."
 
 [forges]
 github = "hyperpolymath/stateful-artefacts"
