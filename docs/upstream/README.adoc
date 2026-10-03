@@ -37,11 +37,57 @@ with `gh actions-lock .github/workflows/main-estate-audit.yml --relock --no-narr
 Review that the resolved commit includes the upstream merge, verify the lock,
 and rerun the entire estate audit. Do not point production CI at the unmerged patch commit.
 
-== Unresolved identity policy
+== Confirmed registry mismatch and coordinated migration
 
 https://github.com/hyperpolymath/standards/issues/1140[standards #1140] remains
-open. This patch does not change the clade identity or weaken UUID validation.
-Registration in the external clade registry has not been established. The
-owner must identify whether the current ID has consumers before choosing a
-reviewed alias/migration with inventory and rollback, or authorizing replacement
-of a confirmed unregistered ID. Unknown registration is not proof of absence.
+open. No clade UUID was changed and no UUID validation was weakened.
+
+Direct inspection of gv-clade-index commit
+`7f875de3c39931775213a98a5c2e4e0a3c3fd8a0` found:
+
+* https://github.com/hyperpolymath/gv-clade-index/blob/7f875de3c39931775213a98a5c2e4e0a3c3fd8a0/verisim/seed/repos.a2ml[The seed]
+  registers this repository in clade `rm`.
+* https://github.com/hyperpolymath/gv-clade-index/blob/7f875de3c39931775213a98a5c2e4e0a3c3fd8a0/worker/data/repos.json[Worker data]
+  uses a different UUID (starting `ae44803d`) from the local declaration
+  (starting `dbc2ef6f`). Both are v5.
+* The registered value re-derives exactly from the registry deployment script's
+  URL namespace and `github.com/hyperpolymath/stateful-artefacts` input.
+
+The local provisional classification/prefix now agrees with the authoritative
+registry (`rm` / `rm-stateful-artefacts`). The local UUID is deliberately unchanged.
+https://github.com/hyperpolymath/gv-clade-index/issues/98[Registry issue #98]
+records the complete IDs, pinned evidence and coordinated migration requirements.
+Public source registration is confirmed; live Worker/VeriSimDB deployment and
+consumers of either identity remain unverified. Indexed code search is not
+proof of absence of external consumers.
+
+The remaining work needs registry/standards review: inventory both identities,
+agree an explicit alias/migration representation and canonical v7 identity,
+update the registry's v5 generator and data coherently, validate references,
+and provide rollback before cutover. Do not replace only the local UUID just
+to satisfy a syntactic gate.
+
+== Registry description-only patch
+
+A separate apply-ready workspace deliverable, `gv-clade-index-98.patch`, changes
+only the approved README-derived description in the seed and regenerated Worker
+data; it preserves every registry identity and classification. It is based on
+the registry revision above. Push to this repository also returned HTTP 403;
+no registry PR or deployment was created. It is separate from the identity
+migration and does not resolve #98.
+
+Apply it with `git am` from a clean gv-clade-index review checkout, then run:
+
+[source,bash]
+----
+bash scripts/check-registry.sh
+bash tests/check-registry-test.sh
+----
+
+Local integrity/drift checks and all three planted-failure cases passed. Since
+system `uuidgen` was unavailable, local execution used a narrow Python-standard-
+library UUIDv5 compatibility utility; the unchanged baseline reproduced exactly.
+Hosted validation with real `uuidgen` remains required. Comments on the existing
+cicd-suite/standards issues were also denied by this integration; do not assume
+those maintainers have received the patch handoff. The new registry issue was
+successfully created.

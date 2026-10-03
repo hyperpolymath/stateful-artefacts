@@ -39,4 +39,4 @@ status = "PR #69 open; local validation passed. Hosted checks expose upstream bl
 
 upstream-patch = "docs/upstream/cicd-suite-42.patch; 18 local regression cases pass; upstream push/PR creation denied with HTTP 403"
 optional-work = "Wiki-format policy reconciled and tested; real ReleaseSafe packaging and non-publishing CI dry run replace release template. No release or OIDC/provenance verification claimed."
-identity-decision = "Clade registry registration remains unknown; preserve identity until reviewed migration/alias decision."
+identity-decision = "Registry inspection found a DIFFERENT registered UUID and clade rm (gv-clade-index#98). Classification reconciled; UUID unchanged pending consumer inventory and reviewed alias/migration."
