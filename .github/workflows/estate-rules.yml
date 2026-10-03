@@ -7,7 +7,6 @@
 # Estate Rules — enforces hyperpolymath estate-wide conventions:
 #   * root shape (allowlist of permitted root entries)
 #   * AsciiDoc-by-default (no .md files under docs/)
-#   * zig is banned (no zig scaffolding or references)
 #
 # Each rule is enforced by an executable check script under scripts/. Failures
 # are surfaced as workflow errors so the rule can't silently regress.

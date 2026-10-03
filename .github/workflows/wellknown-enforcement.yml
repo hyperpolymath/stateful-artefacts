@@ -7,13 +7,17 @@ on:
   push:
     branches: [main, master]
     paths:
+      - 'www/.well-known/**'
       - '.well-known/**'
+      - '.github/workflows/wellknown-enforcement.yml'
       - 'security.txt'
   pull_request:
     paths:
+      - 'www/.well-known/**'
       - '.well-known/**'
+      - '.github/workflows/wellknown-enforcement.yml'
   schedule:
-    # Weekly expiry check
+    # Daily expiry check
     - cron: '0 9 * * *'
   workflow_dispatch:
 permissions:
@@ -31,6 +35,8 @@ jobs:
           SECTXT=""
           [ -f ".well-known/security.txt" ] && SECTXT=".well-known/security.txt"
           [ -f "security.txt" ] && SECTXT="security.txt"
+          # The site-operations bundle is canonical (root allowlist).
+          [ -f "www/.well-known/security.txt" ] && SECTXT="www/.well-known/security.txt"
 
           if [ -z "$SECTXT" ]; then
             echo "::error::No security.txt found — required for OpenSSF Best Practices. See https://github.com/hyperpolymath/well-known-ecosystem"
@@ -49,8 +55,9 @@ jobs:
           # Check expiry
           EXPIRES=$(grep "^Expires:" "$SECTXT" | cut -d: -f2- | tr -d ' ' | head -1)
           if date -d "$EXPIRES" > /dev/null 2>&1; then
-            DAYS=$(( ($(date -d "$EXPIRES" +%s) - $(date +%s)) / 86400 ))
-            if [ $DAYS -lt 0 ]; then
+            REMAINING=$(( $(date -d "$EXPIRES" +%s) - $(date +%s) ))
+            DAYS=$(( REMAINING / 86400 ))
+            if [ "$REMAINING" -le 0 ]; then
               echo "::error::security.txt EXPIRED"
               exit 1
             elif [ $DAYS -lt 30 ]; then
@@ -58,13 +65,16 @@ jobs:
             else
               echo "✅ security.txt valid ($DAYS days)"
             fi
+          else
+            echo "::error::Invalid security.txt Expires timestamp"
+            exit 1
           fi
       - name: RSR well-known compliance
         run: |
           MISSING=""
-          [ ! -f ".well-known/security.txt" ] && [ ! -f "security.txt" ] && MISSING="$MISSING security.txt"
-          [ ! -f ".well-known/ai.txt" ] && MISSING="$MISSING ai.txt"
-          [ ! -f ".well-known/humans.txt" ] && MISSING="$MISSING humans.txt"
+          [ ! -f "www/.well-known/security.txt" ] && [ ! -f ".well-known/security.txt" ] && [ ! -f "security.txt" ] && MISSING="$MISSING security.txt"
+          [ ! -f "www/.well-known/ai.txt" ] && [ ! -f ".well-known/ai.txt" ] && MISSING="$MISSING ai.txt"
+          [ ! -f "www/.well-known/humans.txt" ] && [ ! -f ".well-known/humans.txt" ] && MISSING="$MISSING humans.txt"
 
           if [ -n "$MISSING" ]; then
             echo "::warning::Missing RSR recommended files:$MISSING"

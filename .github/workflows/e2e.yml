@@ -40,7 +40,5 @@ jobs:
       - uses: goto-bus-stop/setup-zig@v2.2.1
         with:
           version: 0.15.2
-      - name: Build + test the ABI/FFI seam
-        run: cd src/interface/ffi && zig build test --summary all
-      - name: Aspect tests (SPDX, dangerous-patterns, ABI/FFI parity)
-        run: bash tests/aspect_tests.sh
+      - name: Build, C-ABI integration and aspect tests
+        run: bash tests/e2e.sh

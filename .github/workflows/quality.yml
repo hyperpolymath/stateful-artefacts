@@ -7,6 +7,9 @@ on:
   push:
     branches: [main, master]
   pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '23 8 * * 1'
 
 # Estate guardrail: scope push to default branches so a PR fires once (not
 # push+PR), and cancel superseded runs. Safe — read-only PR-triggered check.
@@ -57,3 +60,21 @@ jobs:
           else
             echo "✅ Core documentation present"
           fi
+
+  repository-description:
+    name: Repository description contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - name: Test README-derived metadata tooling
+        run: bash tests/repository-description_test.sh
+      - name: Check live default-branch description
+        # A PR can propose new wording without mutating repository settings.
+        # The deployed/default-branch contract is checked on push and weekly.
+        if: github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/repository-description.sh --check "$GITHUB_REPOSITORY"

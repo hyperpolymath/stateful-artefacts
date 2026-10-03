@@ -1,0 +1,14 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+= Vendored validation hooks
+
+`validate-k9.sh` is copied verbatim from
+`hyperpolymath/k9-ecosystem/validate-action/validate-k9.sh` at
+`2155aa26a21758f2ba119f61bc7e0e1981c106fb`, the same revision consumed by
+the locked `cicd-suite` manifest gate. Do not locally fork its dialect rules.
+The upstream validator distinguishes plain K9, Nickel contracts, and
+non-contract session/coordination files; the older template copy incorrectly
+required Nickel pedigree syntax on every file with a K9 suffix.
+
+When updating, run the upstream `validate-action/tests/test-validate-k9.sh`
+against the new copy and run the repository's Dogfood Gate. Preserve the
+upstream licence and review changes to the default non-target paths.

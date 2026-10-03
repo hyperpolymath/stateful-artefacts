@@ -15,6 +15,7 @@
 README.adoc
 AUDIT.adoc
 EXPLAINME.adoc
+ARCHITECTURE.adoc          # Project architecture overview, required by the central estate audit.
 AFFIRMATION.adoc           # dated/signed honesty snapshot (README/EXPLAINME/AFFIRMATION trio)
 0-AI-MANIFEST.a2ml         # thin pointer to .machine_readable/0.1-AI-MANIFEST.a2ml
 GOVERNANCE.adoc            # governance model (validator accepts root or docs/governance/)

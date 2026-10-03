@@ -5,5 +5,5 @@
 Contact: mailto:j.d.a.jewell@open.ac.uk
 Expires: 2026-12-31T23:59:59.000Z
 Preferred-Languages: en
-Canonical: https://github.com/hyperpolymath/stateful-artefacts/.well-known/security.txt
-Policy: https://github.com/hyperpolymath/stateful-artefacts/blob/main/SECURITY.md
+Canonical: https://raw.githubusercontent.com/hyperpolymath/stateful-artefacts/main/www/.well-known/security.txt
+Policy: https://github.com/hyperpolymath/stateful-artefacts/blob/main/SECURITY.adoc

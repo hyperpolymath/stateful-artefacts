@@ -5,7 +5,7 @@
 # verisimdb-feed.sh — PROVISIONAL local feed emitter.
 #
 # Writes an artefact-state-record's fields as a feed entry under
-# verisimdb-data/feeds/ (gitignored). This is a LOCAL STUB: the upstream
+# verisimdb-data/feeds/ (gitignored). This is a LOCAL STUB(#68): the upstream
 # VeriSimDB "hexad" feed layout (hyperpolymath/nextgen-databases) is named but
 # not yet specified, so this deliberately does NOT freeze a canonical six-tuple
 # — it emits the v0 record fields plus a marker, to be reshaped when the real
