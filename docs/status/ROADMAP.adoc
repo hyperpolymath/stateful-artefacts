@@ -3,7 +3,7 @@
 = Stateful Artefacts Roadmap
 
 The authoritative, machine-readable roadmap lives in
-`.machine_readable/6a2/STATE.a2ml` under `[route-to-mvp]`. This page is a
+`.machine_readable/descriptiles/STATE.a2ml` under `[route-to-mvp]`. This page is a
 human-readable summary of it.
 
 == Current Status

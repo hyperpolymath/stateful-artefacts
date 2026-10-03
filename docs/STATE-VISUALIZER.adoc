@@ -11,7 +11,7 @@ labels below are placeholder examples, not measurements.
 
 For this repository's real, evidence-based state see:
 
-* `.machine_readable/6a2/STATE.a2ml` (authoritative machine-readable state),
+* `.machine_readable/descriptiles/STATE.a2ml` (authoritative machine-readable state),
 * link:status/READINESS.adoc[READINESS.adoc] (Component Readiness Grade), and
 * link:../AFFIRMATION.adoc[AFFIRMATION.adoc] (honest scope of what exists).
 

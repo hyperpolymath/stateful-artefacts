@@ -104,7 +104,7 @@ Key invariants that must never be violated:
 
 If using an AI assistant, load its warmup context by reading the universal
 entry point `0-AI-MANIFEST.a2ml`, then the structured project state under
-`.machine_readable/` (start with `.machine_readable/6a2/STATE.a2ml`).
+`.machine_readable/` (start with `.machine_readable/descriptiles/STATE.a2ml`).
 
 == Get Help
 

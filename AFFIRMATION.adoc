@@ -15,7 +15,7 @@ README / EXPLAINME / AFFIRMATION trio. Update it whenever the real state moves.
 
 * The repository was instantiated from the RSR template (`rsr-template-repo`)
   on 2026-07-02 via `just init`, then given its real identity by hand
-  (6a2 metadata, README, EXPLAINME, contractiles).
+  (descriptiles metadata, README, EXPLAINME, contractiles).
 * The formally-typed ABI/FFI seam is *real code and builds*:
   `src/interface/ffi/` (Zig) exports `stateful_artefacts_*` C symbols;
   `src/interface/Abi/` (Idris2) binds them with a shared 5-value `Result`

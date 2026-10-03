@@ -126,10 +126,23 @@ architecture overview, not arbitrary future paths or other exemption ledgers.
 The inline Hypatia scan now builds the same vetted scanner commit as the
 shared workflow (`51ab6496bf47e30a0576d503df31fec30f3cfe56`) and fails on
 setup/build errors rather than substituting a clean result. The previous
-floating-main copy disagreed with the shared scanner's severity policy.
+floating-main copy was not reproducible. Pinning alone did not remove existing
+findings: the shared scan is advisory by default, whereas the local critical
+gate enforces them. A green advisory scan is not a clean security result.
 
 Issue #66 also remains blocked on the live settings permission described
 above. Do not enable auto-merge merely because the single branch-required
 secret-scanning context passes while other checks remain red. After resolving
 these dependencies, rerun all checks, verify the live description, merge
 through the normal PR path, and verify default-branch runs before closure.
+
+The follow-up critical findings are repaired at source, not baselined away:
+
+* The retired metadata tree is relocated to `.machine_readable/descriptiles/`
+  with the manifests, Just recipes, OpenSSF workflow, contractiles and
+  documentation updated together. The clade identity is preserved unchanged.
+* Setup no longer pipes a remote installer into a shell. Unsupported package
+  managers or missing packages fail with manual verified-install guidance.
+* Dependabot's guarded auto-merge job receives the `contents: write` permission
+  its operation actually needs; other jobs stay read-only. Optional forge
+  dispatch explicitly skips an absent credential rather than claiming success.

@@ -70,7 +70,10 @@ jobs:
         with:
           persist-credentials: false
       - name: Test README-derived metadata tooling
-        run: bash tests/repository-description_test.sh
+        run: |
+          bash tests/repository-description_test.sh
+          bash tests/metadata-layout_test.sh
+          bash tests/setup_test.sh
       - name: Check live default-branch description
         # A PR can propose new wording without mutating repository settings.
         # The deployed/default-branch contract is checked on push and weekly.
