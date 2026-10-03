@@ -21,7 +21,8 @@ bit-for-bit compiler reproducibility.
 PRs touching the release workflow or library run this packaging path. Manual
 `Release` workflow dispatch is also a dry run. Both retain the package as an
 Actions artifact without creating a GitHub release or requesting provenance
-signing. Hosted builds use Ubuntu 24.04 x86_64; no macOS, Windows, musl or older
+signing. Lockfile, licence, README and aspect-test changes also exercise
+packaging. Hosted builds use Ubuntu 24.04 x86_64; no macOS, Windows, musl or older
 glibc compatibility is implied.
 
 == Intentional publication
@@ -34,11 +35,11 @@ can publish. Its base version must match `const VERSION` in
 The pipeline is ordered:
 
 . Build, run tests, package, compute SHA-256 subjects and retain the assets.
-. Run the SHA-pinned isolated SLSA generator with those actual subjects. The
-  generator is compiled from source because binary download requires a tag
-  ref, while this workflow deliberately pins a commit.
+. Download and verify the package in a separate job. The SHA-pinned GitHub
+  artifact-attestation action computes its digest and signs build provenance
+  with OIDC; only this job receives attestation-write and signing permissions.
 . Download the package and signed provenance; verify the package checksums.
-. Publish the archive, `SHA256SUMS` and signed `.intoto.jsonl` provenance,
+. Publish the archive, `SHA256SUMS` and signed `.sigstore.json` attestation bundle,
   with GitHub-generated release notes.
 
 A failed build or provenance job prevents publication. No unverified remote
@@ -52,3 +53,14 @@ Those require a deliberately authorized tagged release after main is clean.
 Inspect the provenance and verify its signature, source commit, builder identity
 and artifact digest with a trusted verifier before asserting a SLSA level.
 This work does not publish a release or assert a certified supply-chain level.
+
+The nonfunctional template SLSA reusable generator was replaced with GitHub
+artifact attestations: GitHub rejected its unrecorded transitive action pin
+before any job could run. This is an explicit provenance mechanism change,
+not a claim to have achieved an isolated SLSA Build L3 builder. All direct and
+composite attestation dependencies are now recorded in the native lock.
+
+With a GitHub CLI that supports artifact attestations, verify a published archive
+using `gh attestation verify ARCHIVE --repo hyperpolymath/stateful-artefacts`.
+Also inspect the source commit and workflow identity; checksum agreement alone
+is not signature verification.

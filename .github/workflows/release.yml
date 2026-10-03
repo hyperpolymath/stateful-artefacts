@@ -56,19 +56,39 @@ jobs:
           if-no-files-found: error
           retention-days: 14
   provenance:
+    name: Attest verified release artifact
     if: github.event_name == 'push' && github.ref_type == 'tag'
     needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
     permissions:
+      contents: read
       actions: read
       id-token: write
-      contents: write
-    # SHA-pinned isolated generator; compile because its binary download path
-    # requires a version tag rather than a commit SHA. Subjects are real hashes.
-    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@f7dd8c54c2067bafc12ca7a55595d5ee9b75204a # v2.1.0
-    with:
-      base64-subjects: ${{ needs.build.outputs.hashes }}
-      compile-generator: true
-      provenance-name: stateful-artefacts.intoto.jsonl
+      attestations: write
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: release-package
+          path: release
+      - name: Verify subjects before attestation
+        working-directory: release
+        run: sha256sum --check SHA256SUMS
+      - name: Generate GitHub artifact provenance
+        id: attest
+        uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3
+        with:
+          subject-path: release/*.tar.gz
+      - name: Retain signed bundle for release
+        env:
+          BUNDLE_PATH: ${{ steps.attest.outputs.bundle-path }}
+        run: cp -- "$BUNDLE_PATH" "$RUNNER_TEMP/stateful-artefacts.sigstore.json"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-provenance
+          path: ${{ runner.temp }}/stateful-artefacts.sigstore.json
+          if-no-files-found: error
+          retention-days: 14
   release:
     name: Publish verified package and provenance
     if: github.event_name == 'push' && github.ref_type == 'tag'
@@ -85,7 +105,7 @@ jobs:
           path: release
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: ${{ needs.provenance.outputs.provenance-name }}
+          name: release-provenance
           path: provenance
       - name: Verify downloaded package integrity
         working-directory: release
@@ -100,4 +120,4 @@ jobs:
           files: |
             release/*.tar.gz
             release/SHA256SUMS
-            provenance/*.intoto.jsonl
+            provenance/*.sigstore.json

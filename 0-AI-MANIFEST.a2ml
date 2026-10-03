@@ -35,7 +35,7 @@ items = [
 
 [session-2026-10-03]
 task = "Issue #66 / D183: README-derived repository description, drift prevention, and CI dependency audit"
-status = "PR #69 merged externally by hyperpolymath as d457edf on 2026-10-03; #66 was closed but live description remains null. Main has failing description, estate-audit, UUID and Sonar checks. Follow-up source security fixes and registry reconciliation findings are in this branch; no clean-main claim."
+status = "PRs #69 and #71 merged externally; CodeRabbit #70 serializer change incorporated from main. Live description now reads back correctly. Registry/UUID mismatch remains open in gv-clade-index#98 and standards#1140. Final release configuration is being validated on this branch; no clean-main claim."
 
 upstream-patch = "docs/upstream/cicd-suite-42.patch; 18 local regression cases pass; upstream push/PR creation denied with HTTP 403"
 optional-work = "Wiki-format policy reconciled and tested; real ReleaseSafe packaging and non-publishing CI dry run replace release template. No release or OIDC/provenance verification claimed."

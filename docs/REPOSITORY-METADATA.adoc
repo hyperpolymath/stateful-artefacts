@@ -206,3 +206,25 @@ the set of dependency commits. Check Actions workflow-run conclusions as well
 as PR check rollups: a `startup_failure` can otherwise disappear from a
 check-summary-only audit. A fresh non-publishing release dispatch is required
 to establish hosted packaging evidence; local tests alone are not that evidence.
+
+A subsequent release-only startup failure identified an unrecorded transitive
+SLSA reusable-workflow dependency. The broken template generator is now replaced
+by explicitly pinned GitHub artifact attestations with a complete composite
+lock. This changes the provenance mechanism and makes no SLSA L3 claim. Manual
+workflow dispatch was denied by the integration; PR coverage now includes all
+package inputs and native-lock changes, without enabling publication on PRs.
+
+== Subsequent owner-side changes and live read-back
+
+The owner also merged #71 as `bea3b7c` and CodeRabbit's #70 as `47fd201`.
+The latter uses bounded `std.fmt.bufPrint` serialization instead of the API
+matched by the old estate grep. That concurrent source change is preserved.
+The generic upstream false-positive patch is still useful but no longer has
+to block this repository once its real estate audit passes.
+
+A fresh `repository-description.sh --check hyperpolymath/stateful-artefacts`
+now succeeds against the live setting: #66's metadata condition is satisfied.
+Earlier null/read-permission failures above are historical evidence, not the
+current description state. The remaining identity mismatch still requires the
+coordinated registry/standards review. The final attestation/release correction
+is a follow-up to the merged work and must pass hosted packaging before landing.
