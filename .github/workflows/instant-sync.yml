@@ -22,6 +22,10 @@ jobs:
     env:
       FARM_DISPATCH_TOKEN: ${{ secrets.FARM_DISPATCH_TOKEN }}
     steps:
+      - name: Audit outbound traffic for credentialed forge dispatch
+        uses: step-security/harden-runner@v2.21.1
+        with:
+          egress-policy: audit
       - name: Trigger Propagation
         if: env.FARM_DISPATCH_TOKEN != ''
         uses: peter-evans/repository-dispatch@v4.0.1

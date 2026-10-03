@@ -23,6 +23,7 @@ workflows:
     '.github/workflows/hypatia-scan.yml': []
     '.github/workflows/instant-sync.yml':
         - 'peter-evans/repository-dispatch@v4.0.1'
+        - 'step-security/harden-runner@v2.21.1'
     '.github/workflows/label-triage.yml': []
     '.github/workflows/labels.yml': []
     '.github/workflows/main-estate-audit.yml':
@@ -164,3 +165,8 @@ dependencies:
         commit: 'sha1-efb35369e0ad2afab669f228072c1b0d510eae64'
         owner_id: 2242
         repo_id: 204253808
+    'step-security/harden-runner@v2.21.1':
+        ref: 'v2.21.1'
+        commit: 'sha1-e14015d583714f6e62063499dc959a02595150a1'
+        owner_id: 88700172
+        repo_id: 422287306
