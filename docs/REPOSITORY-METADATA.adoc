@@ -178,7 +178,9 @@ GitHub records that `hyperpolymath` merged PR #69 as
 closed #66 immediately afterwards. This session did not initiate that merge.
 The live description read-back was still null after the merge.
 
-PR packaging passed before merge, but default-branch validation was not clean:
+Local packaging passed before merge. The hosted release workflow failed at
+startup; that failure was absent from the PR check-run summary and was found
+by separately inspecting Actions runs. Default-branch validation was not clean:
 the live-description, estate-audit and UUID checks failed; SonarCloud also
 reported existing workflow security findings in its broader main analysis.
 The follow-up keeps every action at the same vetted SHA while making pins
@@ -196,3 +198,11 @@ provisional clade classification is reconciled, but the local UUID is preserved.
 Settings write access, upstream patch landing, reviewed identity reconciliation
 and a fresh full default-branch validation remain prerequisites for completion,
 regardless of the closed issue or merged PR status.
+
+After exposing explicit action SHAs, incremental native-lock generation and
+local `--verify` still accepted an index that GitHub rejected at startup.
+A full tool-generated rebuild of the lock corrected the indices without changing
+the set of dependency commits. Check Actions workflow-run conclusions as well
+as PR check rollups: a `startup_failure` can otherwise disappear from a
+check-summary-only audit. A fresh non-publishing release dispatch is required
+to establish hosted packaging evidence; local tests alone are not that evidence.
