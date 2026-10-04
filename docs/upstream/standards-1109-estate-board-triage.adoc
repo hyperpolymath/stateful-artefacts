@@ -1,0 +1,334 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+= standards#1109 estate-board triage and ruleset-gap handoff
+:toc:
+:toclevels: 3
+:date: 2026-10-04
+
+Date: 2026-10-04 +
+Source issue: https://github.com/hyperpolymath/standards/issues/1109[hyperpolymath/standards#1109] +
+Tracking issue (this repository): https://github.com/hyperpolymath/stateful-artefacts/issues/73[stateful-artefacts#73] +
+Board generator: https://github.com/hyperpolymath/cicd-squabbler[hyperpolymath/cicd-squabbler] (`squabble board`) +
+Owner commands: `hyperpolymath/standards` `scripts/apply-branch-gates.sh`, `scripts/apply-workflow-pins-remote.sh`
+
+== Read this first (agent handoff)
+
+This file records a *completed read-only triage* and a *set of writes that are still owed*. It
+exists because the agent session that did the triage could not perform the writes: its GitHub
+credential is scoped to this repository and is read-only elsewhere. Both repo-level ruleset
+writes and a comment on the source issue were refused with HTTP 403
+(`Resource not accessible by integration`). Nothing in the source issue was written to, and no
+ruleset anywhere was changed.
+
+*Tracking issue: https://github.com/hyperpolymath/stateful-artefacts/issues/73[stateful-artefacts#73]*
+— it is the handoff ticket for the work listed below, and it should stay open until the owner
+commands have run.
+
+What remains owed, in order:
+
+. *Post the paste-ready comment* in <<Appendix A>> to `hyperpolymath/standards#1109`. It is the
+  triage result, phrased for the owner.
+. *Run the four owner commands* in <<Owner actions>>. They need `administration:write`; the
+  agent session has no such grant (`POST` *and* `PUT` to `/repos/{o}/{r}/rulesets` both 403).
+. *Then close* `standards#1109` by re-running `squabble board`. Its "Needs you" bucket is already
+  empty — see <<The board is a stale snapshot>>.
+
+Rules for any agent picking this up:
+
+* *Do not claim any write happened.* The section <<What this file does not claim>> lists exactly
+  what was and was not done.
+* *Re-verify before acting.* Every figure here is a snapshot dated 2026-10-04; the reads that
+  produce them are given in <<Re-verification recipe>> and are cheap.
+* *Do not weaken a gate to make it satisfiable.* `standards` owns the policy; this repository
+  only records the finding. In particular, do not require a context that is currently red on
+  `main` — see the `--require-green` note in <<Owner actions>>.
+
+== The board is a stale snapshot
+
+`standards#1109` is not a bug report. It is an auto-generated estate worklist whose body is
+rewritten wholesale on every `squabble board` run (it never comments, so it never notifies). The
+body had not been rewritten since `2026-10-01T22:57:05Z` when it was read on 2026-10-04.
+Measured live, its headline bucket is already empty:
+
+[cols="2,1,1",options="header"]
+|===
+| Claim in the generated body (2026-10-01T22:56Z)
+| Board said
+| Measured 2026-10-04
+
+| PRs across 10 repos with no required check on the default branch
+| 20
+| *0* — all 10 repos have 0 open PRs
+
+| "CLEAN: every requirement already passed" — merge it
+| 2 (`standards#1121`, `pow-the-game#102`)
+| both already `MERGED`
+
+| Agent work (red checks, changes requested, mergeability unknown)
+| 43
+| 0 remaining from that list; estate-wide 15 open PRs, all Dependabot bumps with red checks
+
+| Open PRs reported across both accounts
+| 70
+| 15 (13 `hyperpolymath`, 2 `metadatastician`)
+|===
+
+Consequence: re-running the generator clears the "Needs you" bucket, and re-running it is the
+whole cure for the issue's *headline*. The ten default branches below are a separate, real gap
+that the issue happened to point at.
+
+== The underlying gap: ten default branches with no required checks
+
+Report-only run of `standards` `scripts/apply-branch-gates.sh` on 2026-10-04 against the ten
+repos named in the issue. Contexts are derived from real check-run emissions, never typed
+(`config/rulesets/gates.json`).
+
+[cols="1,4",options="header"]
+|===
+| State
+| Repos and detail
+
+| `WOULD-GATE`
+| `hyperpolymath/ambientops` (ruleset 23869404; 9 contexts derived, 7 green), `metadatastician/proglanging-languages` (24258662; 3 contexts)
+
+| `AMBIGUOUS`
+| `academic-workflow-suite`, `awesome-idris2`, `awesome-zig`, `cargo-zigbuild`, `explore` — 2–3 active repo-level branch rulesets each, and none is uniquely checks-only, so the applier refuses by shape rather than guess (rulesets are additive)
+
+| `REFUSED`
+| `bitfuckit` (`hypatia-scan.yml` run returned zero jobs), `civic-connect` (`governance.yml` run returned zero jobs) — refusing to derive a gate from an incomplete read
+
+| `ORG-INHERITED`
+| `metadatastician/authority-watch` — the only active branch cover is org-level (23868655, 18225024); the cure is a repo-level checks-only ruleset *beside* it (ruling O6), never a write to the inherited one
+|===
+
+== Root cause of the zero-job / `startup_failure` runs
+
+Audit of `.github/workflows/secret-scanner.yml` in all ten repos on 2026-10-04. Every one is
+BEHIND the canon pin `84355587`, and three have drifted off the frozen caller job id:
+
+[cols="5,1,1,1,1,1,1",options="header"]
+|===
+| Repo
+| Pin
+| Caller job id
+| Job-level `permissions:`
+| `secrets: inherit`
+| Latest run
+| Jobs emitted
+
+| `hyperpolymath/academic-workflow-suite` | `74d2f66f` | `scan` | 0 | 0 | failure | 3
+| `hyperpolymath/ambientops` | `74d2f66f` | `scan` | 0 | 0 | failure | 3
+| `hyperpolymath/awesome-idris2` | none (legacy TruffleHog job) | `trufflehog` | 0 | 0 | failure | 2
+| `hyperpolymath/awesome-zig` | `bd0df9ea` | `secret-scan` | 1 | 1 | success | 3
+| `hyperpolymath/bitfuckit` | `74d2f66f` | `scan` | 0 | 0 | success | 3
+| `hyperpolymath/cargo-zigbuild` | `571cc734` | `secret-scan` | 0 | 1 | success | 3
+| `hyperpolymath/civic-connect` | `74d2f66f` | `scan` | 0 | 0 | failure | 3
+| `hyperpolymath/explore` | `571cc734` | `secret-scan` | 0 | 1 | success | 3
+| `metadatastician/authority-watch` | `74d2f66f` | `scan` | 1 | 0 | success | 3
+| `metadatastician/proglanging-languages` | `74d2f66f` | `scan` | 0 | 0 | success | 3
+|===
+
+Three findings, in order of importance:
+
+. *The caller job id is half the required context name.* A caller using job id `secret-scan`
+  emits `secret-scan / gitleaks` and can never satisfy a `scan / gitleaks` requirement — a
+  phantom context, which is exactly the freeze the reusable's own header warns about
+  ("caller job ids are FROZEN until this derivation replaces every typed ruleset"). Three repos
+  are in this state: `awesome-zig`, `cargo-zigbuild`, `explore`.
+. *The applier's refusals are window-driven, not current.* `--require-green N` refuses if any of
+  the last `N` runs cannot be read; the zero-job runs it trips over are *older* pins still
+  inside the window, while the latest run emits 2–3 jobs in 9 of 10 repos. Converging the pins
+  and letting clean runs accumulate is what unblocks a stricter derivation.
+. *A rejected reusable call produces no check run at all.* The reusable's header records the
+  diagnosis rule: `gh pr checks` shows nothing and the annotations endpoint 404s, so diagnose
+  with `gh run list --json conclusion`, never by the absence of a red tick.
+
+An older pin (`892497fe` in `ambientops`) shows the same failure class as `bd0df9ea`. Both are
+real commits in `standards`, so this is pin *staleness*, not a dead ref — the "DEAD-REF" class
+`apply-workflow-pins-remote.sh` describes.
+
+== Owner actions
+
+Run from a checkout of `hyperpolymath/standards`. Steps 2 and 3 are the writes the agent session
+was refused (HTTP 403); all three scripts are report-only without `--apply`.
+
+[source,bash]
+----
+cd standards
+
+# 1. converge reusable-workflow pins + caller shape (FRESH | BEHIND | DEAD-REF | ILLEGAL).
+#    Report first, then apply per its own usage; it is the scheduled applier, not a sweep.
+scripts/apply-workflow-pins-remote.sh
+
+# 2. gate the two repos whose shape is ready. --require-green 1 is deliberate:
+#    it drops any context that is not green across the last run, so gating cannot
+#    turn a visible red into a merge deadlock (owner ruling on standards#956).
+scripts/apply-branch-gates.sh --apply --require-green 1 \
+  --repo hyperpolymath/ambientops \
+  --repo metadatastician/proglanging-languages
+
+# 3. the O6 checks-only ruleset for the org-inherited repo.
+scripts/apply-branch-gates.sh --apply --create-gates --require-green 1 \
+  --repo metadatastician/authority-watch
+
+# 4. once pins have converged and three clean runs have accumulated, require the
+#    full derived context set:
+scripts/apply-branch-gates.sh --apply \
+  --repo hyperpolymath/ambientops \
+  --repo metadatastician/proglanging-languages
+----
+
+*Do not require `ambientops`'s red pair yet.* `scan / gitleaks` and
+`rust-ci / Cargo check + clippy + fmt` are genuinely failing on `main` there — not failing to
+start. Requiring them now blocks every future PR behind a pre-existing red.
+
+Caveat from the estate's own notes (`config/rulesets/README.adoc`): the estate's fine-grained PAT
+was measured returning *404 on `PUT`/`PATCH`* of repo-level rulesets while `POST` is accepted. If
+step 2 fails that way it is the documented token limitation, not a script defect; the escape
+hatch is the create path used in step 3, which `POST`s the canon checks-only body instead of
+filling an existing ruleset.
+
+== Follow-ups (not just the ten repos)
+
+. *`AMBIGUOUS` has no applier path.* `--create-gates` fires only when there is *no* repo-level
+   ruleset, so the five repos carrying a baseline ruleset plus something else cannot be gated by
+   the script as written. Adding the O6 checks-only ruleset *alongside* a baseline is additive
+   and safe; filling the baseline would mix rules into one object, which is what O6 exists to
+   prevent. This needs a decision, then a script change in `standards`.
+. *`awesome-idris2` still runs a legacy TruffleHog caller* rather than the reusable; migrate it.
+. *`bitfuckit` / `civic-connect` refusals are on other gate files* (`hypatia-scan.yml`,
+   `governance.yml`), not `secret-scanner.yml` — same pin-staleness class, different file.
+. *Everything in this file is a snapshot.* If it is being read well after 2026-10-04, re-run
+   <<Re-verification recipe>> before acting on any figure.
+
+== Re-verification recipe
+
+[source,bash]
+----
+# The ten repos named by standards#1109.
+REPOS="hyperpolymath/academic-workflow-suite hyperpolymath/ambientops \
+hyperpolymath/awesome-idris2 hyperpolymath/awesome-zig hyperpolymath/bitfuckit \
+hyperpolymath/cargo-zigbuild hyperpolymath/civic-connect hyperpolymath/explore \
+metadatastician/authority-watch metadatastician/proglanging-languages"
+
+# 1. Is the board still advertising the same bucket? (cheap, no auth beyond read)
+gh issue view 1109 --repo hyperpolymath/standards --json body,updatedAt
+
+# 2. Do those repos still have open PRs? (0 today)
+for r in $REPOS; do echo "$r $(gh pr list --repo $r --state open --json number --jq length)"; done
+
+# 3. What does the sanctioned applier say? (report-only; needs jq + gh)
+git clone --depth 1 https://github.com/hyperpolymath/standards
+cd standards
+args=""; for r in $REPOS; do args="$args --repo $r"; done
+bash scripts/apply-branch-gates.sh $args
+----
+
+Read-only endpoints this triage used, for targeted re-checks:
+`GET /repos/{o}/{r}/rulesets` (list omits `.rules` — fetch each id), `GET /repos/{o}/{r}/rulesets/{id}`,
+`GET /repos/{o}/{r}/rules/branches/{branch}` (effective rules),
+`GET /repos/{o}/{r}/actions/workflows/secret-scanner.yml/runs?branch=main`,
+`GET /repos/{o}/{r}/actions/runs/{id}/jobs`, and
+`GET /repos/{o}/{r}/contents/.github/workflows/secret-scanner.yml?ref={sha}`.
+
+== What this file does not claim
+
+* No ruleset was created, edited, enabled, disabled or deleted anywhere. Every write attempt
+  returned `403 Resource not accessible by integration`.
+* No comment, review or issue body was written to `hyperpolymath/standards` (403). The owner has
+  *not* been notified via the issue; the comment is owed, and it is in <<Appendix A>>.
+* No workflow file, pin or caller was modified in any repository. Pin states are *observations*
+  made through the contents API at specific commit SHAs.
+* The board's own numbers were not recomputed by `squabble board` — it could not be run (no Rust
+  toolchain in the session, and it reads classic branch protection, which the session's token is
+  not permitted to read). Liveness figures were measured independently through the API.
+* No claim is made that gating the ten repos is the *right* policy. That is a `standards`
+  decision; this file only records the state and the sanctioned commands.
+
+== Provenance
+
+* Triage performed 2026-10-04 by an Arena agent session on
+  `hyperpolymath/stateful-artefacts`, branch `arena/01a105b9-stateful-artefacts`, using the
+  owner's GitHub credential as granted to that session.
+* Every figure was read from the live GitHub API on 2026-10-04; endpoint list in
+  <<Re-verification recipe>>.
+* The session's credential could push to this repository but not write rulesets
+  (`403`, `PUT` and `POST` alike) nor comment on `hyperpolymath/standards` (`403`).
+* Superseded scratch file: an earlier Markdown draft of the same triage was removed in favour of
+  this file (estate rule: AsciiDoc by default outside `docs/wiki/`).
+
+== Appendix A: paste-ready comment for standards#1109 (Markdown)
+
+Everything between the `---8<---` markers is the comment body, Markdown by design because GitHub
+renders Markdown. This appendix is deliberately the *last* section of the file and carries no block
+delimiter after the closing marker, so both extraction forms below reproduce the body exactly. Post
+it with, from a checkout of this repository:
+
+[source,bash]
+----
+awk '/^---8<---$/{n++; next} n==1' docs/upstream/standards-1109-estate-board-triage.adoc > /tmp/comment.md
+gh issue comment 1109 --repo hyperpolymath/standards --body-file /tmp/comment.md
+----
+
+---8<---
+
+## Triage — 2026-10-04: this board is a stale snapshot, and its "Needs you" bucket is already clear
+
+Measured live today, not at generation time (the body has not been rewritten since `2026-10-01T22:57:05Z`):
+
+* **All 10 repos in the "no required check" group now have 0 open PRs** — `academic-workflow-suite`, `ambientops`, `awesome-idris2`, `awesome-zig`, `bitfuckit`, `cargo-zigbuild`, `civic-connect`, `explore`, `metadatastician/authority-watch`, `metadatastician/proglanging-languages`.
+* Both *CLEAN — merge it* items were already merged: `standards#1121`, `pow-the-game#102`.
+* Estate-wide open PRs: **70 → 15**, and the 15 are all Dependabot bumps with red checks (the "agent work" class). Everything sampled from the "changes requested" and "red check" groups is merged.
+
+So a re-run of `squabble board` clears the "Needs you" bucket. Nothing in this body needs a hand today.
+
+### The underlying gap is still real: those 10 default branches carry no required checks
+
+Report-only run of `scripts/apply-branch-gates.sh` (2026-10-04, `gates.json` policy, contexts derived from real check-run emissions):
+
+| state | repos |
+|---|---|
+| `WOULD-GATE` | `hyperpolymath/ambientops` (ruleset 23869404, 9 contexts → 7 green), `metadatastician/proglanging-languages` (24258662, 3) |
+| `AMBIGUOUS` | `academic-workflow-suite`, `awesome-idris2`, `awesome-zig`, `cargo-zigbuild`, `explore` — 2–3 active repo-level rulesets, none checks-only; the applier refuses by shape rather than guess |
+| `REFUSED` | `bitfuckit` (`hypatia-scan.yml` run returned zero jobs), `civic-connect` (`governance.yml` run returned zero jobs) |
+| `ORG-INHERITED` | `metadatastician/authority-watch` — cover is org-level only (23868655, 18225024); cure is a repo-level checks-only ruleset beside it (O6) |
+
+### Why the zero-job / `startup_failure` runs happen
+
+Audit of `.github/workflows/secret-scanner.yml` in all 10 repos — every one is BEHIND the canon pin `84355587`, and three still use the pre-freeze job id:
+
+* pins: `74d2f66f` ×6 · `bd0df9ea` ×1 · `571cc734` ×2 · none ×1 (`awesome-idris2` still runs a legacy TruffleHog job, not the reusable).
+* caller job ids: `scan` ×7, but `secret-scan` ×3 (`awesome-zig`, `cargo-zigbuild`, `explore`). The caller job id is half the required context name, so these emit `secret-scan / gitleaks` and never satisfy a `scan / gitleaks` requirement — a phantom context, exactly the freeze the reusable's header warns about.
+* The applier's refusals come from **older** zero-job runs still inside its 3-run window; the latest run now emits 2–3 jobs in 9/10 repos. Converging the pins and letting three clean runs accumulate is what unblocks `--require-green 3`.
+* The reusable's own header records this failure mode: *"A rejected run produces NO check run at all — `gh pr checks` shows nothing and the annotations endpoint 404s. Diagnose with `gh run list --json conclusion`, never by the absence of a red tick."*
+
+### Owner actions (a repo-level ruleset write is refused for the agent session — 403, PUT and POST alike)
+
+```sh
+cd standards
+# 1. converge pins + caller shape (FRESH/BEHIND/DEAD-REF/ILLEGAL) — report first, then apply per its usage
+scripts/apply-workflow-pins-remote.sh
+
+# 2. gate the two repos whose shape is ready (deadlock-safe: currently-red contexts dropped)
+scripts/apply-branch-gates.sh --apply --require-green 1 \
+  --repo hyperpolymath/ambientops --repo metadatastician/proglanging-languages
+
+# 3. the O6 checks-only ruleset for the org-inherited repo
+scripts/apply-branch-gates.sh --apply --create-gates --require-green 1 \
+  --repo metadatastician/authority-watch
+
+# 4. once pins converge and three clean runs accumulate, re-run (2) without --require-green 1
+#    to require the full derived set
+```
+
+Do not require `ambientops`'s red pair yet — `scan / gitleaks` and `rust-ci / Cargo check + clippy + fmt` are genuinely failing on `main`, not failing to start.
+
+### Follow-ups
+
+1. `apply-branch-gates.sh` has no path for the 5 `AMBIGUOUS` repos: `--create-gates` only fires when there is *no* repo-level ruleset. Adding the O6 checks-only ruleset alongside a baseline is additive and safe; filling the baseline would mix rules into one object, which is what O6 exists to prevent.
+2. `awesome-idris2` needs migrating off the legacy TruffleHog caller onto the reusable.
+3. `bitfuckit` / `civic-connect` refusals are on *other* gate files (`hypatia-scan.yml`, `governance.yml`), not `secret-scanner.yml` — same class, different pin.
+
+_Full handoff, including the audit table and re-verification recipe: `stateful-artefacts` `docs/upstream/standards-1109-estate-board-triage.adoc`._
+
+---8<---
