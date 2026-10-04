@@ -6,7 +6,7 @@
 
 [metadata]
 version = "0.1.0"
-last-updated = "2026-07-02"
+last-updated = "2026-10-04"
 
 [project-info]
 type = "library"  # library | binary | monorepo | service | website
@@ -20,7 +20,8 @@ adrs = [
   { id = "ADR-001", title = "Instantiate from RSR template (rsr-template-repo)", status = "accepted", date = "2026-07-02" },
   { id = "ADR-002", title = "Extraction from reposystem: domain content re-transferred, Rust core planned; Zig keeps the C-ABI seam, Idris2 keeps the ABI proofs", status = "accepted", date = "2026-07-02" },
   { id = "ADR-003", title = "ABI Result canon: five values (ok, error, invalid_param, out_of_memory, null_pointer) shared verbatim by Zig, Idris2, and the C header", status = "accepted", date = "2026-07-02" },
-  { id = "ADR-004", title = "v0 artefact-state-record: four fields (identity, provenance, phase, verification); Zig core with a typed lifecycle (forward-only phase, monotonic verification) proven in Idris2/TLA+; additive-only schema; hexad feed deferred", status = "accepted", date = "2026-07-03" },
+  { id = "ADR-004", title = "v0 artefact-state-record: identity, provenance, phase, verification; Zig core with typed lifecycle; additive-only schema; VeriSimDB mapping and sink deferred pending an explicit Octad API contract", status = "accepted", date = "2026-07-03" },
+  { id = "ADR-005", title = "Keep VeriSimDB output local-only; no Octad mapping or network sink in current scope; retain PROVISIONAL markers and revisit contract-first", status = "accepted", date = "2026-10-04" },
 ]
 
 [development-practices]

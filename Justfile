@@ -120,7 +120,7 @@ clean-all: clean
 # TEST & QUALITY
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# Run all tests (Zig unit + integration through the C ABI)
+# Run all tests (Zig unit/integration through the C ABI + local serializer safety)
 test *args:
     @echo "Running tests..."
     @if command -v zig >/dev/null 2>&1; then \
@@ -128,6 +128,7 @@ test *args:
     else \
         echo "zig not found — skipping FFI tests (install Zig 0.15.2+)"; \
     fi
+    @bash tests/verisimdb-feed_test.sh
     @echo "Tests passed!"
 
 # Run tests with verbose per-test output

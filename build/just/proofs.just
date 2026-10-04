@@ -15,8 +15,9 @@ proof-check-all: proof-check-idris2 proof-check-lean4 proof-check-agda proof-che
 # Typecheck the ABI/FFI seam package (src/interface/Abi via abi.ipkg).
 # This compiles the Idris2 half of the C-ABI seam — the aspect symbol-parity
 # test and the Zig tests cannot catch a broken Idris body, so this is the
-# gate that does. Runs in CI where idris2 is installable; skips locally when
-# no idris2 toolchain is present.
+# gate that does. This recipe is not currently wired into repository CI; it
+# skips locally when no idris2 toolchain is present. A future proof workflow
+# must install a pinned toolchain and must not treat SKIP as verification.
 typecheck-abi:
     #!/usr/bin/env bash
     set -euo pipefail

@@ -8,4 +8,5 @@ command -v zig >/dev/null || { echo 'Zig 0.15.2 is required.' >&2; exit 1; }
 cd "$root/src/interface/ffi"
 zig build --summary all
 zig build test --summary all
+bash "$root/tests/verisimdb-feed_test.sh"
 bash "$root/tests/aspect_tests.sh"

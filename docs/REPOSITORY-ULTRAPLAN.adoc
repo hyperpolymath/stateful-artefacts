@@ -1,0 +1,278 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+= Stateful Artefacts — Repository Ultraplan
+:toc:
+:toclevels: 3
+
+*Review date:* 2026-10-04
+*Purpose:* evidence-based statement of what this repository is, its current
+boundary, material risks, and a sequenced path forward. This is a planning
+document, not a new schema, API, licence grant, or maintainer decision.
+
+== Executive recommendation
+
+Keep `stateful-artefacts` a *small, language-neutral artefact-state library*:
+a versioned state-record contract, lifecycle implementation, and stable ABI/FFI
+with validators and tests. It is not the Reposystem graph engine, a general
+analytics pipeline, a database, or a network service.
+
+The selected boundary for VeriSimDB is *local-only*: retain the tested,
+PROVISIONAL `provisional-v0` file serializer, but do not add a mapping from
+this record to the current upstream Octad API/model or a network sink here.
+Revisit only if a concrete consumer need
+changes scope and a maintainer approves a contract-first design. This boundary
+is recorded in ADR-005, `docs/RE-TRANSFER-RUNBOOK.adoc`,
+`docs/status/ROADMAP.adoc`, and
+`machine-readable-design/canonical-directory-structure/Intentfile.a2ml`.
+
+== What the repository is
+
+The core product is the state carried by an artefact:
+
+* identity and kind;
+* provenance/source reference;
+* lifecycle phase;
+* verification state; and
+* a versioned, cross-language representation of those values.
+
+The current implementation includes `src/core/record.zig`, the machine-readable
+schema in `src/definitions/artefact-state-record.a2ml`, the C ABI and Zig FFI,
+a hand-maintained C header, and authored Idris2/TLA+ lifecycle proof sources.
+The local bridge at `src/bridges/verisimdb-feed.sh` emits JSON for local use; it
+is not an upstream VeriSimDB payload. Its fixture-based safety tests are in
+`tests/verisimdb-feed_test.sh`.
+
+Reposystem remains the owner of estate coordination: graph construction,
+scanning, CLI/TUI, and its legacy persistence client. A minimal graph-export or
+scenario-state slice may be reviewed for re-transfer, but only after the open
+language, ABI, and licence questions are resolved. Re-transfer is not a reason
+to import the whole application or its database client.
+
+== What it is not
+
+[cols="1,3",options="header"]
+|===
+| Not this | Boundary
+
+| Reposystem itself | Do not move its graph engine, scanners, CLI/TUI, or full estate orchestration into this library.
+| A datastore or analytics service | No database ownership, metrics feed, or network transport is implemented here.
+| A VeriSimDB Octad adapter | The upstream Octad schema/API has no agreed mapping from this repository's v0 record. Use *modality profile* as the number-agnostic term for a deployment's selected modalities; *Octad* names the current upstream eight-modality contract, and *hexad* is not a generic contract.
+| A general metadata framework | Keep the schema specific to state carried by artefacts; extend only for demonstrated consumer needs.
+| A settled, formally verified release | The v0 record remains PROVISIONAL; proof sources are not currently machine-checked by this repository's CI.
+|===
+
+== Current evidence and limitations
+
+=== Repository and issue/PR state
+
+As observed on 2026-10-04:
+
+* Issue link:https://github.com/hyperpolymath/stateful-artefacts/issues/68[#68]
+  is the only open issue observed. Safe local serialization is now tested, but
+  the issue's upstream contract/sink acceptance is not met and is outside the
+  selected scope. Do not describe it as a completed VeriSimDB integration;
+  keep #68 open as deferred. If a maintainer narrows its acceptance to local
+  serialization, update the issue explicitly before closing it.
+* There are no open pull requests. Recent merged PRs were #69 (metadata/CI
+  drift), #70 (CI fixes), #71 (security follow-up and registry mismatch), and
+  #72 (artifact-attestation/release dry-run corrections).
+* Latest observed `main` checks included passing
+  link:https://github.com/hyperpolymath/stateful-artefacts/actions/runs/37167060249[Hypatia],
+  link:https://github.com/hyperpolymath/stateful-artefacts/actions/runs/37132087543[Secret Scanner],
+  and link:https://github.com/hyperpolymath/stateful-artefacts/actions/runs/37180028684[OSSF Scorecard]
+  runs. link:https://github.com/hyperpolymath/stateful-artefacts/actions/runs/37132087712[Governance]
+  failed UUID-v7 conformance; link:https://github.com/hyperpolymath/stateful-artefacts/actions/runs/37132086881[Central Estate CI/CD Audit]
+  failed at the Recipes Set Validation Gate. GitHub log retrieval returned
+  EOF, so the underlying failure details could not be independently inspected
+  here.
+* The GitHub security-alert endpoints returned `403 Resource not accessible by
+  integration`. Alert counts and alert contents are *unknown*, not zero.
+* PR #72's hosted package dry run passed; no release was published.
+
+The identity issue is cross-repository: `standards#1140` and
+`gv-clade-index#98` track UUID-v7/registry reconciliation. Do not silently
+replace the local UUID or invent a registry identity while those decisions are
+open.
+
+=== Cross-repository terminology follow-ups
+
+The generic term adopted here is *modality profile* for an implementation's
+selected modalities; *modality set* names membership. Cardinality is
+implementation-specific. *Octad* remains the current upstream's named
+eight-modality model/API; this terminology does not imply arbitrary subset or
+variable-cardinality support.
+
+Follow-up issues filed on 2026-10-04 because their source repositories were not
+modified in this session:
+
+* https://github.com/hyperpolymath/verisimdb/issues/299 — define modality-profile
+  wording and cardinality semantics in the current upstream contract.
+* https://github.com/hyperpolymath/reposystem/issues/299 — replace unqualified
+  “hexad” persistence descriptions and clarify the legacy custom client.
+* https://github.com/hyperpolymath/flat-mate/issues/60 — reconcile `/hexads`
+  routes with the pinned VeriSimDB API/version and remove number-agnostic use
+  of “hexad”.
+* https://github.com/hyperpolymath/vcl-ut/issues/118 — distinguish the fixed
+  eight-slot `OctadSchema` from generic modality profiles.
+* https://github.com/hyperpolymath/verisimiser/issues/213 — distinguish its
+  fixed concern Octad from selected Tier 2 modality overlays.
+
+The other audited consumers use *Octad* for an explicit fixed eight-modality
+contract/model, so no generic-term correction was identified there. The
+coordination-only `nextgen-databases` repository points to the standalone
+VeriSimDB owner and was not given a duplicate issue.
+
+The existing stateful-artefacts #68 issue remains open and unchanged. Its title
+still uses the legacy “hexad” label: both issue-edit and comment attempts were
+rejected with HTTP 403, “Resource not accessible by integration”. A maintainer
+with issue-write permission must reconcile its remote wording; this local
+branch's ADR-005 does not close or satisfy its upstream-contract acceptance.
+
+=== Local verification
+
+The following repository checks passed in the current workspace:
+
+* `bash tests/verisimdb-feed_test.sh`
+* `bash tests/aspect_tests.sh`
+* `bash tests/docs-format_test.sh`
+* `bash tests/metadata-layout_test.sh`
+* `bash tests/http-urls_test.sh`
+* `bash tests/package-release_test.sh`
+* `bash tests/repository-description_test.sh`
+* `bash tests/setup_test.sh`
+* `bash tests/workflows/validate_workflows_test.sh .github/workflows` (passes
+  with eight legacy-workflow warnings)
+* `bash scripts/check-root-shape.sh .`
+* `bash scripts/check-no-md-in-docs.sh .`
+* `git diff --check`
+
+`zig` and `just` are not installed in this workspace, and the attempt to fetch
+the pinned `just` binary ended in EOF. Consequently, this review could not rerun
+the Zig build/tests or Justfile recipes locally. The Idris2 and TLA+ proof
+sources have not been machine-checked by the current repository CI; do not
+advertise those invariants as formally verified until a check runs and its
+result is recorded. Security-alert visibility is also incomplete as noted
+above.
+
+== Principal risks and open decisions
+
+[cols="1,2,3",options="header"]
+|===
+| Priority | Risk | Why it matters / evidence
+
+| P0 | Product and status documentation drift | `docs/status/READINESS.adoc` remains a historical assessment with stale component rows; the state visualizer is explicitly illustrative; ADR-002's empty-core context is historical and Rust is not the implemented core. The live core is Zig; the canonical language decision for future domain content remains unresolved. `META.a2ml` lists ADR-004, but no matching `docs/decisions/0004-*.adoc` file exists.
+| P0 | Language/ABI ownership conflict | ADR-002 plans Rust, the v0 core is Zig, and the re-transfer notes identify a possible Ada/Idris ABI in Reposystem versus this repository's Idris2/Zig seam. Choose one target before moving domain code.
+| P0 | Licence incompatibility risk | This repository is MPL-2.0 for code plus CC-BY-SA-4.0 for docs; Reposystem declares PMPL-1.0. Resolve provenance and compatibility before copying code.
+| P1 | Native text serializer has no escaping contract | `Record.serialize` writes user-provided bytes directly into line-oriented `key=value` output. Newlines, delimiters, or invalid UTF-8 can make records ambiguous; specify encoding/validation and tests before downstream use. The separate shell JSON emitter is escaped and tested, but is not the canonical serializer.
+| P1 | Proof claims exceed executed evidence | Idris2/TLA+ sources exist, but no current CI gate machine-checks them. A source file is not a completed proof result.
+| P1 | Identity and registration drift | UUID-v7 conformance failed in the observed Governance workflow; external identity/registry issues remain open. Preserve existing identifiers pending maintainer resolution.
+| P1 | Security visibility gap | Automated workflows are present, but the integration could not read GitHub security-alert details. A passing scanner workflow is not proof that no open alerts exist.
+| P2 | Release readiness is overstated in places | Readiness/status docs contain placeholders, stale counts, and dates. The latest package dry run passed but no release exists.
+|===
+
+== Sequenced plan
+
+=== Phase 0 — Make scope and status unambiguous
+
+. Keep the current local-only VeriSimDB decision. The emitter remains
+  `provisional-v0`; do not add a mapping to the current upstream Octad
+  API/model, a sink, credentials, or retries.
+. Reconcile the remaining status sources: complete the readiness
+  reassessment; decide whether to keep the visualizer as an illustrative
+  template or replace it with a live report; review ADR-002 against the
+  implemented Zig core; and distinguish *implemented*, *implemented but
+  unverified*, *deferred*, and *out of scope*.
+  Preserve historical ADR context; record any changed language/ABI decision in
+  a new maintainer-approved ADR instead of silently rewriting history.
+. Keep issue #68 open as a deferred integration request: its current
+  upstream-contract acceptance cannot be marked satisfied. Re-scope it only if
+  a maintainer later narrows the acceptance explicitly.
+. Resolve the Rust-versus-Zig core direction, the ABI canon, and the licence
+  before content is moved from Reposystem.
+
+*Exit gate:* README, roadmap, machine-readable metadata, and the decision record
+agree about the library's purpose and boundaries; no document claims a live
+VeriSimDB integration or verified proof without evidence.
+
+=== Phase 1 — Make the v0 contract reproducible
+
+. Before treating the native `key=value` serializer as consumable, approve a
+  safe encoding or input-validation rule for delimiters, control bytes, and
+  UTF-8; add tests for it. Keep this separate from the local JSON bridge tests.
+. Pin and run the supported Zig/Just toolchain in CI; make the Zig unit,
+  integration, and C-header checks required for changes to the ABI/core.
+. Keep `tests/verisimdb-feed_test.sh` in the normal test path. It should continue
+  to exercise JSON types/escaping, controls, invalid enum/string inputs,
+  length boundaries, filename collisions, and fail-closed behavior.
+. Add Idris2 and TLA+ checks to a reproducible, SHA-pinned CI job when a
+  maintainable toolchain/action is available. Until then, label proofs
+  *authored, unverified*.
+. Add fuzzing only when an actual parser or other suitable untrusted byte-input
+  surface exists; do not add a placeholder fuzz harness merely to satisfy a
+  checklist.
+
+*Exit gate:* clean required CI on a supported toolchain, repeatable local build
+instructions, contract tests for every implemented behavior, and no unsupported
+verification claims.
+
+=== Phase 2 — Re-transfer only approved domain content
+
+. Confirm candidate paths against the actual Reposystem tree before extraction.
+. After language, ABI, and licence decisions, select the smallest reusable
+  slice: likely state-bearing export types and scenario-state definitions, not
+  the full graph application.
+. Keep `src/verisimdb.rs` (the legacy store/snapshot client), graph engine,
+  scanners, CLI/TUI, and unrelated service integrations in Reposystem under the
+  current boundary.
+. Map transferred identity/provenance/lifecycle/verification semantics onto
+  the existing record. Avoid duplicate state models and preserve schema
+  compatibility rules.
+
+*Exit gate:* maintainer-reviewed provenance/licence, documented source-to-target
+mapping, no duplicate lifecycle model, tests for migrated behavior, and a
+refreshed status snapshot.
+
+=== Phase 3 — Resolve governance and release blockers
+
+. Work with standards and `gv-clade-index` maintainers on UUID-v7 and registry
+  conformance; do not patch around the identity contract locally.
+. Re-run the failing Governance and Central Estate CI/CD Audit gates and fix the
+  source-level causes, not just the displayed status.
+. Restore or obtain authorized visibility into GitHub security alerts; triage
+  actual findings before making any clean-security statement.
+. Reassess workflow permissions, action pinning, dependency policy, SBOM and
+  release attestations as part of the next release audit. Retain the passing
+  package dry-run evidence but do not describe it as a published release.
+. Complete Groove/clade/other external registrations only after the relevant
+  maintainers accept the identifiers.
+
+*Exit gate:* required CI and governance checks are green, security-alert review
+is recorded, registrations are confirmed, and a maintainer approves a tagged
+release with reproducible artifacts and truthful metadata.
+
+== Definition of done for the repository's next stable step
+
+* The artefact-state schema and lifecycle semantics have an explicit version
+  and compatibility policy.
+* The Zig implementation, C ABI/header, and supported language bindings agree
+  and are tested in required CI.
+* Any claimed proof has a reproducible machine-check result; otherwise it is
+  labelled unverified.
+* License and provenance are resolved before re-transferred code is included.
+* The local serializer remains local-only and explicitly PROVISIONAL unless a
+  future scope decision authorizes a separate, contract-tested integration.
+* README, roadmap, readiness, ADRs, and machine-readable metadata describe the
+  same actual implementation and open decisions.
+* No clean-security, live-integration, or release claim exceeds the available
+  evidence.
+
+== Anti-goals
+
+* Do not implement a VeriSimDB network client in this repository under the
+  current scope.
+* Do not revive the obsolete "hexad" format or infer a mapping from a label.
+* Do not transfer Reposystem's full application or legacy database client.
+* Do not replace UUIDs or choose a licence/language on behalf of maintainers.
+* Do not claim authored proof sources, a green package dry run, or a passing
+  scanner as equivalent to formal verification, a published release, or a
+  complete security review.

@@ -20,7 +20,8 @@ projects = [
   { name = "reposystem", relationship = "extraction-parent", notes = "Railway-yard estate coordination tool this repo was split out of; the domain content is re-transferred from there." },
   { name = "standards", relationship = "standard-source", notes = "Defines the RSR standard, contractile canon, and policies this repo follows." },
   { name = "rsr-template-repo", relationship = "template-parent", notes = "Scaffolding this repo was instantiated from via `just init`." },
-  { name = "nextgen-databases", relationship = "data-feed-target", notes = "VeriSimDB is the aggregation sink for artefact state records (hexad feed format)." },
+  { name = "nextgen-databases", relationship = "database-coordination", notes = "Coordination repository; VeriSimDB has moved to its own repository." },
+  { name = "verisimdb", relationship = "potential-data-store", notes = "Current service names its eight-modality API Octad; use modality profile for a generic implementation-specific selection. No v0 mapping or network sink is agreed here." },
   { name = "git-hud", relationship = "stack-peer", notes = "OPSM stack HUD; consumes Reposystem exports that carry stateful-artefacts records." },
   { name = "vordr", relationship = "verification-tooling", notes = "Build/artifact verification; natural consumer of artefact state records." },
 ]

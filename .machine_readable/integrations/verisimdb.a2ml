@@ -1,17 +1,19 @@
 # SPDX-License-Identifier: MPL-2.0
-# OPTIONAL: VeriSimDB Feed — Cross-Repo Analytics Data Store
-# Delete this file if your project does not feed data to VeriSimDB.
-# See https://github.com/hyperpolymath/nextgen-databases for details.
+# OPTIONAL: VeriSimDB feed — provisional local state-record export.
+# Current VeriSimDB lives at hyperpolymath/verisimdb and exposes an Octad API.
+# Generic terminology: a deployment's selection is a modality profile; its
+# cardinality is implementation-specific. No v0-to-profile mapping or sink is agreed.
+# The current emit flags are disabled; the local script still writes only its provisional file.
 
 [integration]
 name = "verisimdb"
-type = "data-feed"
-repository = "https://github.com/hyperpolymath/nextgen-databases"
-data-store = "verisimdb-data"
+type = "local-export"
+# Contract reference only; this configuration has no remote sink.
+repository = "https://github.com/hyperpolymath/verisimdb"
 
 [feed-config]
-emit-scan-results = true
-emit-build-metrics = true
-emit-dependency-graph = true
-format = "hexad"
+emit-scan-results = false
+emit-build-metrics = false
+emit-dependency-graph = false
+format = "provisional-v0"
 destination = "verisimdb-data/feeds/"

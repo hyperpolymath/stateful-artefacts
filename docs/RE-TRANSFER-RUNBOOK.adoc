@@ -37,7 +37,7 @@ reposystem. Candidate paths (from reposystem's README):
 |===
 | reposystem path | What it is | Take?
 
-| `src/verisimdb.rs` | VeriSimDB persistence client | *Yes* — state persistence
+| `src/verisimdb.rs` | Legacy VeriSimDB persistence client | *No, under current scope* — keep persistence in Reposystem; reconsider only if a future decision adds a tested adapter boundary here
 | `src/graph.rs` (export/serialize parts) | DOT/JSON/estate-export serializers | *Partial* — the state/metadata export, not the graph build
 | `src/lib.rs` (types) | `Estate`, `ExternalSeam`, `GraphStore`, `RelationType` | *Partial* — the record/state types, not `GraphStore` internals
 | scenario state (in `src/commands/scenario`) | scenario state model | *Yes* — a scenario is a stateful artefact
@@ -57,7 +57,7 @@ commands. Example:
 [source,bash]
 ----
 REPOS_DIR=~/repos \
-SLICE="src/verisimdb.rs src/graph.rs src/lib.rs spec/DATA-MODEL.adoc" \
+SLICE="src/graph.rs src/lib.rs spec/DATA-MODEL.adoc" \
   bash scripts/retransfer-from-reposystem.sh          # DRY RUN — prints the plan
 
 # When the plan looks right, run for real:
@@ -85,7 +85,7 @@ Place and reconcile as follows:
 |===
 | reposystem piece | Lands in | Reconciliation
 
-| VeriSimDB client (`verisimdb.rs`) | `src/bridges/` | Reconcile with the PROVISIONAL `verisimdb-feed.sh` stub; this is where the *real* hexad feed format finally gets specified (retire "provisional-v0").
+| VeriSimDB client (`verisimdb.rs`) | Not in the current transfer | Keep persistence in Reposystem. The legacy client writes five custom store/snapshot collections, while current VeriSimDB documents an Octad API; do not port it to this repository under the current scope.
 | Estate/export serializers | `src/core/` + `src/definitions/` | Each emitted artefact (graph export, estate metadata) should carry a state record: identity (what), provenance (which scan/commit produced it), phase, verification.
 | Scenario state | `src/core/` | Model a scenario as an artefact with its own lifecycle; reuse the `Phase`/`Verification` enums where they fit, or extend them (additive-only — bump `schema-version`).
 | `DATA-MODEL.adoc` | `docs/spec/` | Merge with `ARTEFACT-STATE-RECORD.adoc`; where reposystem entities carry identity/provenance/lifecycle/verification, unify on the v0 record's four fields rather than duplicating.
@@ -95,6 +95,38 @@ Place and reconcile as follows:
 Key rule: *do not fork the state model.* If a reposystem type already carries
 "who produced this / has it been verified", map it onto the v0 record's
 `provenance`/`verification` rather than inventing a parallel one.
+
+[[verisimdb-adapter-boundary]]
+=== VeriSimDB adapter boundary (issue #68)
+
+The upstream layout has changed since the provisional bridge was written:
+`hyperpolymath/nextgen-databases` now points to the standalone
+https://github.com/hyperpolymath/verisimdb[`hyperpolymath/verisimdb`] project.
+Its current public contract names an eight-modality *Octad* API, including an
+`OctadInput` JSON Schema and `POST /api/v1/octads`. For number-agnostic
+architecture discussion, use *modality profile* for an implementation's
+selected/supported modalities and state its cardinality explicitly. The current
+upstream contract does not establish that arbitrary subsets or cardinalities
+are accepted, and it does not define a mapping from this repository's v0
+record.
+
+The current `reposystem/src/verisimdb.rs` is not that adapter: it PUTs five
+Reposystem stores/snapshots to custom `/api/v1/{collection}/{id}` paths. Under
+the current scope decision, that persistence client stays in Reposystem and is
+not transferred here. If a future consumer need reopens the boundary, first
+agree how the v0 record maps to the upstream Octad API and what modality
+profile, if any, its payload represents; then specify identity/idempotency
+rules, provenance semantics, and configuration/security model, and add tests
+against a pinned upstream schema and a test server or equivalent contract
+fixture.
+`verisimdb-feed.sh` is a separate local JSON serializer, not the v0 key=value
+serializer or an upstream adapter; its PROVISIONAL markers remain in place
+because no upstream mapping or sink is in scope or implemented here.
+
+References: the upstream
+link:https://github.com/hyperpolymath/verisimdb/blob/main/connectors/shared/json-schema/octad-input.json[Octad input schema]
+and
+link:https://github.com/hyperpolymath/verisimdb/blob/main/connectors/shared/openapi/verisim-api-v1.yaml[OpenAPI contract].
 
 [[abi-reconciliation]]
 === ABI reconciliation (needs a decision)
@@ -109,7 +141,7 @@ is *Idris2/Zig* (`src/interface/`). Decide one canon and record it as an ADR:
 Either way the C header (`src/interface/generated/abi/stateful_artefacts.h`)
 stays the single contract, and `tests/aspect_tests.sh` keeps symbol parity.
 
-== 4. Decisions to make during the re-transfer (ADRs)
+== 4. Decisions and current boundaries
 
 . *Core language.* reposystem's core is Rust (+ ReScript data model); this repo's
   v0 core is Zig, with Rust only "planned". Decide: Rust domain core alongside
@@ -118,20 +150,30 @@ stays the single contract, and `tests/aspect_tests.sh` keeps symbol parity.
 . *Licence.* reposystem declares *PMPL-1.0*; this repo is normalised to MPL-2.0
   (code) + CC-BY-SA-4.0 (docs). Resolve before merging content
   (`AFFIRMATION.adoc` tracks this as open).
-. *Hexad feed format.* Specify it for real when `verisimdb.rs` lands; retire the
-  `provisional-v0` stub.
+. *VeriSimDB adapter boundary (decided in ADR-005).* As of 2026-10-04, keep
+  this repository focused on the state record; retain the local `provisional-v0`
+  serializer, with no mapping to the current upstream Octad API/model or
+  network sink here. If a future consumer
+  changes that scope, first agree the mapping, identity/idempotency and
+  provenance rules, trust/configuration model, and upstream contract tests. Do
+  not infer a six-tuple from the obsolete "hexad feed" label. See
+  `docs/decisions/0005-verisimdb-local-only-boundary.adoc`.
 
-== 5. After the transfer — update state + delete PROVISIONAL markers
+== 5. After the transfer — update state and provisional markers
 
-* `META.a2ml`: add the new language(s); add ADRs for the decisions above.
-* `STATE.a2ml`: bump `completion-percentage`; move the "Re-transfer" milestone to
-  done; drop the PROVISIONAL note in `[project-context].purpose`.
-* `README.adoc`: remove the PROVISIONAL admonition and the "Re-transfer status"
-  section (or turn it into a "history" note).
-* `AFFIRMATION.adoc`: refresh the snapshot; close the "reposystem domain content
-  is missing" item; record the licence and ABI decisions.
-* `.machine_readable/descriptiles/anchors/ANCHOR.a2ml`: extend `allowed` languages if Rust
-  is added.
+* `META.a2ml`: add the new language(s); add ADRs for decisions actually made.
+* `STATE.a2ml`: bump `completion-percentage` and move the "Re-transfer"
+  milestone only when the reviewed slice has landed and passed its gates.
+* `README.adoc`: update the PROVISIONAL notice and turn "Re-transfer status"
+  into a history note only when the project scope and licence are settled.
+* `AFFIRMATION.adoc`: refresh the snapshot; close only the gaps actually
+  resolved; record the licence and ABI decisions.
+* `.machine_readable/descriptiles/anchors/ANCHOR.a2ml`: extend `allowed`
+  languages if Rust is added.
+* Keep the v0 record and local VeriSimDB serializer marked PROVISIONAL until
+  their contracts are explicitly settled. A domain-content transfer alone
+  does not establish an upstream mapping or a network sink; current scope
+  excludes both.
 
 == 6. Verification (same gates the rest of the repo uses)
 

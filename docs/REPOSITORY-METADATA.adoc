@@ -84,12 +84,15 @@ The CI audit accompanying #66 found failures predating this change:
   rather than missing the relocated files. Invalid expiry dates and expiry
   within the last day no longer pass. Security-file links use the actual
   source and policy locations.
-* `tests/e2e.sh` now builds the real library and executes Zig unit/C-ABI tests
-  plus aspect checks, replacing a template that passed with zero tests.
-* The provisional VeriSimDB adapter remains explicitly provisional. Its
-  existing implementation debt is tracked at
-  https://github.com/hyperpolymath/stateful-artefacts/issues/68[#68], not hidden
-  by disabling the hygiene gate.
+* `tests/e2e.sh` builds the real library and executes Zig unit/C-ABI tests,
+  local serializer safety tests, and aspect checks, replacing a template that
+  passed with zero tests.
+* The provisional VeriSimDB serializer is tested only for its local-v0 JSON
+  shape; it has no mapping to the current upstream Octad API/model, no agreed
+  modality-profile payload, and no network sink under the current scope
+  (ADR-005). Issue
+  https://github.com/hyperpolymath/stateful-artefacts/issues/68[#68] remains
+  open for its unmet upstream-contract acceptance; no integration is claimed.
 
 For future workflow dependency changes, install `github/gh-actions-lock`
 (version 0.1.6 for this update), run `gh actions-lock --no-narrow`, inspect the generated

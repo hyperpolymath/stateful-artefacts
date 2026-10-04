@@ -11,19 +11,21 @@ working, what is scaffolding, and what is pending.
 
 == What the project is
 
-Stateful Artefacts is the state-carrying artefact layer of the Reposystem/OPSM
+Stateful Artefacts is the state-record and ABI/FFI layer of the Reposystem/OPSM
 stack. Reposystem (https://github.com/hyperpolymath/reposystem) coordinates a
-~300-repo estate as a railway yard and emits artefacts — graph exports,
-scenario states, estate metadata, VeriSimDB feeds. This repo defines the
-canonical *state record* those artefacts carry (identity, provenance,
-lifecycle phase, verification status) and the cross-language tooling to read,
-write, and validate the records.
+~300-repo estate as a railway yard and emits graph exports, scenario states,
+and estate metadata. Reposystem still owns its legacy VeriSimDB snapshot client;
+this repository does not own a database or a network sink. Stateful Artefacts
+defines the canonical *state record* those artefacts should carry (identity,
+provenance, lifecycle phase, verification status) and cross-language tooling to
+read, write, and validate records.
 
 Caveat:
 
-* The definition is PROVISIONAL: the original split out of reposystem lost the
-  domain content, which is being re-transferred (see `README.adoc`,
-  "Re-transfer status", and `STATE.a2ml` blockers).
+* The original split out of reposystem lost additional domain content. This
+  repository's v0 state-record core and ABI/FFI seam exist, but the broader
+  graph/scenario domain model is still under maintainer review for re-transfer
+  (see `README.adoc`, "Re-transfer status", and `STATE.a2ml` blockers).
 
 == Architecture: the ABI seam
 
@@ -46,8 +48,11 @@ How this is implemented:
 
 Caveat:
 
-* The Zig side compiles and is tested locally; the Idris2 typecheck runs in CI
-  only (no local Idris2 toolchain is assumed).
+* The Zig implementation and its tests exist; this workspace has no `zig` or
+  `just` executable, so they could not be rerun for the 2026-10-04 review.
+  Idris2/TLA+ proof sources are authored, but are not currently machine-checked
+  by this repository's CI. Do not describe them as verified until a proof gate
+  runs and its result is recorded.
 
 == Central Session Protocol Authority
 
@@ -101,11 +106,15 @@ Caveat:
 
 * Instantiated from `rsr-template-repo` on 2026-07-02 (`just init` + manual
   identity pass).
-* The ABI/FFI seam is real code; the domain directories (`src/core`,
-  `src/definitions`, `src/contracts`, `src/errors`, `src/bridges`) are
-  structured scaffolds awaiting the reposystem re-transfer.
-* `verification/proofs/` holds template-level proof scaffolding across
-  Agda/Coq/Lean4/Idris2/TLA+ — to be specialised to the record schema.
+* `src/core/record.zig` and `src/definitions/artefact-state-record.a2ml`
+  implement the provisional v0 state record. `src/bridges/verisimdb-feed.sh`
+  writes a tested local-only JSON representation; no mapping to the current
+  upstream Octad API/model or any agreed modality profile exists here, and there
+  is no network sink. Other domain components (including `src/contracts/` and
+  `src/errors/`) still await an explicit re-transfer scope.
+* `verification/proofs/` includes authored Idris2/TLA+ lifecycle proof sources
+  plus scaffolding for other provers. The proof sources are not currently
+  machine-checked by this repository's CI.
 * See `AFFIRMATION.adoc` for the dated snapshot and open questions (including
   the PMPL-1.0 vs MPL-2.0 licence discrepancy with reposystem).
 

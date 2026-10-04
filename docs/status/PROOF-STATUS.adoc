@@ -21,10 +21,11 @@
 |===
 
 *Overall*: 0% machine-verified. The four INV/DOM lifecycle proofs below are
-*authored but not yet machine-checked in this environment* (no idris2/TLC
-present; idris-lang GitHub source is blocked here). They run via
-`just typecheck-abi` / `just proof-check-idris2` and `tlc` where those
-toolchains are installable (e.g. CI). See AFFIRMATION.adoc.
+*authored but not machine-checked*. Idris2/TLC are absent from the 2026-10-04
+workspace, and no repository CI workflow currently runs the proof checks. The
+`just typecheck-abi` / `just proof-check-idris2` recipes and `tlc` can be invoked
+where toolchains are installed; a skipped recipe is not a verification result.
+See AFFIRMATION.adoc and the repository ultraplan.
 
 == Proofs Done
 
@@ -45,10 +46,10 @@ toolchains are installable (e.g. CI). See AFFIRMATION.adoc.
 |===
 | ID | Proof | Prover | File | Started | Blocker
 
-| INV-1 | Phase is forward-only (no backward/terminal edges) | Idris2 + TLA+ | src/interface/Abi/Record.idr; verification/proofs/tlaplus/ArtefactLifecycle.tla | 2026-07-03 | no local idris2/TLC (CI-gated)
-| INV-2 | Verification-monotonicity (no silent regress to unverified; reopen only) | Idris2 + TLA+ | Abi/Record.idr (noSetToUnverified); ArtefactLifecycle.tla (NoSilentUnverify) | 2026-07-03 | no local idris2/TLC (CI-gated)
-| INV-3 | Additive-schema / backward-readability (schema-version non-decreasing) | TLA+ | ArtefactLifecycle.tla (AdditiveSchema) | 2026-07-03 | no local TLC (CI-gated)
-| DOM-1 | Typed lifecycle transition relation (illegal transitions unrepresentable) | Idris2 | Abi/Record.idr (ValidPhaseStep, ValidVerificationSet) | 2026-07-03 | no local idris2 (CI-gated)
+| INV-1 | Phase is forward-only (no backward/terminal edges) | Idris2 + TLA+ | src/interface/Abi/Record.idr; verification/proofs/tlaplus/ArtefactLifecycle.tla | 2026-07-03 | Authored only; Idris2/TLC unavailable here and no CI gate is wired; unverified
+| INV-2 | Verification-monotonicity (no silent regress to unverified; reopen only) | Idris2 + TLA+ | Abi/Record.idr (noSetToUnverified); ArtefactLifecycle.tla (NoSilentUnverify) | 2026-07-03 | Authored only; Idris2/TLC unavailable here and no CI gate is wired; unverified
+| INV-3 | Additive-schema / backward-readability (schema-version non-decreasing) | TLA+ | ArtefactLifecycle.tla (AdditiveSchema) | 2026-07-03 | Authored only; TLC unavailable here and no CI gate is wired; unverified
+| DOM-1 | Typed lifecycle transition relation (illegal transitions unrepresentable) | Idris2 | Abi/Record.idr (ValidPhaseStep, ValidVerificationSet) | 2026-07-03 | Authored only; Idris2 unavailable here and no CI gate is wired; unverified
 |===
 
 == Proofs Blocked
@@ -59,6 +60,13 @@ toolchains are installable (e.g. CI). See AFFIRMATION.adoc.
 
 | — | — | — | —
 |===
+
+[NOTE]
+====
+*Verification infrastructure gap (not an individual proof obligation):* no
+repository CI workflow currently installs a pinned Idris2/TLC toolchain and
+runs these proof checks. The current workspace also lacks both tools.
+====
 
 == Proofs Remaining
 
@@ -105,5 +113,6 @@ panic-attack assail --proofs-only
 | Date | Change | By
 
 | 2026-04-04 | Initial proof status tracking | Template
-| 2026-07-03 | Authored v0 lifecycle proofs (INV-1..3, DOM-1) — Idris2 typed transitions + TLA+ spec; CI-gated | —
+| 2026-07-03 | Authored v0 lifecycle proof sources (INV-1..3, DOM-1) — Idris2 typed transitions + TLA+ spec | —
+| 2026-10-04 | Corrected status: no repository CI gate is wired; lifecycle proof sources remain unverified pending pinned Idris2/TLC checks | Repository review
 |===

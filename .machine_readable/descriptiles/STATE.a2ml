@@ -6,7 +6,7 @@
 [metadata]
 project = "stateful-artefacts"
 version = "0.1.0"
-last-updated = "2026-07-03"
+last-updated = "2026-10-04"
 status = "active"  # active | paused | archived
 
 [project-context]
@@ -22,24 +22,30 @@ maturity = "alpha"         # experimental | alpha | beta | production | lts
 milestones = [
   { name = "Phase A: Template instantiation and identity", completion = 100 },
   { name = "Phase B: Repair template defects (ABI drift, validators, missing docs)", completion = 100 },
-  { name = "Phase C: ABI/FFI seam builds and passes tests (Zig + Idris2)", completion = 100 },
-  { name = "Phase D: v0 artefact-state-record (schema + Zig core + lifecycle proofs)", completion = 90 },
+  { name = "Phase C: Zig ABI/FFI implemented; Idris2 proof/typecheck CI pending", completion = 90 },
+  { name = "Phase D: provisional v0 artefact-state-record (schema + Zig core + unverified lifecycle proof sources)", completion = 90 },
   { name = "Phase E: Re-transfer domain content from hyperpolymath/reposystem", completion = 0 },
-  { name = "Phase F: VeriSimDB live feed + estate registrations (local stub done)", completion = 10 },
+  { name = "Phase F: Local-only provisional VeriSimDB serializer + estate registrations (no Octad adapter/sink in current scope)", completion = 10 },
 ]
 
 [blockers-and-issues]
 issues = [
-  "Original content transfer out of hyperpolymath/reposystem failed; only the RSR template shell landed here. Domain code must be re-transferred by the maintainer.",
+  "The original content transfer from hyperpolymath/reposystem failed; the v0 record core now exists in this repository, while broader graph/scenario domain content still needs a maintainer-selected re-transfer slice.",
   "License discrepancy: reposystem declares PMPL-1.0; this repo is normalised to MPL-2.0 (code) + CC-BY-SA-4.0 (docs). Needs a maintainer decision.",
+  "Core-language/ABI decision is unresolved: ADR-002 plans Rust, the v0 core is Zig, and Reposystem's documented ABI differs from this repository's Idris2/Zig seam.",
+  "UUID-v7/registry identity reconciliation is tracked in standards#1140 and gv-clade-index#98; preserve the current local identity until maintainers resolve it.",
+  "Issue #68's upstream-contract/sink acceptance is not met; current repository scope retains only the tested local provisional serializer, with no Octad mapping or network sink.",
+  "Modality-profile follow-ups are open in verisimdb#299, reposystem#299, flat-mate#60, vcl-ut#118, and verisimiser#213; issue #68's legacy title/body could not be updated through the GitHub integration (HTTP 403) and remains unchanged.",
 ]
 
 [critical-next-actions]
 actions = [
-  "Get an idris2 toolchain into CI so the ABI/Record typecheck (just typecheck-abi) runs on every change (currently dev/CI-local only; see AFFIRMATION)",
-  "Re-transfer the stateful-artefacts slice from hyperpolymath/reposystem into src/core, reconciling it with the v0 artefact-state-record (maintainer-only; see README)",
+  "Add reproducible Idris2/TLA+ proof checks to CI; until they run, describe proof sources as authored but unverified (see AFFIRMATION and docs/REPOSITORY-ULTRAPLAN.adoc)",
+  "Resolve the Rust-versus-Zig core and ABI canon before re-transferring any Reposystem content",
+  "Have the maintainer select a minimal state/export/scenario slice and reconcile it with the v0 record; keep the legacy VeriSimDB client, graph engine, scanner, and CLI/TUI in Reposystem",
   "Register groove port in standards PORT-REGISTRY and clade prefix in gv-clade-index; upstream the estate V/Zig naming-check fix to standards",
   "Resolve PMPL-1.0 vs MPL-2.0 licensing question",
+  "Follow up on cross-repository modality-profile issues and reconcile stateful-artefacts#68 once issue-write permission is available",
 ]
 
 [maintenance-status]
@@ -51,4 +57,4 @@ open-failures = 0
 
 [ecosystem]
 part-of = ["Reposystem/OPSM stack", "RSR Framework"]
-depends-on = ["reposystem", "nextgen-databases", "standards"]
+depends-on = ["reposystem", "standards"]

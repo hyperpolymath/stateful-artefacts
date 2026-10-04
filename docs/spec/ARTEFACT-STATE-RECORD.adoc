@@ -20,11 +20,31 @@ domain content is re-transferred from `hyperpolymath/reposystem`. Evolution is
 
 An artefact state record answers, in one self-describing unit: _what is this
 artefact, where did it come from, where is it in its lifecycle, and has it been
-verified?_ Producers (Reposystem, CI) attach a record to an artefact; consumers
-(vordr, cerro-torre, svalinn, VeriSimDB) read and act on it. This spec defines
-the v0 record, its two state machines, and a deterministic serialization. The
-layout is proven C-ABI-compliant (Idris2) and exposed through the
-`stateful_artefacts_*` C ABI.
+verified?_ Producers such as Reposystem or CI can attach a record to an
+artefact. Potential consumers include vordr, cerro-torre, and svalinn; no live
+consumer integration is claimed here, and VeriSimDB mapping is out of scope.
+This spec defines
+the v0 record and its two state machines. The Idris2 sources model the
+intended C-ABI layout, and the record is exposed through the
+`stateful_artefacts_*` C ABI; those layout-proof sources are not yet
+machine-checked by this repository's CI.
+
+== Terminology for modular modality groups
+
+Use *modality profile* as the number-agnostic term for the modalities selected
+or supported by a particular database implementation or deployment. A profile
+identifies membership and any required/optional status; its cardinality is
+implementation-specific. The *modality set* is the membership itself.
+
+* *Octad* names the current upstream VeriSimDB contract/model with eight
+  modalities. Use it when referring to that specific upstream shape.
+* *Hexad* ordinarily denotes six members; legacy project identifiers may use
+  the word for other shapes. It is not a generic name for a configurable
+  modality group, and its use does not establish the current API cardinality.
+* This terminology does not assert that the current Octad API accepts arbitrary
+  subsets or variable cardinalities. That is determined by its versioned
+  upstream contract; this repository has no mapping or serialized profile
+  contract of its own.
 
 == Record shape (v0)
 
@@ -82,9 +102,13 @@ back to `unverified` is possible only through an explicit *reopen* operation.
 
 == Serialization (v0)
 
-A deterministic, line-oriented `key=value` text form, one field per line, in
-the field order of the table above. Optional fields with empty values are
-omitted. Example:
+The v0 text serialization is a deterministic, line-oriented `key=value` form,
+one field per line, in the field order of the table above. Optional fields with
+empty values are omitted. The current Zig writer inserts string bytes as-is; it
+does not define escaping for newlines, delimiters, or invalid UTF-8. Because the
+format remains PROVISIONAL and has no agreed parser/consumer contract, do not
+rely on it for untrusted strings until encoding/validation rules and tests are
+specified. Example:
 
 ----
 schema-version=1
@@ -97,6 +121,12 @@ phase=1
 verification=0
 ----
 
+The `src/bridges/verisimdb-feed.sh` output is *not* this normative text
+serialization. It is a separate, PROVISIONAL local JSON envelope containing a
+subset of v0 fields for safety testing; no downstream contract has been agreed.
+Do not treat that JSON shape as a frozen record format or as a VeriSimDB API
+payload.
+
 [[Compatibility]]
 == Compatibility rule (additive-only)
 
@@ -106,13 +136,21 @@ verification=0
 * Removing or renumbering a field, or narrowing an enum, is a *breaking* change
   that bumps `schema-version`.
 
-This rule is the machine-checked target of the `additive-schema` /
+This rule is modeled by the `additive-schema` /
 `backward-readability` invariant in
-`verification/proofs/tlaplus/ArtefactLifecycle.tla`.
+`verification/proofs/tlaplus/ArtefactLifecycle.tla`. That TLA+ source has not
+been machine-checked by the current repository CI.
 
 == Out of scope for v0 (do not assume)
 
-* The VeriSimDB *hexad* feed layout (named but never specified upstream) — the
-  local emitter in `src/bridges/` is a clearly-marked stub.
+* An adapter mapping from this v0 record to VeriSimDB. The current upstream
+  (`hyperpolymath/verisimdb`) documents an eight-modality *Octad* JSON API; this
+  repository has not found a versioned upstream six-field `hexad` feed contract.
+  Nor has it agreed how the v0 record maps into the current API. `src/bridges/`
+  is a tested, local-only provisional JSON serializer, not an adapter, sink, or
+  canonical record serialization. See
+  the upstream
+  link:https://github.com/hyperpolymath/verisimdb/blob/main/connectors/shared/json-schema/octad-input.json[Octad input schema]
+  and link:https://github.com/hyperpolymath/verisimdb/blob/main/connectors/shared/openapi/verisim-api-v1.yaml[API specification].
 * Reposystem's domain semantics (yard/track/switch-point records, graph-export
   and scenario-state schemas) — those arrive with the re-transfer.
