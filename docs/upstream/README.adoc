@@ -1,6 +1,24 @@
 // SPDX-License-Identifier: CC-BY-SA-4.0
 = Upstream patch handoff
 
+== standards #1109 (estate board triage + ruleset-gap handoff)
+
+`standards-1109-estate-board-triage.adoc` records a read-only triage, dated 2026-10-04, of the
+auto-generated estate board https://github.com/hyperpolymath/standards/issues/1109[standards#1109]
+and of the ten default branches it flagged as having no required check. Its "Needs you" bucket is
+already empty (all ten repos now have 0 open PRs; both "merge it" items were merged), so re-running
+`squabble board` clears the headline — but the ruleset gap and a pin-drift root cause are real.
+
+The session could not perform the writes: repo-level ruleset writes returned HTTP 403
+(`Resource not accessible by integration`, `PUT` and `POST` alike) and so did a comment on the
+source issue, so the owner has *not* been notified through the issue. The file carries a
+paste-ready comment (Appendix A) and the four owner commands that need `administration:write`;
+the tracking issue in this repository records who runs them.
+
+Unusually for this directory, this is not a patch to apply — nothing was authored for upstream
+beyond the comment text. Do not claim any write happened; the file's "What this file does not
+claim" section is the inventory of what was and was not done.
+
 == cicd-suite #42 (generic upstream fix)
 
 The owner has since merged CodeRabbit PR #70, which uses bounded
