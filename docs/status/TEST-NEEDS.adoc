@@ -5,10 +5,11 @@
 == CRG Grade: see docs/status/READINESS.adoc
 
 The CRG grade is an asserted human/AI-agent assessment, not derived from this
-document — see link:READINESS.adoc[READINESS.adoc] for the current grade and
-evidence gates.
+document. The last assessment is dated 2026-07-02 and has not been recalculated
+since the v0 record core landed; see link:READINESS.adoc[READINESS.adoc] and its
+historical-snapshot warning before using the grade as current evidence.
 
-== Current State (updated on instantiation cleanup)
+== Current State (updated 2026-10-04)
 
 [cols="2,1,4", options="header"]
 |===
@@ -18,6 +19,7 @@ evidence gates.
 | *Unit tests* | 7 | Inline `test` blocks in `main.zig` (3) and `record.zig` (4, via `zig build test`'s core-module step)
 | *Integration tests* | 9 | `src/interface/ffi/test/integration_test.zig` — real tests exercising the library entirely through its C ABI (lifecycle, null-safety, strings, version, and the artefact-state-record's phase/verification state machines)
 | *Aspect tests* | 1 | `tests/aspect_tests.sh` (SPDX headers, no-dangerous-proof-patterns, Idris2<->Zig symbol parity)
+| *Local serializer tests* | 1 | `tests/verisimdb-feed_test.sh` — input validation and JSON-safe serialization of the provisional-v0 stub only; it is not an upstream VeriSimDB contract test
 | *Workflow tests* | 1 | `tests/workflows/validate_workflows_test.sh`
 | *Benchmarks* | 3 | `benches/template_bench.sh` (Zig build, Zig tests, workflow validation)
 | *Fuzz tests* | 0 | `tests/fuzz/README.adoc` scaffold with harness instructions — none configured yet
@@ -30,27 +32,38 @@ template-only machinery useful only pre-instantiation. Both have been
 removed; `just validate` covers required-file/metadata compliance for this
 already-instantiated repo.
 
-== Test Results Summary (`zig build test`, Zig 0.15.2)
+== Last Recorded Zig Test Results (`zig build test`, Zig 0.15.2; 2026-07-03)
 
 ----
 Build Summary: 9/9 steps succeeded; 16/16 tests passed
 ----
 
+These Zig results are historical, not a run from the 2026-10-04 review: `zig`
+and `just` are absent in the current workspace. Re-run the build and update this
+section when the supported toolchain is available.
+
 == CI Coverage
 
 * `.github/workflows/e2e.yml` — builds the FFI seam and runs
-  `zig build test --summary all`, then `tests/aspect_tests.sh`, on every push/PR
-  touching `src/**` or `tests/**`.
+  `zig build test --summary all`, the provisional bridge safety test, and
+  `tests/aspect_tests.sh` on every push/PR touching `src/**` or `tests/**`.
 * `.github/workflows/quality.yml`, `codeql.yml`, `scorecard.yml`,
   `secret-scanner.yml`, `hypatia-scan.yml` — quality/security gates.
 
 == Known Gaps
 
+* [ ] `src/core/record.zig`'s line-oriented `key=value` serializer currently
+  writes string bytes without escaping delimiters, newlines, or invalid UTF-8.
+  Specify a safe encoding or validation rule and test it before downstream use;
+  keep this separate from the local JSON bridge contract.
 * [ ] No fuzz harness configured (`tests/fuzz/README.adoc` documents how to
   add one when the library grows parsers or untrusted-input surfaces).
-* [ ] `src/bridges/verisimdb-feed.sh` is a PROVISIONAL local stub, not
-  covered by the test suite — it is not yet part of the re-transferred
-  domain content.
+* `src/bridges/verisimdb-feed.sh` remains a PROVISIONAL local-only serializer.
+  Tests cover safe serialization of its provisional-v0 shape only; there is no
+  mapping from this record to the current upstream Octad API or an agreed
+  modality-profile payload, and no network sink. Those are outside the current
+  scope. If that boundary changes, add upstream contract tests before
+  implementation.
 * [ ] The reposystem domain content itself (the actual estate-coordination
   logic) has not yet been re-transferred — see
   link:../RE-TRANSFER-RUNBOOK.adoc[RE-TRANSFER-RUNBOOK.adoc]. Until it

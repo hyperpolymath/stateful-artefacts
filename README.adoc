@@ -25,20 +25,22 @@ instantiated; the domain content is being re-transferred from reposystem
 ====
 
 Reposystem treats a ~300-repo estate as a railway yard: repos are yards, edges
-are tracks, provider choices are switch points, and everything it knows is
-exported as artefacts — graph exports, scenario states, estate metadata,
-VeriSimDB feed records. *Stateful Artefacts* is the layer those artefacts pass
-through: one canonical, machine-readable *state record* (identity, provenance,
-lifecycle phase, verification status) that any artefact can carry, plus the
-tooling to read, write, and validate those records from any language via a
-formally-typed C ABI (Idris2-proven layout, Zig implementation).
+are tracks, and provider choices are switch points. It exports graph,
+scenario, and estate metadata artefacts. *Stateful Artefacts* is the layer
+those artefacts should pass through: one canonical, machine-readable *state
+record* (identity, provenance, lifecycle phase, verification status) that any
+artefact can carry, plus tooling to read, write, and validate those records
+from any language via a formally-typed C ABI (Idris2 layout model, Zig
+implementation). VeriSimDB persistence remains outside this repository's
+current scope; the local provisional exporter is not a database sink.
 
 A *v0* of that record now exists — the schema
 (link:docs/spec/ARTEFACT-STATE-RECORD.adoc[ARTEFACT-STATE-RECORD]), a Zig core
 (`src/core/record.zig`) with a typed lifecycle (forward-only phase, monotonic
-verification) exposed over the `stateful_artefacts_record_*` C ABI, and lifecycle
-proofs (Idris2 `Abi/Record.idr` + TLA+ `ArtefactLifecycle.tla`). It is
-PROVISIONAL and additive-only; the reposystem-specific domain content still
+verification) exposed over the `stateful_artefacts_record_*` C ABI, and
+lifecycle proof sources (Idris2 `Abi/Record.idr` + TLA+
+`ArtefactLifecycle.tla`; not yet machine-checked by CI). It is PROVISIONAL and
+additive-only; the reposystem-specific domain content still
 arrives via the <<Re-transfer status,re-transfer>>.
 
 == Quick start
@@ -66,9 +68,10 @@ link:docs/onboarding/QUICKSTART-MAINTAINER.adoc[QUICKSTART-MAINTAINER].
   in a2ml, so tools and agents can read the project's state and boundaries.
 * *AI gatekeeper protocol* — `0-AI-MANIFEST.a2ml` is the universal entry point that
   tells an AI agent how to work in this repo before it touches anything.
-* *Typed ABI/FFI seam* — `src/interface/Abi/` (Idris2 type + layout proofs) over
-  `src/interface/ffi/` (Zig implementation), with a hand-maintained C header in
-  `src/interface/generated/abi/`.
+* *Typed ABI/FFI seam* — `src/interface/Abi/` (Idris2 ABI types and proof
+  sources) over `src/interface/ffi/` (Zig implementation), with a
+  hand-maintained C header in `src/interface/generated/abi/`. The proof sources
+  are not yet machine-checked in CI.
 * *CI/CD* — GitHub Actions for quality, security (CodeQL, Scorecard, secret
   scanning), multi-forge mirroring, and RSR anti-pattern enforcement.
 * *Supply-chain & reproducibility* — container layering (stapeln), Nix/Guix shells,
@@ -88,7 +91,7 @@ link:docs/onboarding/QUICKSTART-MAINTAINER.adoc[QUICKSTART-MAINTAINER].
 | `src/definitions/`        | Machine-readable schemas (`artefact-state-record.a2ml`).
 | `src/bridges/`            | Estate adapters — `verisimdb-feed.sh` (PROVISIONAL local stub).
 | `src/interface/`          | Typed ABI (Idris2) + FFI (Zig) + hand-maintained C header.
-| `verification/proofs/`    | Idris2/TLA+ lifecycle proofs (+ Agda/Coq/Lean4 scaffolding).
+| `verification/proofs/`    | Authored Idris2/TLA+ lifecycle proof sources (not yet CI-checked) plus other prover scaffolding.
 | `docs/spec/`, `docs/`     | The record spec; onboarding, status, governance, decisions.
 | `build/`, `Justfile`      | Task orchestration (`just` phases delegate to `build/just/*.just`).
 | `.github/`                | Workflows + community health files.
@@ -100,24 +103,29 @@ link:docs/onboarding/QUICKSTART-MAINTAINER.adoc[QUICKSTART-MAINTAINER].
 The domain content still lives in `hyperpolymath/reposystem` and must be
 re-extracted by the maintainer (that repo is not reachable from CI here). The
 full harness — extraction, a reconciliation map onto the v0 record, the
-decisions to make (core language, ABI canon, licence, hexad format), and the
-verification gates — is in link:docs/RE-TRANSFER-RUNBOOK.adoc[the re-transfer
+remaining decisions (core language, ABI canon, licence), the current
+VeriSimDB-local-only boundary, and verification gates — is in link:docs/RE-TRANSFER-RUNBOOK.adoc[the re-transfer
 runbook], driven by `scripts/retransfer-from-reposystem.sh` (dry-run by default).
 
 In brief:
 
-1. Decide the slice — candidates: `src/verisimdb.rs`, the exporter/state parts
-   of `src/graph.rs`, scenario state, `spec/DATA-MODEL.adoc`.
+1. Decide the slice — candidates: exporter/state parts of `src/graph.rs`,
+   scenario state, and `spec/DATA-MODEL.adoc`. The current scope keeps
+   `src/verisimdb.rs`'s persistence client in Reposystem; do not transfer it as
+   an adapter to VeriSimDB's Octad API.
 2. Extract with history via the script (`git filter-repo`), then merge with
    `--allow-unrelated-histories`.
 3. Land + reconcile onto the v0 artefact-state-record (`src/core` /
    `src/definitions` / `src/bridges`, specs in `docs/`); do not fork the state
-   model; update `META.a2ml` / `STATE.a2ml` and drop the PROVISIONAL markers.
+   model; update `META.a2ml` / `STATE.a2ml`. Remove only markers whose
+   assumptions are resolved; retain the v0/local-serializer PROVISIONAL
+   markers (the current scope has no VeriSimDB mapping or sink).
 4. Resolve the licence question: reposystem declares PMPL-1.0; this repo is
    normalised to MPL-2.0 (code) + CC-BY-SA-4.0 (docs).
 
 == Where to go next
 
+* link:docs/REPOSITORY-ULTRAPLAN.adoc[Repository ultraplan] — current boundary, audit evidence, risks, and sequenced priorities.
 * `EXPLAINME.adoc` — the engineering deep-dive: how the pieces actually work.
 * `AFFIRMATION.adoc` — the dated, signed honesty snapshot of the repo's true state.
 * `AUDIT.adoc` — the release audit gate.

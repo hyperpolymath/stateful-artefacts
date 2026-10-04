@@ -1,3 +1,22 @@
 // SPDX-License-Identifier: CC-BY-SA-4.0
 // Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
-= decisions Unit
+= Architecture Decision Records
+
+This directory stores the rationale and consequences for material architecture
+choices. Machine-readable summaries are maintained in
+`.machine_readable/descriptiles/META.a2ml`.
+
+== Records
+
+* link:0000-template.adoc[ADR template]
+* link:0001-adopt-rsr-standard.adoc[ADR-001 — Adopt the RSR standard]
+* link:0002-extraction-from-reposystem.adoc[ADR-002 — Extraction from Reposystem]
+* link:0003-abi-result-canon.adoc[ADR-003 — ABI Result canon]
+* link:0005-verisimdb-local-only-boundary.adoc[ADR-005 — VeriSimDB local-only boundary]
+
+[NOTE]
+====
+`META.a2ml` also lists ADR-004, but a matching `0004-*.adoc` record is absent
+from this directory. Verify the original decision with maintainers rather than
+reconstructing its history from the metadata summary alone.
+====

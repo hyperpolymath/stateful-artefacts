@@ -37,19 +37,24 @@ just validate              # RSR structure + metadata + this guide
 
 == Scope and Honest State
 
-This repository currently ships the RSR scaffolding plus a working, formally
-typed ABI/FFI seam. The domain implementation (`src/core` and siblings) is
-awaiting a content re-transfer from `hyperpolymath/reposystem`; see
-`AFFIRMATION.adoc` for the dated snapshot and open questions. An agent asked to
-"implement the domain" should stop and consult the maintainer rather than
-inventing semantics.
+This repository includes the v0 state-record schema and Zig core, a typed
+ABI/FFI seam, and a PROVISIONAL local-only JSON serializer. Additional
+Reposystem-specific graph/scenario domain content is awaiting maintainer review
+for re-transfer; this repo does not currently map the record to the current
+VeriSimDB Octad API/model or any agreed modality profile, and it does not
+implement a network sink.
+See `AFFIRMATION.adoc` and
+`docs/RE-TRANSFER-RUNBOOK.adoc` for the current boundary and open decisions. An
+agent asked to "implement the domain" should stop and consult the maintainer
+rather than inventing semantics.
 
 == Privacy
 
 This guide and the install steps collect no telemetry. Cloning, building, and
 testing stateful-artefacts run entirely on your machine and transmit nothing to
-the maintainers. The optional estate integrations (VeriSimDB feeds, Groove
-discovery, multi-forge mirroring) are disabled by default and, when enabled,
+the maintainers. The VeriSimDB-related script writes a provisional record to a
+local ignored directory; it does not send data over the network. Groove
+discovery and multi-forge mirroring are separate optional tooling and should
 only exchange data with the hyperpolymath services you explicitly configure —
 never with third parties. No personal data is processed by the library itself.
 

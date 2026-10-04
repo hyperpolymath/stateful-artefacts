@@ -12,6 +12,13 @@ Date: 2026-07-02
 
 Accepted
 
+> **Implementation drift note — 2026-10-04 (not a replacement for an ADR):**
+> when this decision was written, `src/core` was empty. A provisional v0 record
+> core has since been implemented in Zig at `src/core/record.zig`. The Rust-core
+> plan below has therefore not been validated by implementation and must be
+> reconciled by a maintainer before additional domain code is transferred. See
+> `docs/REPOSITORY-ULTRAPLAN.adoc`.
+
 ## Context
 
 `stateful-artefacts` is the state-carrying artefact layer of the

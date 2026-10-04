@@ -30,8 +30,9 @@ next-actions and aspirational wishes.
 Stateful Artefacts provides one canonical, machine-readable state schema
 (identity, provenance, lifecycle phase, verification status) carried by the
 artefacts the hyperpolymath estate produces and consumes — graph exports,
-scenario states, estate metadata, VeriSimDB feed records — plus the tooling
-to read, write, and validate those records across languages via a
+scenario states, estate metadata, and possible downstream VeriSimDB records
+if a concrete contract is agreed — plus the tooling to read, write, and
+validate those records across languages via a
 formally-typed C ABI. (PROVISIONAL — refine on content re-transfer from
 hyperpolymath/reposystem.)
 
@@ -40,7 +41,7 @@ hyperpolymath/reposystem.)
 This repository is NOT:
 - A general-purpose metadata framework (it serves the estate's artefact-state schema, nothing broader)
 - The Reposystem graph engine itself (that remains in hyperpolymath/reposystem)
-- A database (VeriSimDB in hyperpolymath/nextgen-databases is the aggregation sink; this layer only emits/validates records)
+- A database (VeriSimDB in hyperpolymath/verisimdb is a potential downstream store; this layer only defines/validates records and has no current network sink)
 
 ## If In Doubt
 
@@ -60,7 +61,7 @@ touching licensing (MPL-2.0 vs reposystem's PMPL-1.0 is unresolved).
 - description: v0 record (schema + Zig core + lifecycle proofs) through the seam
 - probe: cd src/interface/ffi && zig build test && bash tests/aspect_tests.sh
 - status: done
-- notes: docs/spec/ARTEFACT-STATE-RECORD.adoc; src/core/record.zig; Abi/Record.idr; ArtefactLifecycle.tla. PROVISIONAL, additive-only. Idris2/TLC checks are CI-gated.
+- notes: docs/spec/ARTEFACT-STATE-RECORD.adoc; src/core/record.zig; Abi/Record.idr; ArtefactLifecycle.tla. PROVISIONAL, additive-only. Idris2/TLC proof sources are authored but not machine-checked; no repository CI gate is wired yet.
 
 ### retransfer-domain-content
 - description: Re-transfer the stateful-artefacts slice out of hyperpolymath/reposystem into src/core
@@ -73,10 +74,16 @@ touching licensing (MPL-2.0 vs reposystem's PMPL-1.0 is unresolved).
 ### Near Horizon
 
 #### verisimdb-feed-stub
-- description: Local hexad-JSON feed emitter writing artefact state records to verisimdb-data/feeds/
+- description: Local provisional-v0 serializer for artefact state records under verisimdb-data/feeds/
 - horizon: near
 - status: achieved
-- notes: src/bridges/verisimdb-feed.sh — PROVISIONAL local stub; does not freeze the hexad layout
+- notes: src/bridges/verisimdb-feed.sh validates enum/string inputs and safely writes local JSON only; it is not a payload for the current Octad API/model, has no agreed modality-profile mapping, and has no network sink
+
+#### verisimdb-modality-profile-adapter
+- description: Possible future adapter from the v0 artefact-state-record to a versioned VeriSimDB representation, if a consumer and target modality profile are agreed (the current upstream API/model is named Octad)
+- horizon: mid
+- status: deferred
+- notes: Modality profile is the number-agnostic term for an implementation's selected modalities; current upstream contract details and cardinality rules control any mapping. No mapping or network sink is in this repository's scope (ADR-005); revisit only for a concrete consumer need and an upstream contract test
 
 ### Mid Horizon
 

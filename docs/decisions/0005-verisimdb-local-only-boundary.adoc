@@ -1,0 +1,72 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+= Architecture Decision Record: 0005-verisimdb-local-only-boundary
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
+<!-- Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk> -->
+
+# 5. VeriSimDB boundary: local-only provisional serializer
+
+Date: 2026-10-04
+
+## Status
+
+Accepted
+
+## Context
+
+Issue #68 concerns safe serialization and a VeriSimDB-facing feed. The original
+"hexad" label does not identify a current upstream contract. VeriSimDB now
+publishes a named Octad API, but this repository has no agreed mapping from its
+v0 artefact-state record to that API/model. Reposystem's legacy snapshot client
+uses custom store routes and is not a verified Octad adapter.
+
+The repository can safely serialize its own provisional v0 state record without
+claiming a database integration. For number-agnostic discussion of a selected
+group of database modalities, use *modality profile*; reserve *Octad* for the
+current upstream's named eight-modality model/API. The term does not imply that
+the current API accepts arbitrary subsets.
+
+The selected scope is to keep this project focused on the state record and
+retain that local serializer; do not add an Octad mapping or network sink here
+for now.
+
+## Decision
+
+- Keep `src/bridges/verisimdb-feed.sh` as a *local-only* serializer that writes
+  `provisional-v0` JSON under the ignored `verisimdb-data/feeds/` directory.
+- Validate values and encode JSON safely. Keep the fixture-based tests in
+  `tests/verisimdb-feed_test.sh` in the normal test path.
+- Do not add a v0-to-Octad API mapping (or any other modality-profile
+  payload), network transport, credentials, retry policy, or claim of a live
+  VeriSimDB integration in this repository.
+- Keep the v0 record and serializer marked *PROVISIONAL*. Do not infer a
+  six-field "hexad" mapping from the obsolete label.
+- Leave issue #68 open as a deferred integration request: its upstream-contract
+  acceptance is not satisfied by local serialization. Do not close it as
+  complete; if a maintainer narrows the acceptance, update the issue explicitly
+  before closing it.
+- Reconsider this boundary only for a concrete consumer need, through a new
+  maintainer-approved decision that specifies the mapping and identity,
+  idempotency, provenance, trust/configuration, and contract-test requirements.
+
+## Consequences
+
+### Positive
+
+- The library has a narrow, truthful responsibility and a useful local export
+  path without a speculative network dependency.
+- Input validation, JSON escaping, deterministic collision-resistant filenames,
+  and atomic file replacement can be tested independently of any database.
+
+### Negative
+
+- Consumers that need persistence must keep using a separately owned client or
+  request a new, contract-first scope decision.
+- The original issue's upstream integration acceptance remains open; this
+  decision does not imply that a VeriSimDB integration has shipped.
+
+### Neutral
+
+- This decision does not change the v0 record schema, choose the future core
+  language, resolve the Reposystem licence question, or authorize transferring
+  Reposystem's legacy persistence client.

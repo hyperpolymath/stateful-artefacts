@@ -13,12 +13,13 @@
 #   REPOS_DIR   Directory containing the reposystem clone (expects $REPOS_DIR/reposystem).
 #               Or set REPOSYSTEM_DIR to point straight at the clone.
 #   SLICE       Space-separated list of reposystem paths to take (with history).
-#               Default: the candidate slice from the runbook.
+#               Default: candidate state/export paths from the runbook; excludes
+#               src/verisimdb.rs under the current local-only boundary (ADR-005).
 #   MODE        "history" (git filter-repo, default) or "copy" (plain file copy).
 #   DRY_RUN     "1" (default) prints the plan; "0" executes.
 #
 # Example:
-#   REPOS_DIR=~/repos SLICE="src/verisimdb.rs spec/DATA-MODEL.adoc" \
+#   REPOS_DIR=~/repos SLICE="src/graph.rs spec/DATA-MODEL.adoc" \
 #     bash scripts/retransfer-from-reposystem.sh
 #
 # Exit codes: 0 ok / plan printed; 2 usage or environment error.
@@ -35,7 +36,7 @@ else
 fi
 MODE="${MODE:-history}"
 DRY_RUN="${DRY_RUN:-1}"
-SLICE="${SLICE:-src/verisimdb.rs src/graph.rs src/lib.rs spec/DATA-MODEL.adoc}"
+SLICE="${SLICE:-src/graph.rs src/lib.rs spec/DATA-MODEL.adoc}"
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"   # this repo root
 SCRATCH="${HERE}/.retransfer-scratch"                     # gitignored workspace

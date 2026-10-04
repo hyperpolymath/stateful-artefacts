@@ -15,9 +15,11 @@ For this repository's real, evidence-based state see:
 * link:status/READINESS.adoc[READINESS.adoc] (Component Readiness Grade), and
 * link:../AFFIRMATION.adoc[AFFIRMATION.adoc] (honest scope of what exists).
 
-As of this writing the project is early alpha (grade X): the ABI/FFI seam
-builds, there is no domain implementation yet, and the licence question is
-unresolved.
+The underlying sample remains illustrative rather than a live dashboard. The
+current repository has a provisional v0 state-record schema and Zig core, plus
+a tested local-only serializer; broader Reposystem domain transfer and the
+licence question remain unresolved. See `docs/status/ROADMAP.adoc` and
+`docs/REPOSITORY-ULTRAPLAN.adoc` for current status.
 ====
 
 [source]

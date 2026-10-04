@@ -7,8 +7,8 @@
 # E2E + Aspect — exercises the Idris2/Zig ABI/FFI seam end-to-end.
 #
 # Builds libstateful_artefacts, runs the Zig unit + integration tests (which
-# drive the library through its C ABI), and runs the aspect tests
-# (SPDX headers, no-dangerous-proof-patterns, Idris2<->Zig symbol parity).
+# drive the library through its C ABI), the provisional local serializer safety
+# tests, and the aspect tests (SPDX headers, dangerous-pattern scan, ABI parity).
 
 name: E2E + Aspect + Bench
 on:

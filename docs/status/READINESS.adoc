@@ -18,6 +18,14 @@ grade*. See the per-component table in §3.
 *Honest grading.* Per CRG v2.0 Principle 4: grade as-is today, not
 aspirationally. Long alpha is discipline, not shame. Demote immediately if
 evidence doesn't support the claim.
+
+*Historical snapshot warning (2026-10-04):* this assessment was last dated
+2026-07-02 and has not been recalculated after the v0 state-record schema and
+Zig core landed. In particular, the `src/core` row below is stale. Do not use
+its component grades, counts, or placeholders as current evidence; refresh this
+assessment before using it for a release or publication gate. See
+link:ROADMAP.adoc[ROADMAP.adoc] and
+link:../REPOSITORY-ULTRAPLAN.adoc[the repository ultraplan].
 ====
 
 '''
