@@ -5,7 +5,7 @@
 #
 [metadata]
 version = "0.1.0"
-last-updated = "2026-10-03"
+last-updated = "2026-10-04"
 
 [project]
 name = "Stateful Artefacts"
@@ -42,3 +42,10 @@ optional-work = "Wiki-format policy reconciled and tested; real ReleaseSafe pack
 identity-decision = "Registry inspection found a DIFFERENT registered UUID and clade rm (gv-clade-index#98). Classification reconciled; UUID unchanged pending consumer inventory and reviewed alias/migration."
 
 validation-boundary = "PR check rollups omit some Actions startup failures. Native lock fully regenerated from unchanged SHA set; inspect run conclusions separately. Initial hosted release dry run failed startup despite local packaging success."
+
+[session-2026-10-04]
+task = "Estate triage: standards#1109 'Estate: needs me' board, and the ten default branches it flags as having no required check"
+status = "Read-only triage complete. The board is a stale snapshot (not rewritten since 2026-10-01T22:57:05Z): all ten flagged repos have 0 open PRs and both 'merge it' items were merged, so re-running squabble board clears its 'Needs you' bucket. The underlying gap is real: apply-branch-gates.sh reports 2 WOULD-GATE, 5 AMBIGUOUS, 2 REFUSED, 1 ORG-INHERITED, and every one of the ten callers is BEHIND the canon pin 84355587 (three still use the pre-freeze caller job id secret-scan, which can never satisfy a 'scan / gitleaks' requirement)."
+handoff = "docs/upstream/standards-1109-estate-board-triage.adoc — paste-ready comment in Appendix A, four owner commands in Owner actions, a re-verification recipe, and an explicit 'what this file does not claim' section."
+writes-not-performed = "Every finishing write was refused with HTTP 403 (Resource not accessible by integration): POST and PUT to /repos/{o}/{r}/rulesets on all ten repos, and a comment on hyperpolymath/standards#1109. Nothing was written anywhere, and the owner was NOT notified through the source issue."
+tracking-issue = "https://github.com/hyperpolymath/stateful-artefacts/issues/73"
