@@ -171,8 +171,11 @@ scripts/apply-branch-gates.sh --apply --require-green 1 \
 scripts/apply-branch-gates.sh --apply --create-gates --require-green 1 \
   --repo metadatastician/authority-watch
 
-# 4. once pins have converged and three clean runs have accumulated, re-run (2)
-#    WITHOUT --require-green 1 to require the full derived context set.
+# 4. once pins have converged and three clean runs have accumulated, require the
+#    full derived context set:
+scripts/apply-branch-gates.sh --apply \
+  --repo hyperpolymath/ambientops \
+  --repo metadatastician/proglanging-languages
 ----
 
 *Do not require `ambientops`'s red pair yet.* `scan / gitleaks` and
