@@ -64,3 +64,29 @@ permissions:
 jobs:
   estate-audit:
     uses: hyperpolymath/proven-cicd-and-workflows/.github/workflows/main-estate-audit.yml@3120495390635096552935d904652789253938e8 # cicd-suite main, 2026-11-09
+    with:
+      # Declare the Zig FFI surface instead of leaving `zig-ffi-paths` empty.
+      # Empty means "scan every tracked Zig file" (previous behaviour), which
+      # applied the FFI purity policy to the whole tree. These are the actual
+      # FFI roots, plus the local import closure the gate's own header
+      # requires ("callers narrowing the scope must include the FFI
+      # implementation's imports"):
+      #
+      #   src/interface/ffi/          build.zig, src/main.zig,
+      #                               test/integration_test.zig — the C ABI
+      #                               declared in src/interface/Abi/*.idr
+      #   src/core/record.zig         `@import("core")` in ffi/src/main.zig —
+      #                               the artefact-state-record domain, whose
+      #                               serializer writes into the caller's byte
+      #                               slice with std.fmt.bufPrint (no std.io,
+      #                               no std.fs, no fixedBufferStream)
+      #
+      # Coverage is unchanged today: all four tracked Zig files are inside
+      # this scope (census: `git ls-files '*.zig'` = 4). It is not a
+      # suppression — the scope is enforced, not advisory: injecting a real
+      # `std.fs.cwd()` into src/interface/ffi/src/main.zig makes the pinned
+      # check.sh exit 1, and a root matching no tracked file is rejected.
+      # Add any new module the FFI implementation imports to this list.
+      zig-ffi-paths: |
+        src/interface/ffi
+        src/core/record.zig
