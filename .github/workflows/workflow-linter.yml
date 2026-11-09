@@ -69,7 +69,13 @@ jobs:
         run: |
           # Native locks pin tag-based actions and transitive dependencies.
           # A grep for @SHA rejects valid locks and misses '- uses:' steps.
-          gh extension install github/gh-actions-lock --pin v0.1.6
+          #
+          # The pin must be able to READ this repository's lockfile schema.
+          # actions.lock is v0.0.3; v0.1.6 tops out at v0.0.2 and failed every
+          # run with "lockfile version v0.0.3 is newer than this binary
+          # supports", so this check could not verify anything. v0.4.1 reads
+          # v0.0.3 (and is what regenerated the lock in this change).
+          gh extension install github/gh-actions-lock --pin v0.4.1
           gh actions-lock --verify --json=valid,findings
 
       - name: Check for Duplicate Workflows
