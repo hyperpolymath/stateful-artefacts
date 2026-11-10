@@ -1,8 +1,50 @@
-# This workflow is managed by gh actions-lock.
 # SPDX-License-Identifier: MPL-2.0
-# This workflow is managed by gh actions-lock.
-
 name: Central Estate CI/CD Audit
+
+# Thin caller of the shared estate audit, which lives in
+# hyperpolymath/cicd-suite — renamed to hyperpolymath/proven-cicd-and-workflows
+# — as a reusable workflow, and reports five component checks: governance,
+# hygiene, manifests, languages, advisory.
+#
+# The ref below spells the repo's CURRENT name. A `jobs.<id>.uses:` call does
+# not follow the rename: pinned old, this workflow's run dies before jobs are
+# created with "error parsing called workflow ...: workflow was not found"
+# (witnessed on this branch, run 42603770919; the same call by the new name
+# starts five component jobs). Step-level `uses:` inside the called workflow
+# still use the old name and do follow the redirect.
+#
+# This file used to be a COPY of the audit: one `estate-audit` job with 26
+# gate steps pinned at cicd-suite 4c772eb (2026-10-02). That copy froze the
+# gate implementations at whatever commit the copy was taken from, so fixes
+# made upstream after 2026-10-02 could never reach this repository; and
+# because the gates were steps of one job, the first red gate skipped every
+# later one (run 42465996444 on main, 2026-11-08, stopped at "Recipes Set
+# Validation Gate" and skipped 20 gates). A caller replaces the copy.
+#
+# The job id stays `estate-audit` (and the workflow name unchanged) so the
+# check-run prefix this repository has always reported is preserved; the
+# component checks appear as `estate-audit / governance`, `estate-audit /
+# hygiene`, `estate-audit / manifests`, `estate-audit / languages` and
+# `estate-audit / advisory`.
+#
+# Pin a full, branch-reachable COMMIT sha, never `@main` or a tag: the
+# account enforces `sha_pinning_required`, and `@main` would silently change
+# the gate in every consuming repository at once. Never pin a blob sha: a
+# blob cannot be a workflow ref. cicd-suite main as of 2026-11-09 is
+# 3120495390635096552935d904652789253938e8 (workflow blob
+# da33b6b0f9e1ca4d654710452d0259f7e86cdbcc); cicd-suite's
+# templates/track-estate-audit.yml advances this pin weekly by PR, whose own
+# run of this audit is the check.
+#
+# Lockfile: `.github/workflows/actions.lock` carries this workflow's entry as
+# an EMPTY list. Its only `uses:` is a job-level reusable-workflow call, which
+# gh-actions-lock v0.4.1 records as "the workflow exists" but does not pin, so
+# there is no tag-pinned or onboarded composite here for the account's
+# sha_pinning_required policy to reject. If a future tool starts onboarding
+# the call itself, de-onboard it: an ONBOARDED cross-repository
+# reusable-workflow call startup-fails with ZERO jobs under
+# sha_pinning_required (cicd-suite's main-estate-audit.yml header records the
+# witnessed matrix; scripts/deonboard-estate-audit.sh reverses it).
 
 on:
   push:
@@ -13,87 +55,38 @@ on:
 permissions:
   contents: read
 
+# No `concurrency:` here. The called workflow already sets
+# `${{ github.workflow }}-${{ github.ref }}`, which in a called context
+# resolves to the caller's name and ref — the same group — and GitHub cancels
+# such a run: "Canceling since a deadlock was detected for concurrency group
+# ... between a top level workflow and 'estate-audit'" (run 42604549221).
+
 jobs:
   estate-audit:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      
-      - name: Required Files Gate
-        uses: hyperpolymath/cicd-suite/actions/required-files-check@4c772eb235b04455307d5c03cbbc4f45130f7f0f # main
-        
-      - name: Code Hygiene Gate
-        uses: hyperpolymath/cicd-suite/actions/code-hygiene-check@4c772eb235b04455307d5c03cbbc4f45130f7f0f # main
-        
-      - name: Manifest Validation Gate
-        uses: hyperpolymath/cicd-suite/actions/manifest-check@4c772eb235b04455307d5c03cbbc4f45130f7f0f # main
-        
-      - name: Idris2 ABI Purity Gate
-        uses: hyperpolymath/cicd-suite/actions/idris2-abi-check@4c772eb235b04455307d5c03cbbc4f45130f7f0f # main
-        
-      - name: Zig UnifiedApiAdapter API Gate
-        uses: hyperpolymath/cicd-suite/actions/zig-unified-api-adapter-check@4c772eb235b04455307d5c03cbbc4f45130f7f0f # main
-        
-      - name: Contractile Validation Gate
-        uses: hyperpolymath/cicd-suite/actions/contractile-validation-check@4c772eb235b04455307d5c03cbbc4f45130f7f0f # main
-        
-      - name: Recipes Set Validation Gate
-        uses: hyperpolymath/cicd-suite/actions/recipes-set-check@4c772eb235b04455307d5c03cbbc4f45130f7f0f # main
-        
-      - name: Affirmation Document Gate
-        uses: hyperpolymath/cicd-suite/actions/affirmation-check@4c772eb235b04455307d5c03cbbc4f45130f7f0f # main
-        
-      - name: Academic Referencing Gate
-        uses: hyperpolymath/cicd-suite/actions/referencing-check@4c772eb235b04455307d5c03cbbc4f45130f7f0f # main
-        
-      - name: Semantic Audit Gate
-        uses: hyperpolymath/cicd-suite/actions/semantic-audit-check@4c772eb235b04455307d5c03cbbc4f45130f7f0f # main
-        
-      - name: SPDX License Gate
-        uses: hyperpolymath/cicd-suite/actions/spdx-license-check@4c772eb235b04455307d5c03cbbc4f45130f7f0f # main
-        
-      - name: Proof Runner Gate
-        uses: hyperpolymath/cicd-suite/actions/proof-runner-check@4c772eb235b04455307d5c03cbbc4f45130f7f0f # main
-        
-      - name: PRAT Testing Gate
-        uses: hyperpolymath/cicd-suite/actions/prat-check@4c772eb235b04455307d5c03cbbc4f45130f7f0f # main
-        
-      - name: Panic Attack & Pons Gate
-        uses: hyperpolymath/cicd-suite/actions/custom-tools-check@4c772eb235b04455307d5c03cbbc4f45130f7f0f # main
-        
-      - name: WWW & Well-Known Compliance Gate
-        uses: hyperpolymath/cicd-suite/actions/www-compliance-check@4c772eb235b04455307d5c03cbbc4f45130f7f0f # main
-        
-      - name: BoJ Cartridge Validation Gate
-        uses: hyperpolymath/cicd-suite/actions/boj-cartridge-check@4c772eb235b04455307d5c03cbbc4f45130f7f0f # main
-        
-      - name: Formatting Validation Gate
-        uses: hyperpolymath/cicd-suite/actions/formatting-check@4c772eb235b04455307d5c03cbbc4f45130f7f0f # main
-        
-      - name: Accreditations & Badges Gate
-        uses: hyperpolymath/cicd-suite/actions/badges-check@4c772eb235b04455307d5c03cbbc4f45130f7f0f # main
-        
-      - name: Metrics Extraction Gate
-        uses: hyperpolymath/cicd-suite/actions/metrics-check@4c772eb235b04455307d5c03cbbc4f45130f7f0f # main
-        
-      - name: Linguist & Banned Languages Gate
-        uses: hyperpolymath/cicd-suite/actions/linguist-check@4c772eb235b04455307d5c03cbbc4f45130f7f0f # main
-        
-      - name: Test & Benchmarks Dashboard Gate
-        uses: hyperpolymath/cicd-suite/actions/tests-benches-check@4c772eb235b04455307d5c03cbbc4f45130f7f0f # main
-        
-      - name: Hosting & Site Status Gate
-        uses: hyperpolymath/cicd-suite/actions/hosting-check@4c772eb235b04455307d5c03cbbc4f45130f7f0f # main
-        
-      - name: Git-Sea Analytics Gate
-        uses: hyperpolymath/cicd-suite/actions/gitsea-check@4c772eb235b04455307d5c03cbbc4f45130f7f0f # main
-        
-      - name: Trust & Humans Validation Gate
-        uses: hyperpolymath/cicd-suite/actions/trust-humans-check@4c772eb235b04455307d5c03cbbc4f45130f7f0f # main
-        
-      - name: Are We UnAPI Gate (Secret Scanning)
-        uses: hyperpolymath/cicd-suite/actions/secrets-check@4c772eb235b04455307d5c03cbbc4f45130f7f0f # main
-        
-      - name: Reasonably Good Token Validation Gate
-        uses: hyperpolymath/cicd-suite/actions/vaulted-tokens-check@4c772eb235b04455307d5c03cbbc4f45130f7f0f # main
+    uses: hyperpolymath/proven-cicd-and-workflows/.github/workflows/main-estate-audit.yml@3120495390635096552935d904652789253938e8 # cicd-suite main, 2026-11-09
+    with:
+      # Declare the Zig FFI surface instead of leaving `zig-ffi-paths` empty.
+      # Empty means "scan every tracked Zig file" (previous behaviour), which
+      # applied the FFI purity policy to the whole tree. These are the actual
+      # FFI roots, plus the local import closure the gate's own header
+      # requires ("callers narrowing the scope must include the FFI
+      # implementation's imports"):
+      #
+      #   src/interface/ffi/          build.zig, src/main.zig,
+      #                               test/integration_test.zig — the C ABI
+      #                               declared in src/interface/Abi/*.idr
+      #   src/core/record.zig         `@import("core")` in ffi/src/main.zig —
+      #                               the artefact-state-record domain, whose
+      #                               serializer writes into the caller's byte
+      #                               slice with std.fmt.bufPrint (no std.io,
+      #                               no std.fs, no fixedBufferStream)
+      #
+      # Coverage is unchanged today: all four tracked Zig files are inside
+      # this scope (census: `git ls-files '*.zig'` = 4). It is not a
+      # suppression — the scope is enforced, not advisory: injecting a real
+      # `std.fs.cwd()` into src/interface/ffi/src/main.zig makes the pinned
+      # check.sh exit 1, and a root matching no tracked file is rejected.
+      # Add any new module the FFI implementation imports to this list.
+      zig-ffi-paths: |
+        src/interface/ffi
+        src/core/record.zig
