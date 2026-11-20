@@ -20,7 +20,7 @@
 | *Total* | *11* | *0* | *4* | *0* | *7*
 |===
 
-*Overall*: 0% machine-verified. The four INV/DOM lifecycle proofs below are
+*Overall*: 0 of 11 machine-verified. The four INV/DOM lifecycle proofs below are
 *authored but not machine-checked*. Idris2/TLC are absent from the 2026-10-04
 workspace, and no repository CI workflow currently runs the proof checks. The
 `just typecheck-abi` / `just proof-check-idris2` recipes and `tlc` can be invoked
